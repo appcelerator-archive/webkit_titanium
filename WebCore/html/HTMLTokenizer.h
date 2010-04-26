@@ -48,6 +48,7 @@ class HTMLParser;
 class Node;
 class PreloadScanner;
 class ScriptSourceCode;
+class ScriptEvaluator;
 
 /**
  * @internal
@@ -388,6 +389,8 @@ private:
     int m_executingScript;
     Deque<CachedResourceHandle<CachedScript> > m_pendingScripts;
     RefPtr<HTMLScriptElement> m_scriptNode;
+    ScriptEvaluator *m_scriptEvaluator;
+    String m_scriptMimeType;
 
     bool m_requestingScript;
     bool m_hasScriptsWaitingForStylesheets;

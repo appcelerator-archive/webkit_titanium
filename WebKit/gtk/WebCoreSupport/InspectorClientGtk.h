@@ -42,6 +42,7 @@ namespace WebCore {
 
 namespace WebKit {
 
+    extern char* CustomGtkWebInspectorPath;
     class InspectorClient : public WebCore::InspectorClient {
     public:
         InspectorClient(WebKitWebView* webView);

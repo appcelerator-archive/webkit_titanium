@@ -327,6 +327,13 @@ public:
     virtual HRESULT STDMETHODCALLTYPE desktopNotificationsDelegate(
         /* [retval][out] */ IWebDesktopNotificationsDelegate **result) { return E_NOTIMPL; }
 
+    virtual HRESULT STDMETHODCALLTYPE newBackingStore(
+        /* [in] */ IWebView*,
+        /* [in] */ OLE_HANDLE)
+    {
+        return E_NOTIMPL;
+    }
+
 private:
     WebInspectorDelegate();
 

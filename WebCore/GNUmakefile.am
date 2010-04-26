@@ -309,6 +309,8 @@ IDL_BINDINGS += \
 	WebCore/xml/XSLTProcessor.idl
 
 webcore_sources += \
+	WebCore/platform/network/TitaniumProtocols.cpp \
+	WebCore/platform/network/TitaniumProtocols.h \
 	WebCore/WebCorePrefix.h \
         WebCore/accessibility/AXObjectCache.cpp \
 	WebCore/accessibility/AXObjectCache.h \
@@ -3736,7 +3738,7 @@ webcore_built_objects = := $(patsubst %.cpp,%.lo,$(webcore_built_nosources))
 
 $(webcore_built_objects): AM_CPPFLAGS+=$(corekit_cppflags)
 
-$(webcore_built_objects): AM_CXXFLAGS+=$(libwebkit_1_0_la_CXXFLAGS)
+$(webcore_built_objects): AM_CXXFLAGS+=$(libwebkittitanium_1_0_la_CXXFLAGS)
 
 libWebCoreJS_objects := $(patsubst %.idl,DerivedSources/JS%.lo,$(notdir $(IDL_BINDINGS_JS)))
 
@@ -3749,7 +3751,7 @@ libWebCoreJS_depfiles += $(patsubst %.lo,$(DEPDIR)/%.Plo,$(libWebCoreJS_objects)
 
 $(libWebCoreJS_objects): AM_CPPFLAGS+=$(corekit_cppflags)
 
-$(libWebCoreJS_objects): AM_CXXFLAGS+=$(libwebkit_1_0_la_CXXFLAGS)
+$(libWebCoreJS_objects): AM_CXXFLAGS+=$(libwebkittitanium_1_0_la_CXXFLAGS)
 
 libWebCoreJS.la: $(libWebCoreJS_objects)
 	$(CXXLINK) $(libWebCoreJS_objects) $(LIBS)

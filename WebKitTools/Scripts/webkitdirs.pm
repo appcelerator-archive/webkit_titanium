@@ -67,6 +67,7 @@ my $isEfl;
 my @wxArgs;
 my $isChromium;
 my $isInspectorFrontend;
+my $isWinCairo;
 
 # Variables for Win32 support
 my $vcBuildPath;
@@ -241,15 +242,15 @@ sub argumentsForConfiguration()
     determineArchitecture();
 
     my @args = ();
-    push(@args, '--debug') if $configuration eq "Debug";
-    push(@args, '--release') if $configuration eq "Release";
-    push(@args, '--32-bit') if $architecture ne "x86_64";
+    push(@args, '--debug') if $configuration eq "Debug" or $configuration eq 'Debug_Cairo';
+    push(@args, '--release') if $configuration eq "Release" or $configuration eq 'Release_Cairo';
     push(@args, '--qt') if isQt();
     push(@args, '--symbian') if isSymbian();
     push(@args, '--gtk') if isGtk();
     push(@args, '--efl') if isEfl();
     push(@args, '--wx') if isWx();
     push(@args, '--chromium') if isChromium();
+    push(@args, '--cairo-win32') if isWinCairo();
     push(@args, '--inspector-frontend') if isInspectorFrontend();
     return @args;
 }
@@ -763,6 +764,18 @@ sub determineIsChromium()
 {
     return if defined($isChromium);
     $isChromium = checkForArgumentAndRemoveFromARGV("--chromium");
+}
+
+sub isWinCairo()
+{
+    determineIsWinCairo();
+    return $isWinCairo;
+}
+
+sub determineIsWinCairo()
+{
+	return if defined($isWinCairo);
+	$isWinCairo = checkForArgumentAndRemoveFromARGV("--cairo-win32");
 }
 
 sub isCygwin()

@@ -31,6 +31,7 @@
 
 #include "WebKitDLL.h"
 #include "WebView.h"
+#include "WebInspectorClient.h"
 #pragma warning(push, 0)
 #include <WebCore/InspectorController.h>
 #include <WebCore/Page.h>
@@ -39,18 +40,20 @@
 
 using namespace WebCore;
 
-WebInspector* WebInspector::createInstance(WebView* webView)
+WebInspector* WebInspector::createInstance(WebView* webView, WebInspectorClient* webInspectorClient)
 {
-    WebInspector* inspector = new WebInspector(webView);
+    WebInspector* inspector = new WebInspector(webView, webInspectorClient);
     inspector->AddRef();
     return inspector;
 }
 
-WebInspector::WebInspector(WebView* webView)
+WebInspector::WebInspector(WebView* webView, WebInspectorClient* webInspectorClient)
     : m_refCount(0)
     , m_webView(webView)
+    , m_webInspectorClient(webInspectorClient)
 {
     ASSERT_ARG(webView, webView);
+    ASSERT_ARG(webInspectorClient, webInspectorClient);
 
     gClassCount++;
     gClassNameCount.add("WebInspector");
@@ -65,6 +68,7 @@ WebInspector::~WebInspector()
 void WebInspector::webViewClosed()
 {
     m_webView = 0;
+    m_webInspectorClient = 0;
 }
 
 HRESULT STDMETHODCALLTYPE WebInspector::QueryInterface(REFIID riid, void** ppvObject)
@@ -297,5 +301,16 @@ HRESULT STDMETHODCALLTYPE WebInspector::setTimelineProfilingEnabled(BOOL enabled
     else
         page->inspectorController()->stopTimelineProfiler();
 
+    return S_OK;
+}
+
+HRESULT STDMETHODCALLTYPE WebInspector::setInspectorURL(BSTR url)
+{
+    if (!m_webInspectorClient)
+        return S_OK;
+ 
+    String inspectorURLStr(url, SysStringLen(url));
+    m_webInspectorClient->setInspectorURL(inspectorURLStr);
+ 
     return S_OK;
 }

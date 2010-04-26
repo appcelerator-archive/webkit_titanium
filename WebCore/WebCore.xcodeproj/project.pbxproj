@@ -1147,6 +1147,12 @@
 		59EE122E1106080F00885116 /* JNIUtilityPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 59EE122D1106080F00885116 /* JNIUtilityPrivate.h */; };
 		59EE12301106081F00885116 /* JNIUtility.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 59EE122F1106081F00885116 /* JNIUtility.cpp */; };
 		59EE12321106082900885116 /* JNIUtility.h in Headers */ = {isa = PBXBuildFile; fileRef = 59EE12311106082900885116 /* JNIUtility.h */; };
+		5B4C5A7A0FCB7F0E00601793 /* AtomicString.h in Copy Extra API Headers (Titanium) */ = {isa = PBXBuildFile; fileRef = B2C3D9EE0D006C1D00EF6F26 /* AtomicString.h */; };
+		5B4C5A7B0FCB7F1600601793 /* AtomicStringHash.h in Copy Extra API Headers (Titanium) */ = {isa = PBXBuildFile; fileRef = 0FC705200EB1815600B90AD8 /* AtomicStringHash.h */; };
+		5BCFAE97117CD0C6005E2291 /* FrameLoaderTypes.h in Frameworks */ = {isa = PBXBuildFile; fileRef = 93B77A370ADD792500EA4B81 /* FrameLoaderTypes.h */; };
+		5BCFAE98117CD0D8005E2291 /* FrameLoaderTypes.h in Copy Extra API Headers (Titanium) */ = {isa = PBXBuildFile; fileRef = 93B77A370ADD792500EA4B81 /* FrameLoaderTypes.h */; };
+		5BCFAEB0117CD0FD005E2291 /* ScriptSourceProvider.h in Copy Extra API Headers (Titanium) */ = {isa = PBXBuildFile; fileRef = CE54FD371016D9A6008B44C8 /* ScriptSourceProvider.h */; };
+		5BCFAEBD117CD123005E2291 /* ScriptEvaluator.h in Copy Extra API Headers (Titanium) */ = {isa = PBXBuildFile; fileRef = ABCACE7E0F415D7300805E73 /* ScriptEvaluator.h */; };
 		5D15E3AB0F9E6AC1009E0E3F /* XMLTokenizerScope.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5D15E3A90F9E6AC1009E0E3F /* XMLTokenizerScope.cpp */; };
 		5D15E3AC0F9E6AC1009E0E3F /* XMLTokenizerScope.h in Headers */ = {isa = PBXBuildFile; fileRef = 5D15E3AA0F9E6AC1009E0E3F /* XMLTokenizerScope.h */; };
 		5D874F130D161D3200796C3B /* NetscapePlugInStreamLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 93E227DD0AF589AD00D48324 /* NetscapePlugInStreamLoader.cpp */; };
@@ -3420,6 +3426,27 @@
 		ABB5419E0ACDDFE4002820EB /* RenderListBox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABB5419C0ACDDFE4002820EB /* RenderListBox.cpp */; };
 		ABB5419F0ACDDFE4002820EB /* RenderListBox.h in Headers */ = {isa = PBXBuildFile; fileRef = ABB5419D0ACDDFE4002820EB /* RenderListBox.h */; };
 		ABC128770B33AA6D00C693D5 /* PopupMenuClient.h in Headers */ = {isa = PBXBuildFile; fileRef = ABC128760B33AA6D00C693D5 /* PopupMenuClient.h */; };
+		ABCACED60F416D5F00805E73 /* CachedScriptSourceProvider.h in Copy Extra API Headers (Titanium) */ = {isa = PBXBuildFile; fileRef = BCD533630ED6848900887468 /* CachedScriptSourceProvider.h */; };
+		ABCACED70F416D5F00805E73 /* ScriptSourceCode.h in Copy Extra API Headers (Titanium) */ = {isa = PBXBuildFile; fileRef = 934CC1090EDB223900A658F2 /* ScriptSourceCode.h */; };
+		ABCACED80F416D5F00805E73 /* StringSourceProvider.h in Copy Extra API Headers (Titanium) */ = {isa = PBXBuildFile; fileRef = 65488D6A0DD5A83D009D83B2 /* StringSourceProvider.h */; };
+		ABCACED90F416D8200805E73 /* CachedResource.h in Copy Extra API Headers (Titanium) */ = {isa = PBXBuildFile; fileRef = BCB16C070979C3BD00467741 /* CachedResource.h */; };
+		ABCACEDA0F416D8200805E73 /* CachedResourceClient.h in Copy Extra API Headers (Titanium) */ = {isa = PBXBuildFile; fileRef = BCFB2E5D0979E46400BA703D /* CachedResourceClient.h */; };
+		ABCACEDB0F416D8200805E73 /* CachedResourceHandle.h in Copy Extra API Headers (Titanium) */ = {isa = PBXBuildFile; fileRef = E47B4BE60E71241600038854 /* CachedResourceHandle.h */; };
+		ABCACEDC0F416D8200805E73 /* CachedScript.h in Copy Extra API Headers (Titanium) */ = {isa = PBXBuildFile; fileRef = BCB16C0B0979C3BD00467741 /* CachedScript.h */; };
+		ABCACEDD0F416DA500805E73 /* TextCodec.h in Copy Extra API Headers (Titanium) */ = {isa = PBXBuildFile; fileRef = B2C3DA0A0D006C1D00EF6F26 /* TextCodec.h */; };
+		ABCACEDE0F416DA500805E73 /* TextEncoding.h in Copy Extra API Headers (Titanium) */ = {isa = PBXBuildFile; fileRef = B2C3DA170D006C1D00EF6F26 /* TextEncoding.h */; };
+		ABCACEDF0F416DA500805E73 /* KURL.h in Copy Extra API Headers (Titanium) */ = {isa = PBXBuildFile; fileRef = 6593923609AE4346002C531F /* KURL.h */; };
+		ABCACEE00F416DC100805E73 /* Timer.h in Copy Extra API Headers (Titanium) */ = {isa = PBXBuildFile; fileRef = 9305B24C098F1B6B00C28855 /* Timer.h */; };
+		ABCACEF40F416DF000805E73 /* CachePolicy.h in Copy Extra API Headers (Titanium) */ = {isa = PBXBuildFile; fileRef = F587864902DE3A9A01EA4122 /* CachePolicy.h */; };
+		ABCACEF50F416E1400805E73 /* PlatformString.h in Copy Extra API Headers (Titanium) */ = {isa = PBXBuildFile; fileRef = B2C3D9FB0D006C1D00EF6F26 /* PlatformString.h */; };
+		ABCACEFD0F416E7700805E73 /* ResourceResponse.h in Copy Extra API Headers (Titanium) */ = {isa = PBXBuildFile; fileRef = 514C764A0CE9234E007EF3CD /* ResourceResponse.h */; };
+		ABCACEFE0F416E7700805E73 /* HTTPHeaderMap.h in Copy Extra API Headers (Titanium) */ = {isa = PBXBuildFile; fileRef = 514C765C0CE923A1007EF3CD /* HTTPHeaderMap.h */; };
+		ABCACEFF0F416E7700805E73 /* ResourceResponseBase.h in Copy Extra API Headers (Titanium) */ = {isa = PBXBuildFile; fileRef = 514C766A0CE923A1007EF3CD /* ResourceResponseBase.h */; };
+		ABCACF080F416EC200805E73 /* AtomicStringImpl.h in Copy Extra API Headers (Titanium) */ = {isa = PBXBuildFile; fileRef = B2C3D9EF0D006C1D00EF6F26 /* AtomicStringImpl.h */; };
+		ABCACF090F416EC200805E73 /* StringHash.h in Copy Extra API Headers (Titanium) */ = {isa = PBXBuildFile; fileRef = B2C3DA010D006C1D00EF6F26 /* StringHash.h */; };
+		ABCACF0A0F416EC200805E73 /* StringImpl.h in Copy Extra API Headers (Titanium) */ = {isa = PBXBuildFile; fileRef = B2C3DA030D006C1D00EF6F26 /* StringImpl.h */; };
+		ABCACF0B0F416F3300805E73 /* SharedBuffer.h in Copy Extra API Headers (Titanium) */ = {isa = PBXBuildFile; fileRef = 1A4A954C0B4EDCCB002D8C3C /* SharedBuffer.h */; };
+		ABCACF2C0F41736F00805E73 /* ScriptElement.h in Copy Extra API Headers (Titanium) */ = {isa = PBXBuildFile; fileRef = 08A484760E5272C500C3FE76 /* ScriptElement.h */; };
 		ABDDFE790A5C6E7000A3E11D /* RenderMenuList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABDDFE730A5C6E6F00A3E11D /* RenderMenuList.cpp */; };
 		ABDDFE7A0A5C6E7000A3E11D /* RenderMenuList.h in Headers */ = {isa = PBXBuildFile; fileRef = ABDDFE740A5C6E7000A3E11D /* RenderMenuList.h */; };
 		ABFE7E120D32FAF60066F4D2 /* MediaControlElements.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABFE7E100D32FAF50066F4D2 /* MediaControlElements.cpp */; };
@@ -5392,6 +5419,42 @@
 				08C7A2C710DC7462002D368B /* SVGNames.h in Copy Generated Headers */,
 			);
 			name = "Copy Generated Headers";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ABCACED40F416D2C00805E73 /* Copy Extra API Headers (Titanium) */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = Versions/A/PrivateHeaders/ForwardingHeaders;
+			dstSubfolderSpec = 1;
+			files = (
+				5BCFAEBD117CD123005E2291 /* ScriptEvaluator.h in Copy Extra API Headers (Titanium) */,
+				5BCFAEB0117CD0FD005E2291 /* ScriptSourceProvider.h in Copy Extra API Headers (Titanium) */,
+				5BCFAE98117CD0D8005E2291 /* FrameLoaderTypes.h in Copy Extra API Headers (Titanium) */,
+				5B4C5A7A0FCB7F0E00601793 /* AtomicString.h in Copy Extra API Headers (Titanium) */,
+				5B4C5A7B0FCB7F1600601793 /* AtomicStringHash.h in Copy Extra API Headers (Titanium) */,
+				ABCACF2C0F41736F00805E73 /* ScriptElement.h in Copy Extra API Headers (Titanium) */,
+				ABCACF0B0F416F3300805E73 /* SharedBuffer.h in Copy Extra API Headers (Titanium) */,
+				ABCACF080F416EC200805E73 /* AtomicStringImpl.h in Copy Extra API Headers (Titanium) */,
+				ABCACF090F416EC200805E73 /* StringHash.h in Copy Extra API Headers (Titanium) */,
+				ABCACF0A0F416EC200805E73 /* StringImpl.h in Copy Extra API Headers (Titanium) */,
+				ABCACEFD0F416E7700805E73 /* ResourceResponse.h in Copy Extra API Headers (Titanium) */,
+				ABCACEFE0F416E7700805E73 /* HTTPHeaderMap.h in Copy Extra API Headers (Titanium) */,
+				ABCACEFF0F416E7700805E73 /* ResourceResponseBase.h in Copy Extra API Headers (Titanium) */,
+				ABCACEF50F416E1400805E73 /* PlatformString.h in Copy Extra API Headers (Titanium) */,
+				ABCACEF40F416DF000805E73 /* CachePolicy.h in Copy Extra API Headers (Titanium) */,
+				ABCACEE00F416DC100805E73 /* Timer.h in Copy Extra API Headers (Titanium) */,
+				ABCACEDD0F416DA500805E73 /* TextCodec.h in Copy Extra API Headers (Titanium) */,
+				ABCACEDE0F416DA500805E73 /* TextEncoding.h in Copy Extra API Headers (Titanium) */,
+				ABCACEDF0F416DA500805E73 /* KURL.h in Copy Extra API Headers (Titanium) */,
+				ABCACED90F416D8200805E73 /* CachedResource.h in Copy Extra API Headers (Titanium) */,
+				ABCACEDA0F416D8200805E73 /* CachedResourceClient.h in Copy Extra API Headers (Titanium) */,
+				ABCACEDB0F416D8200805E73 /* CachedResourceHandle.h in Copy Extra API Headers (Titanium) */,
+				ABCACEDC0F416D8200805E73 /* CachedScript.h in Copy Extra API Headers (Titanium) */,
+				ABCACED60F416D5F00805E73 /* CachedScriptSourceProvider.h in Copy Extra API Headers (Titanium) */,
+				ABCACED70F416D5F00805E73 /* ScriptSourceCode.h in Copy Extra API Headers (Titanium) */,
+				ABCACED80F416D5F00805E73 /* StringSourceProvider.h in Copy Extra API Headers (Titanium) */,
+			);
+			name = "Copy Extra API Headers (Titanium)";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -8606,6 +8669,7 @@
 		ABB5419C0ACDDFE4002820EB /* RenderListBox.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = RenderListBox.cpp; sourceTree = "<group>"; };
 		ABB5419D0ACDDFE4002820EB /* RenderListBox.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = RenderListBox.h; sourceTree = "<group>"; };
 		ABC128760B33AA6D00C693D5 /* PopupMenuClient.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = PopupMenuClient.h; sourceTree = "<group>"; };
+		ABCACE7E0F415D7300805E73 /* ScriptEvaluator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ScriptEvaluator.h; sourceTree = "<group>"; };
 		ABDDFE730A5C6E6F00A3E11D /* RenderMenuList.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = RenderMenuList.cpp; sourceTree = "<group>"; };
 		ABDDFE740A5C6E7000A3E11D /* RenderMenuList.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = RenderMenuList.h; sourceTree = "<group>"; };
 		ABFE7E100D32FAF50066F4D2 /* MediaControlElements.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MediaControlElements.cpp; sourceTree = "<group>"; };
@@ -10397,6 +10461,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5BCFAE97117CD0C6005E2291 /* FrameLoaderTypes.h in Frameworks */,
 				93F19B1308245E59001E9ABC /* ApplicationServices.framework in Frameworks */,
 				93F19B1408245E59001E9ABC /* Carbon.framework in Frameworks */,
 				93F19B1508245E59001E9ABC /* Cocoa.framework in Frameworks */,
@@ -16242,6 +16307,7 @@
 				85031B360A44EFC700F992E0 /* RegisteredEventListener.h */,
 				08A484750E5272C500C3FE76 /* ScriptElement.cpp */,
 				08A484760E5272C500C3FE76 /* ScriptElement.h */,
+				ABCACE7E0F415D7300805E73 /* ScriptEvaluator.h */,
 				E11C9DAF0EB3699500E409DB /* ScriptExecutionContext.cpp */,
 				E11C9D9A0EB3681200E409DB /* ScriptExecutionContext.h */,
 				084AEBE20FB505FA0038483E /* SelectElement.cpp */,
@@ -18866,6 +18932,7 @@
 				1C5F9D760E09A1B400E91D0A /* Streamline Inspector Source */,
 				93F19A0C08245E59001E9ABC /* Sources */,
 				93F19B1208245E59001E9ABC /* Frameworks */,
+				ABCACED40F416D2C00805E73 /* Copy Extra API Headers (Titanium) */,
 				939D050109D9FF6B00984996 /* Check For Global Initializers */,
 				933457E60EBFDF6B00B80894 /* Check For Exit Time Destructors */,
 				5D0D540D0E9862F60029E223 /* Check For Weak VTables and Externals */,
@@ -21135,9 +21202,12 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 1CDD45E40BA9C84600F90147 /* DebugRelease.xcconfig */;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1)";
+				ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1 = "ppc i386";
 				DEAD_CODE_STRIPPING = "$(DEAD_CODE_STRIPPING_debug)";
 				DEBUG_DEFINES = "$(DEBUG_DEFINES_debug)";
 				GCC_OPTIMIZATION_LEVEL = "$(GCC_OPTIMIZATION_LEVEL_debug)";
+				ONLY_ACTIVE_ARCH = NO;
 				STRIP_INSTALLED_PRODUCT = "$(STRIP_INSTALLED_PRODUCT_debug)";
 			};
 			name = Debug;
@@ -21146,6 +21216,9 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 1CDD45E40BA9C84600F90147 /* DebugRelease.xcconfig */;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1)";
+				ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1 = "ppc i386";
+				ONLY_ACTIVE_ARCH = NO;
 				STRIP_INSTALLED_PRODUCT = NO;
 			};
 			name = Release;
@@ -21154,6 +21227,9 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 1CDD45E60BA9C84600F90147 /* Base.xcconfig */;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1)";
+				ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1 = "ppc i386";
+				ONLY_ACTIVE_ARCH = NO;
 			};
 			name = Production;
 		};

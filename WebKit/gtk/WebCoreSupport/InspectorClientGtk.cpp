@@ -31,6 +31,7 @@ using namespace WebCore;
 
 namespace WebKit {
 
+char* CustomGtkWebInspectorPath = 0;
 static void notifyWebViewDestroyed(WebKitWebView* webView, InspectorFrontendClient* inspectorFrontendClient)
 {
     inspectorFrontendClient->destroyInspectorWindow();
@@ -69,7 +70,11 @@ void InspectorClient::openInspectorFrontend(InspectorController* controller)
     GOwnPtr<gchar> inspectorURI;
 
     // Make the Web Inspector work when running tests
-    if (g_file_test("WebCore/inspector/front-end/inspector.html", G_FILE_TEST_EXISTS)) {
+    if (CustomGtkWebInspectorPath) {
+        String url = CustomGtkWebInspectorPath;
+        url.append("/inspector.html");
+        inspectorURI.set(g_filename_to_uri(url.utf8().data(), NULL, NULL));
+    } else if (g_file_test("WebCore/inspector/front-end/inspector.html", G_FILE_TEST_EXISTS)) {
         GOwnPtr<gchar> currentDirectory(g_get_current_dir());
         GOwnPtr<gchar> fullPath(g_strdup_printf("%s/WebCore/inspector/front-end/inspector.html", currentDirectory.get()));
         inspectorURI.set(g_filename_to_uri(fullPath.get(), NULL, NULL));
@@ -147,7 +152,11 @@ String InspectorFrontendClient::localizedStringsURL()
     GOwnPtr<gchar> URL;
 
     // Make the Web Inspector work when running tests
-    if (g_file_test("WebCore/English.lproj/localizedStrings.js", G_FILE_TEST_EXISTS)) {
+    if (CustomGtkWebInspectorPath) {
+        String url = CustomGtkWebInspectorPath;
+        url.append("/localizedStrings.js");
+        URL.set(g_filename_to_uri(url.utf8().data(), NULL, NULL));
+    } else if (g_file_test("WebCore/English.lproj/localizedStrings.js", G_FILE_TEST_EXISTS)) {
         GOwnPtr<gchar> currentDirectory(g_get_current_dir());
         GOwnPtr<gchar> fullPath(g_strdup_printf("%s/WebCore/English.lproj/localizedStrings.js", currentDirectory.get()));
         URL.set(g_filename_to_uri(fullPath.get(), NULL, NULL));

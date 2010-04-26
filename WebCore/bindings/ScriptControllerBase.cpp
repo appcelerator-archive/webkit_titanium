@@ -24,6 +24,7 @@
 #include "Frame.h"
 #include "FrameLoaderClient.h"
 #include "Page.h"
+#include "ScriptEvaluator.h"
 #include "ScriptSourceCode.h"
 #include "ScriptValue.h"
 #include "Settings.h"
@@ -67,6 +68,28 @@ ScriptValue ScriptController::executeScript(const ScriptSourceCode& sourceCode)
     return result;
 }
 
+ScriptValue ScriptController::executeScript(const ScriptSourceCode& sourceCode, const String& mimeType, ScriptEvaluator *evaluator)
+{
+    if (!canExecuteScripts(AboutToExecuteScript) || m_frame->script()->isPaused())
+        return ScriptValue();
+
+    if (!evaluator || mimeType.length() == 0)
+        return executeScript(sourceCode);
+
+    bool wasRunningScript = m_inExecuteScript;
+    m_inExecuteScript = true;
+
+    // FIXME, we should eventually pull this from the ScriptEvaluator
+    evaluator->evaluate(mimeType, sourceCode,
+       windowShell(mainThreadNormalWorld())->window()->globalExec());
+
+    if (!wasRunningScript) {
+        m_inExecuteScript = false;
+        Document::updateStyleForAllDocuments();
+    }
+
+    return ScriptValue();
+}
 
 bool ScriptController::executeIfJavaScriptURL(const KURL& url, bool userGesture, bool replaceDocument)
 {

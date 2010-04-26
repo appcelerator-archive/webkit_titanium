@@ -41,7 +41,13 @@ String DataObjectGtk::markup()
 void DataObjectGtk::setText(const String& newText)
 {
     m_range = 0;
+    // For plain-text data we want to replace the non-breaking space
+    // with a regular space, otherwise a lot of text from web pages
+    // will come through with strange characters.
+    static const UChar nonBreakingSpaceCharacter = 0xA0;
+    static const UChar spaceCharacter = ' ';
     m_text = newText;
+    m_text.replace(nonBreakingSpaceCharacter, spaceCharacter);
 }
 
 void DataObjectGtk::setMarkup(const String& newMarkup)
@@ -92,6 +98,18 @@ String DataObjectGtk::urlLabel()
 bool DataObjectGtk::hasURL()
 {
     return !url().isEmpty();
+}
+
+void DataObjectGtk::clearText()
+{
+    m_text = "";
+    m_range = 0;
+}
+
+void DataObjectGtk::clearMarkup()
+{
+    m_markup = "";
+    m_range = 0;
 }
 
 void DataObjectGtk::clear()

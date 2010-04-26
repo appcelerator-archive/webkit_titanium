@@ -52,6 +52,8 @@ interface IWebInspector : IUnknown
     HRESULT isProfilingJavaScript(BOOL* isProfiling);
     HRESULT toggleProfilingJavaScript();
 
+    HRESULT setInspectorURL(BSTR url);
+
     HRESULT isJavaScriptProfilingEnabled(BOOL* isProfilingEnabled);
     HRESULT setJavaScriptProfilingEnabled(BOOL enabled);
 

@@ -57,6 +57,19 @@ template<> struct COMVariantSetter<WebCore::String> : COMVariantSetterBase<WebCo
     }
 };
 
+template<> struct COMVariantSetter<WebCore::AtomicString> : COMVariantSetterBase<WebCore::AtomicString>
+{
+    static const VARENUM VariantType = VT_BSTR;
+
+    static void setVariant(VARIANT* variant, const WebCore::AtomicString& value)
+    {
+        ASSERT(V_VT(variant) == VT_EMPTY);
+
+        V_VT(variant) = VariantType;
+        V_BSTR(variant) = WebCore::BString(value).release();
+    }
+};
+
 template<> struct COMVariantSetter<bool> : COMVariantSetterBase<bool>
 {
     static const VARENUM VariantType = VT_BOOL;

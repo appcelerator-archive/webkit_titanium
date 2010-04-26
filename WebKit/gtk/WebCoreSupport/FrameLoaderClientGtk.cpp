@@ -83,6 +83,8 @@ FrameLoaderClient::FrameLoaderClient(WebKitWebFrame* frame)
     , m_hasSentResponseToPlugin(false)
 {
     ASSERT(m_frame);
+    SecurityOrigin::registerURLSchemeAsLocal(String("app", strlen("app")));
+    SecurityOrigin::registerURLSchemeAsLocal(String("ti", strlen("ti")));
 }
 
 FrameLoaderClient::~FrameLoaderClient()

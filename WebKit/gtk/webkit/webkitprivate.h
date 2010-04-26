@@ -60,6 +60,7 @@
 #include "ResourceResponse.h"
 #include "WindowFeatures.h"
 #include "SecurityOrigin.h"
+#include "DataObjectGtk.h"
 #include <wtf/text/CString.h>
 
 #include <atk/atk.h>
@@ -149,6 +150,9 @@ extern "C" {
         char* mainResourceIdentifier;
         GHashTable* subResources;
         char* tooltipText;
+
+        RefPtr<WebCore::DataObjectGtk> draggingDataObject;
+        RefPtr<WebCore::DataObjectGtk> droppingDataObject;
     };
 
     #define WEBKIT_WEB_FRAME_GET_PRIVATE(obj)    (G_TYPE_INSTANCE_GET_PRIVATE((obj), WEBKIT_TYPE_WEB_FRAME, WebKitWebFramePrivate))

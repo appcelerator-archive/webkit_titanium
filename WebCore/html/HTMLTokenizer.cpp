@@ -49,6 +49,7 @@
 #include "Page.h"
 #include "PreloadScanner.h"
 #include "ScriptController.h"
+#include "ScriptEvaluator.h"
 #include "ScriptSourceCode.h"
 #include "ScriptValue.h"
 #include "XSSAuditor.h"
@@ -156,6 +157,7 @@ HTMLTokenizer::HTMLTokenizer(HTMLDocument* doc, bool reportErrors)
     , m_scriptCodeCapacity(0)
     , m_scriptCodeResync(0)
     , m_executingScript(0)
+    , m_scriptEvaluator(0)
     , m_requestingScript(false)
     , m_hasScriptsWaitingForStylesheets(false)
     , m_timer(this, &HTMLTokenizer::timerFired)
@@ -177,6 +179,7 @@ HTMLTokenizer::HTMLTokenizer(HTMLViewSourceDocument* doc)
     , m_scriptCodeCapacity(0)
     , m_scriptCodeResync(0)
     , m_executingScript(0)
+    , m_scriptEvaluator(0)
     , m_requestingScript(false)
     , m_hasScriptsWaitingForStylesheets(false)
     , m_timer(this, &HTMLTokenizer::timerFired)
@@ -197,6 +200,7 @@ HTMLTokenizer::HTMLTokenizer(DocumentFragment* frag, FragmentScriptingPermission
     , m_scriptCodeCapacity(0)
     , m_scriptCodeResync(0)
     , m_executingScript(0)
+    , m_scriptEvaluator(0)
     , m_requestingScript(false)
     , m_hasScriptsWaitingForStylesheets(false)
     , m_timer(this, &HTMLTokenizer::timerFired)
@@ -239,6 +243,7 @@ void HTMLTokenizer::reset()
     m_doctypeToken.reset();
     m_doctypeSearchCount = 0;
     m_doctypeSecondarySearchCount = 0;
+    m_scriptEvaluator = 0;
     m_hasScriptsWaitingForStylesheets = false;
 }
 
@@ -453,6 +458,9 @@ HTMLTokenizer::State HTMLTokenizer::scriptHandler(State state)
         } else {
             // Parse m_scriptCode containing <script> info
             doScriptExec = m_scriptNode->shouldExecuteAsJavaScript();
+            m_scriptEvaluator = m_scriptNode->findEvaluator();
+            m_scriptMimeType = m_scriptNode->type();
+            doScriptExec = m_scriptNode->shouldExecuteAsJavaScript() || (m_scriptEvaluator != NULL);
 #if ENABLE(XHTMLMP)
             if (!doScriptExec)
                 m_doc->setShouldProcessNoscriptElement(true);
@@ -569,7 +577,12 @@ HTMLTokenizer::State HTMLTokenizer::scriptExecution(const ScriptSourceCode& sour
 #endif
 
     m_state = state;
-    m_doc->frame()->script()->executeScript(sourceCode);
+    if (!m_scriptEvaluator || m_scriptMimeType.length() == 0 || !m_scriptEvaluator->matchesMimeType(m_scriptMimeType)) {
+        m_doc->frame()->script()->executeScript(sourceCode);
+    } else {
+        m_doc->frame()->script()->executeScript(sourceCode, m_scriptMimeType, m_scriptEvaluator);
+        m_scriptMimeType = "";
+    }
     state = m_state;
 
     state.setAllowYield(true);
@@ -2061,8 +2074,18 @@ void HTMLTokenizer::executeExternalScriptsIfReady()
         if (errorOccurred)
             n->dispatchEvent(Event::create(eventNames().errorEvent, true, false));
         else {
-            if (static_cast<HTMLScriptElement*>(n.get())->shouldExecuteAsJavaScript())
+            HTMLScriptElement *el = static_cast<HTMLScriptElement*>(n.get());
+
+            if (el->shouldExecuteAsJavaScript()) {
                 m_state = scriptExecution(sourceCode, m_state);
+            }
+            m_scriptEvaluator = el->findEvaluator();
+            m_scriptMimeType = el->type();
+
+            if (m_scriptEvaluator && m_scriptEvaluator->matchesMimeType(m_scriptMimeType)) {
+                m_state = scriptExecution(sourceCode, m_state);
+                m_scriptMimeType = "";
+            }
 #if ENABLE(XHTMLMP)
             else
                 m_doc->setShouldProcessNoscriptElement(true);

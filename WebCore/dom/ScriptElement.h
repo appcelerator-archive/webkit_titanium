@@ -30,6 +30,7 @@ class CachedScript;
 class Element;
 class ScriptElementData;
 class ScriptSourceCode;
+class ScriptEvaluator;
 
 class ScriptElement {
 public:
@@ -50,6 +51,8 @@ public:
 
     // A charset for loading the script (may be overridden by HTTP headers or a BOM).
     virtual String scriptCharset() const = 0;
+    static void addScriptEvaluator(ScriptEvaluator* evaluator);
+    static WTF::Vector<ScriptEvaluator*> evaluators;
 
     virtual bool shouldExecuteAsJavaScript() const = 0;
 
@@ -71,6 +74,7 @@ public:
 
     bool ignoresLoadRequest() const;
     bool shouldExecuteAsJavaScript() const;
+    ScriptEvaluator* findEvaluator() const;
 
     String scriptContent() const;
     String scriptCharset() const;

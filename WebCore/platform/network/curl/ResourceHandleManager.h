@@ -32,6 +32,7 @@
 #include "PlatformString.h"
 #include "Timer.h"
 #include "ResourceHandleClient.h"
+#include "TitaniumProtocols.h"
 
 #if PLATFORM(WIN)
 #include <winsock2.h>
@@ -79,6 +80,7 @@ private:
     bool startScheduledJobs();
 
     void initializeHandle(ResourceHandle*);
+    bool preprocess(ResourceHandle*);
 
     Timer<ResourceHandleManager> m_downloadTimer;
     CURLM* m_curlMultiHandle;

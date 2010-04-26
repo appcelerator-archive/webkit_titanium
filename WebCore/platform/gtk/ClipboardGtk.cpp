@@ -26,19 +26,35 @@
 #include "NotImplemented.h"
 #include "RenderImage.h"
 #include "StringHash.h"
+#include "Pasteboard.h"
+#include "PasteboardHelper.h"
 #include "markup.h"
 #include <wtf/text/CString.h>
 #include <gtk/gtk.h>
 
 namespace WebCore {
 
+enum ClipboardType { ClipboardTypeText, ClipboardTypeMarkup, ClipboardTypeURIList, ClipboardTypeURL, ClipboardTypeImage, ClipboardTypeUnknown };
+
 PassRefPtr<Clipboard> Editor::newGeneralClipboard(ClipboardAccessPolicy policy)
 {
-    return ClipboardGtk::create(policy, false);
+    GtkClipboard* clipboard = gtk_clipboard_get_for_display(gdk_display_get_default(), GDK_SELECTION_CLIPBOARD);
+    return ClipboardGtk::create(policy, clipboard, false);
 }
 
-ClipboardGtk::ClipboardGtk(ClipboardAccessPolicy policy, bool forDragging)
+ClipboardGtk::ClipboardGtk(ClipboardAccessPolicy policy, PassRefPtr<DataObjectGtk> dataObject, bool forDragging)
     : Clipboard(policy, forDragging)
+    , m_dataObject(dataObject)
+    , m_clipboard(0)
+    , m_helper(Pasteboard::generalPasteboard()->helper())
+{
+}
+
+ClipboardGtk::ClipboardGtk(ClipboardAccessPolicy policy, GtkClipboard* clipboard, bool forDragging)
+    : Clipboard(policy, forDragging)
+    , m_dataObject(DataObjectGtk::forClipboard(clipboard))
+    , m_clipboard(clipboard)
+    , m_helper(Pasteboard::generalPasteboard()->helper())
 {
 }
 
@@ -46,73 +62,298 @@ ClipboardGtk::~ClipboardGtk()
 {
 }
 
-void ClipboardGtk::clearData(const String&)
+static ClipboardType dataObjectTypeFromHTMLClipboardType(const String& type)
 {
-    notImplemented();
+    String qType(type.stripWhiteSpace());
+
+    // Two special cases for IE compatibility
+    if (qType == "Text")
+        return ClipboardTypeText;
+
+    else if (qType == "URL")
+        return ClipboardTypeURL;
+
+    // From the Mac port: Ignore any trailing charset - JS strings are
+    // Unicode, which encapsulates the charset issue.
+    else if (qType == "text/plain" || qType.startsWith("text/plain;"))
+        return ClipboardTypeText;
+
+    else if (qType == "text/html" || qType.startsWith("text/html;"))
+        return ClipboardTypeMarkup;
+
+    else if (qType == "Files" || qType == "text/uri-list" || qType.startsWith("text/uri-list;"))
+        return ClipboardTypeURIList;
+
+    else // Not a known type, so just default to using the text portion.
+        return ClipboardTypeUnknown;
+}
+
+void ClipboardGtk::clearData(const String& htmlType)
+{
+    if (policy() != ClipboardWritable)
+        return;
+
+    ClipboardType type = dataObjectTypeFromHTMLClipboardType(htmlType);
+    switch (type) {
+        case ClipboardTypeURIList:
+        case ClipboardTypeURL:
+            m_dataObject->clearURIList();
+            break;
+
+        case ClipboardTypeMarkup:
+            m_dataObject->clearMarkup();
+            break;
+
+        case ClipboardTypeText:
+            m_dataObject->clearText();
+            break;
+
+        case ClipboardTypeUnknown:
+        default:
+            m_dataObject->clear();
+    }
+
+    if (m_clipboard)
+        m_helper->writeClipboardContents(m_clipboard);
 }
 
 void ClipboardGtk::clearAllData()
 {
-    notImplemented();
+    if (policy() != ClipboardWritable)
+        return;
+
+    m_dataObject->clear();
+
+    if (m_clipboard)
+        m_helper->writeClipboardContents(m_clipboard);
 }
 
-String ClipboardGtk::getData(const String&, bool &success) const
+String joinURIList(Vector<KURL> uriList)
 {
-    notImplemented();
-    success = false;
+    if (uriList.isEmpty())
+        return String();
+
+    String joined(uriList[0].string());
+    for (size_t i = 1; i < uriList.size(); i++) {
+        joined.append("\r\n");
+        joined.append(uriList[i].string());
+    }
+
+    return joined;
+}
+
+String ClipboardGtk::getData(const String& htmlType, bool &success) const
+{
+    success = false; // Pessimism.
+    if (policy() != ClipboardReadable || !m_dataObject)
+        return String();
+
+    if (m_clipboard)
+        m_helper->getClipboardContents(m_clipboard);
+
+    ClipboardType type = dataObjectTypeFromHTMLClipboardType(htmlType);
+    if (type == ClipboardTypeURIList) {
+        if (!m_dataObject->hasURIList())
+            return String();
+
+        success = true;
+        return joinURIList(m_dataObject->uriList());
+
+    } else if (type == ClipboardTypeURL) {
+        if (!m_dataObject->hasURL())
+            return String();
+
+        success = true;
+        return m_dataObject->url();
+
+    } else if (type == ClipboardTypeMarkup) {
+        if (!m_dataObject->hasMarkup())
+            return String();
+
+        success = true;
+        return m_dataObject->markup();
+
+    } else if (type == ClipboardTypeText) {
+        if (!m_dataObject->hasText())
+                return String();
+
+        success = true;
+        return m_dataObject->text();
+    }
+
     return String();
 }
 
-bool ClipboardGtk::setData(const String&, const String&)
+bool ClipboardGtk::setData(const String& htmlType, const String& data)
 {
-    notImplemented();
-    return false;
+    if (policy() != ClipboardWritable)
+        return false;
+
+    bool success = false;
+    ClipboardType type = dataObjectTypeFromHTMLClipboardType(htmlType);
+    if (type == ClipboardTypeURIList || type == ClipboardTypeURL) {
+
+        Vector<KURL> uriList;
+        gchar** uris = g_uri_list_extract_uris(data.utf8().data());
+        if (uris) {
+            gchar** currentURI = uris;
+            while (*currentURI) {
+                uriList.append(KURL(KURL(), *currentURI));
+                currentURI++;
+            }
+            g_strfreev(uris);
+            m_dataObject->setURIList(uriList);
+            success = true;
+        }
+
+    } else if (type == ClipboardTypeMarkup) {
+        m_dataObject->setMarkup(data);
+        success = true;
+
+    } else if (type == ClipboardTypeText) {
+        m_dataObject->setText(data);
+        success = true;
+    }
+
+    if (success && m_clipboard)
+        m_helper->writeClipboardContents(m_clipboard);
+
+    return success;
 }
 
 HashSet<String> ClipboardGtk::types() const
 {
-    notImplemented();
-    return HashSet<String>();
+    if (policy() != ClipboardReadable && policy() != ClipboardTypesReadable)
+        return HashSet<String>();
+
+    if (m_clipboard)
+        m_helper->getClipboardContents(m_clipboard);
+
+    HashSet<String> types;
+    if (m_dataObject->hasText()) {
+        types.add("text/plain");
+        types.add("Text");
+    }
+
+    if (m_dataObject->hasMarkup())
+        types.add("text/html");
+
+    // TODO: Ideally we'd check to make sure that all URIs in the list
+    // are local, but that might be expensive -- so delay that check until
+    // an attempt to fetch the data.
+    if (m_dataObject->hasURIList()) {
+        types.add("text/uri-list");
+        types.add("URL");
+        types.add("Files");
+    }
+
+    return types;
 }
 
 PassRefPtr<FileList> ClipboardGtk::files() const
 {
-    notImplemented();
-    return 0;
+    if (policy() != ClipboardReadable)
+        return FileList::create();
+
+    if (m_clipboard)
+        m_helper->getClipboardContents(m_clipboard);
+
+    RefPtr<FileList> fileList = FileList::create();
+    Vector<String> fileVector(m_dataObject->files());
+
+    for (size_t i = 0; i < fileVector.size(); i++)
+        fileList->append(File::create(fileVector[i]));
+
+    return fileList.release();
 }
 
-IntPoint ClipboardGtk::dragLocation() const
+void ClipboardGtk::writeURL(const KURL& url, const String& label, Frame* frame)
 {
-    notImplemented();
-    return IntPoint(0, 0);
+    String actualLabel(label);
+    if (actualLabel.isEmpty())
+        actualLabel = url;
+
+    Vector<KURL> uriList;
+
+    uriList.append(url);
+    m_dataObject->setURIList(uriList);
+    m_dataObject->setText(url.string());
+
+    // TODO: We should write some markup which includes the label and the URL.
+
+    if (m_clipboard)
+        m_helper->writeClipboardContents(m_clipboard);
 }
 
-CachedImage* ClipboardGtk::dragImage() const
+void ClipboardGtk::writeRange(Range* range, Frame* frame)
 {
-    notImplemented();
-    return 0;
+    ASSERT(range);
+
+    m_dataObject->setText(frame->selectedText());
+    m_dataObject->setMarkup(createMarkup(range, 0, AnnotateForInterchange));
+
+    if (m_clipboard)
+        m_helper->writeClipboardContents(m_clipboard);
 }
 
-void ClipboardGtk::setDragImage(CachedImage*, const IntPoint&)
+void ClipboardGtk::writePlainText(const String& text)
 {
-    notImplemented();
+    m_dataObject->setText(text);
+
+    if (m_clipboard)
+        m_helper->writeClipboardContents(m_clipboard);
 }
 
-Node* ClipboardGtk::dragImageElement()
+bool ClipboardGtk::hasData()
 {
-    notImplemented();
-    return 0;
+    if (m_clipboard)
+        m_helper->getClipboardContents(m_clipboard);
+
+    return m_dataObject->hasText() ||
+           m_dataObject->hasMarkup() ||
+           m_dataObject->hasURIList() ||
+           m_dataObject->hasImage();
 }
 
-void ClipboardGtk::setDragImageElement(Node*, const IntPoint&)
+void ClipboardGtk::setDragImage(CachedImage* image, Node* node, const IntPoint& location)
 {
-    notImplemented();
+    if (policy() != ClipboardImageWritable && policy() != ClipboardWritable)
+        return;
+
+    if (m_dragImage)
+        m_dragImage->removeClient(this);
+
+    m_dragImage = image;
+    if (m_dragImage)
+        m_dragImage->addClient(this);
+
+    m_dragLoc = location;
+    m_dragImageElement = node;
 }
 
-DragImageRef ClipboardGtk::createDragImage(IntPoint&) const
+void ClipboardGtk::setDragImageElement(Node* node, const IntPoint& location)
 {
-    notImplemented();
-    return 0;
+    setDragImage(0, node, location);
+}
+
+DragImageRef ClipboardGtk::createDragImage(IntPoint& location) const
+{
+    GdkPixbuf* result = 0;
+
+    if (m_dragImage) {
+        result = m_dragImage->image()->getGdkPixbuf();
+        location = m_dragLoc;
+    }
+
+    // FIXME: Should we also handle the situation where our
+    // drag image is just a node?
+
+    return result;
+}
+
+void ClipboardGtk::setDragImage(CachedImage* image, const IntPoint& location)
+{
+    setDragImage(image, 0, location);
 }
 
 static CachedImage* getCachedImage(Element* element)
@@ -136,59 +377,16 @@ void ClipboardGtk::declareAndWriteDragImage(Element* element, const KURL& url, c
     if (!cachedImage || !cachedImage->isLoaded())
         return;
 
-    GdkPixbuf* pixbuf = cachedImage->image()->getGdkPixbuf();
-    if (!pixbuf)
+    GdkPixbuf* newImage = cachedImage->image()->getGdkPixbuf();
+    if (!newImage)
         return;
 
-    GtkClipboard* imageClipboard = gtk_clipboard_get(gdk_atom_intern_static_string("WebKitClipboardImage"));
-    gtk_clipboard_clear(imageClipboard);
-
-    gtk_clipboard_set_image(imageClipboard, pixbuf);
-    g_object_unref(pixbuf);
+    m_dataObject->setImage(newImage);
+    g_object_unref(newImage);
 
     writeURL(url, label, 0);
-}
-
-void ClipboardGtk::writeURL(const KURL& url, const String& label, Frame*)
-{
-    GtkClipboard* textClipboard = gtk_clipboard_get(gdk_atom_intern_static_string("WebKitClipboardText"));
-    GtkClipboard* urlClipboard = gtk_clipboard_get(gdk_atom_intern_static_string("WebKitClipboardUrl"));
-    GtkClipboard* urlLabelClipboard = gtk_clipboard_get(gdk_atom_intern_static_string("WebKitClipboardUrlLabel"));
-
-    gtk_clipboard_clear(textClipboard);
-    gtk_clipboard_clear(urlClipboard);
-    gtk_clipboard_clear(urlLabelClipboard);
-
-    gtk_clipboard_set_text(textClipboard, url.string().utf8().data(), -1);
-    gtk_clipboard_set_text(urlClipboard, url.string().utf8().data(), -1);
-    gtk_clipboard_set_text(urlLabelClipboard, label.utf8().data(), -1);
-}
-
-void ClipboardGtk::writeRange(Range* range, Frame* frame)
-{
-    GtkClipboard* textClipboard = gtk_clipboard_get(gdk_atom_intern_static_string("WebKitClipboardText"));
-    GtkClipboard* htmlClipboard = gtk_clipboard_get(gdk_atom_intern_static_string("WebKitClipboardHtml"));
-
-    gtk_clipboard_clear(textClipboard);
-    gtk_clipboard_clear(htmlClipboard);
-
-    gtk_clipboard_set_text(textClipboard, frame->selectedText().utf8().data(), -1);
-    gtk_clipboard_set_text(htmlClipboard, createMarkup(range, 0, AnnotateForInterchange).utf8().data(), -1);
-}
-
-void ClipboardGtk::writePlainText(const String& text)
-{
-    GtkClipboard* textClipboard = gtk_clipboard_get(gdk_atom_intern_static_string("WebKitClipboardText"));
-    
-    gtk_clipboard_clear(textClipboard);
-    
-    gtk_clipboard_set_text(textClipboard, text.utf8().data(), -1);
-}
-    
-bool ClipboardGtk::hasData()
-{
-    notImplemented();
-    return false;
+    if (m_clipboard)
+        m_helper->writeClipboardContents(m_clipboard);
 }
 
 }

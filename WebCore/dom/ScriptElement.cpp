@@ -33,6 +33,7 @@
 #include "HTMLScriptElement.h"
 #include "MIMETypeRegistry.h"
 #include "ScriptController.h"
+#include "ScriptEvaluator.h"
 #include "ScriptSourceCode.h"
 #include "ScriptValue.h"
 #include "StringHash.h"
@@ -45,6 +46,14 @@
 #endif
 
 namespace WebCore {
+
+WTF::Vector<ScriptEvaluator*> ScriptElement::evaluators;
+
+/*static*/
+void ScriptElement::addScriptEvaluator(ScriptEvaluator* evaluator)
+{
+    evaluators.append(evaluator);
+}
 
 void ScriptElement::insertedIntoDocument(ScriptElementData& data, const String& sourceUrl)
 {
@@ -173,8 +182,28 @@ void ScriptElementData::requestScript(const String& sourceUrl)
 
 void ScriptElementData::evaluateScript(const ScriptSourceCode& sourceCode)
 {
-    if (m_evaluated || sourceCode.isEmpty() || !shouldExecuteAsJavaScript())
+    if (m_evaluated || sourceCode.isEmpty())
         return;
+
+    if (!shouldExecuteAsJavaScript()) {
+        Frame* frame = m_element->document()->frame();
+        if (!frame)
+            return;
+
+        for (size_t i = 0; i < ScriptElement::evaluators.size(); i++) {
+            ScriptEvaluator* evaluator = ScriptElement::evaluators.at(i);
+            if (!evaluator || !evaluator->matchesMimeType(m_scriptElement->typeAttributeValue()))
+                continue;
+
+            m_evaluated = true;
+            evaluator->evaluate(m_scriptElement->typeAttributeValue(), sourceCode,
+                frame->script()->windowShell(mainThreadNormalWorld())->window()->globalExec());
+            Document::updateStyleForAllDocuments();
+            return;
+        }
+
+        return;
+    }
 
     if (Frame* frame = m_element->document()->frame()) {
         if (!frame->script()->canExecuteScripts(AboutToExecuteScript))
@@ -185,6 +214,26 @@ void ScriptElementData::evaluateScript(const ScriptSourceCode& sourceCode)
         frame->script()->evaluate(sourceCode);
         Document::updateStyleForAllDocuments();
     }
+}
+
+ScriptEvaluator* ScriptElementData::findEvaluator() const
+{
+    String type = m_scriptElement->typeAttributeValue();
+    String language = m_scriptElement->languageAttributeValue();
+
+    for (size_t i = 0; i < ScriptElement::evaluators.size(); i++) {
+        ScriptEvaluator* evaluator = ScriptElement::evaluators.at(i);
+        if (evaluator) {
+            if (!type.isEmpty() && evaluator->matchesMimeType(type)) {
+                return evaluator;
+            }
+            else if (!language.isEmpty() && evaluator->matchesMimeType(language)) {
+                return evaluator;
+            }
+        }
+    }
+
+    return NULL;
 }
 
 void ScriptElementData::stopLoadRequest()

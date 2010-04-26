@@ -168,7 +168,6 @@ private:
     RefPtr<Image> m_pauseButton;
     RefPtr<Image> m_seekBackButton;
     RefPtr<Image> m_seekForwardButton;
-    Page* m_page;
     GRefPtr<GHashTable> m_partsTable;
 
 };

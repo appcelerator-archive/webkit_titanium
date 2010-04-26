@@ -20,7 +20,7 @@ Programs_GtkLauncher_CFLAGS = \
 	$(LIBSOUP_CFLAGS)
 
 Programs_GtkLauncher_LDADD = \
-	libwebkit-1.0.la \
+	libwebkittitanium-1.0.la \
 	$(GTK_LIBS) \
 	$(GLIB_LIBS)
 
@@ -81,7 +81,7 @@ Programs_DumpRenderTree_CFLAGS = \
 	$(LIBSOUP_CFLAGS)
 
 Programs_DumpRenderTree_LDADD = \
-	libwebkit-1.0.la \
+	libwebkittitanium-1.0.la \
 	libJavaScriptCore.la \
 	$(GLOBALDEPS_LIBS) \
 	$(CAIRO_LIBS) \

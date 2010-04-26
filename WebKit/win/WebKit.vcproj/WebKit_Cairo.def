@@ -118,6 +118,7 @@ EXPORTS
         ?broadcast@ThreadCondition@WTF@@QAEXXZ
         ?callOnMainThread@WTF@@YAXP6AXPAX@Z0@Z
         ?createThread@WTF@@YAIP6APAXPAX@Z0PBD@Z
+        ?addScriptEvaluator@@YGXPAUIWebScriptEvaluator@@@Z
         ?currentThread@WTF@@YAIXZ
         ?detachThread@WTF@@YAXI@Z
         ?initializeMainThread@WTF@@YAXXZ

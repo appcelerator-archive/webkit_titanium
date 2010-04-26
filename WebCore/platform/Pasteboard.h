@@ -108,6 +108,7 @@ public:
 
 #if PLATFORM(GTK)
     void setHelper(PasteboardHelper*);
+    PasteboardHelper* helper() { return m_helper; }
     PasteboardHelper* m_helper;
 #endif
 

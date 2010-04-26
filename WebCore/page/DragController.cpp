@@ -474,7 +474,7 @@ bool DragController::canProcessDrag(DragData* dragData)
     if (!result.innerNonSharedNode())
         return false;
 
-    if (dragData->containsFiles() && asFileInput(result.innerNonSharedNode()))
+    if (dragData->containsFiles())
         return true;
 
     if (!result.innerNonSharedNode()->isContentEditable())

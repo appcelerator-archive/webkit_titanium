@@ -204,7 +204,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 
     RECT clientRect;
     GetClientRect(hMainWnd, &clientRect);
-    hr = gWebView->initWithFrame(clientRect, 0, 0);
+    hr = gWebView->initWithFrame(clientRect, 0, 0, 0);
     if (FAILED(hr))
         goto exit;
 

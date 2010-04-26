@@ -24576,6 +24576,14 @@
 				Name="network"
 				>
 				<File
+					RelativePath="..\platform\network\TitaniumProtocols.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\platform\network\TitaniumProtocols.h"
+					>
+				</File>
+				<File
 					RelativePath="..\platform\network\AuthenticationChallengeBase.cpp"
 					>
 				</File>

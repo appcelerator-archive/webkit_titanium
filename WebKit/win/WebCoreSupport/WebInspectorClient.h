@@ -43,6 +43,8 @@ class WebView;
 class WebInspectorClient : public WebCore::InspectorClient {
 public:
     WebInspectorClient(WebView*);
+    void setInspectorURL(const WebCore::String& url);
+    void setLocalizedStringsURL(const WebCore::String& url);
 
     // InspectorClient
     virtual void inspectorDestroyed();
@@ -62,6 +64,7 @@ private:
     ~WebInspectorClient();
 
     WebView* m_inspectedWebView;
+    WebCore::String m_inspectorURL, m_localizedStringsURL;
     HWND m_inspectedWebViewHwnd;
     HWND m_frontendHwnd;
 

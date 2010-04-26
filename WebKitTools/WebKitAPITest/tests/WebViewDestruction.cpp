@@ -55,7 +55,7 @@ static void createAndInitializeWebView(COMPtr<IWebView>& outWebView, HostWindow&
 
     TEST_ASSERT(window.initialize());
     TEST_ASSERT(SUCCEEDED(webView->setHostWindow(reinterpret_cast<OLE_HANDLE>(window.window()))));
-    TEST_ASSERT(SUCCEEDED(webView->initWithFrame(window.clientRect(), 0, 0)));
+    TEST_ASSERT(SUCCEEDED(webView->initWithFrame(window.clientRect(), 0, 0, 0)));
 
     COMPtr<IWebViewPrivate> viewPrivate(Query, webView);
     TEST_ASSERT(viewPrivate);

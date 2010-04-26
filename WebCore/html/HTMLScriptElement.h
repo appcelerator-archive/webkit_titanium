@@ -35,6 +35,7 @@ public:
     HTMLScriptElement(const QualifiedName&, Document*, bool createdByParser);
     ~HTMLScriptElement();
 
+    ScriptEvaluator* findEvaluator() const;
     virtual bool shouldExecuteAsJavaScript() const;
     virtual String scriptContent() const;
 

@@ -223,7 +223,7 @@ interface IWebView : IUnknown
         @result Returns an initialized WebView.
         - (id)initWithFrame:(NSRect)frame frameName:(NSString *)frameName groupName:(NSString *)groupName;
     */
-    HRESULT initWithFrame([in] RECT frame, [in] BSTR frameName, [in] BSTR groupName);
+    HRESULT initWithFrame([in] RECT frame, [in] BSTR frameName, [in] BSTR groupName, [in] OLE_HANDLE hWnd);
 
     /*!
         @method setUIDelegate:
@@ -736,6 +736,8 @@ interface IWebView : IUnknown
         from doing any more loading and firing any future delegate methods.
     */
     HRESULT close();
+
+    HRESULT forwardingWindowProc([in] OLE_HANDLE hWnd, [in] UINT message, [in] WPARAM wParam, [in] LPARAM lParam);
 }
 
 /*

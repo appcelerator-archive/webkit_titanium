@@ -151,7 +151,7 @@ endif
 
 # Shared libraries
 lib_LTLIBRARIES = \
-	libwebkit-1.0.la
+	libwebkittitanium-1.0.la
 
 # Convenience libraries
 noinst_LTLIBRARIES += \
@@ -172,7 +172,7 @@ nodist_EXTRA_libJavaScriptCore_la_SOURCES = \
 nodist_libJavaScriptCore_la_SOURCES = \
 	$(javascriptcore_built_sources)
 
-libJavaScriptCore_ladir = $(prefix)/include/webkit-1.0/JavaScriptCore
+libJavaScriptCore_ladir = $(prefix)/include/webkittitanium-1.0/JavaScriptCore
 libJavaScriptCore_la_HEADERS = $(javascriptcore_h_api)
 
 libJavaScriptCore_la_SOURCES = \
@@ -199,42 +199,42 @@ libJavaScriptCore_la_CPPFLAGS = \
 	$(javascriptcore_cppflags)
 
 # WebKit
-nodist_EXTRA_libwebkit_1_0_la_SOURCES = \
+nodist_EXTRA_libwebkittitanium_1_0_la_SOURCES = \
 	$(webcore_built_nosources)
 
-nodist_libwebkit_1_0_la_SOURCES = \
+nodist_libwebkittitanium_1_0_la_SOURCES = \
 	$(webcore_built_sources) \
 	$(webkitgtk_built_sources)
 
-libwebkit_1_0_ladir = $(prefix)/include/webkit-1.0/webkit
-libwebkit_1_0_la_HEADERS = \
+libwebkittitanium_1_0_ladir = $(prefix)/include/webkittitanium-1.0/webkit
+libwebkittitanium_1_0_la_HEADERS = \
 	$(webkitgtk_h_api) \
 	WebKit/gtk/webkit/webkitenumtypes.h
 
-libwebkit_1_0_la_SOURCES = \
+libwebkittitanium_1_0_la_SOURCES = \
 	$(webcore_sources) \
 	$(webcoregtk_sources) \
 	$(webkitgtk_sources)
 
-libwebkit_1_0_la_CXXFLAGS = \
+libwebkittitanium_1_0_la_CXXFLAGS = \
 	$(global_cxxflags) \
 	$(corekit_cflags)
 
-libwebkit_1_0_la_CFLAGS = \
+libwebkittitanium_1_0_la_CFLAGS = \
 	$(global_cflags) \
 	$(corekit_cflags)
 
-libwebkit_1_0_la_CPPFLAGS = \
+libwebkittitanium_1_0_la_CPPFLAGS = \
 	$(corekit_cppflags) \
 	$(webkitgtk_cppflags) \
 	$(HILDON_CPPFLAGS)
 
-libwebkit_1_0_la_LDFLAGS = \
+libwebkittitanium_1_0_la_LDFLAGS = \
 	-version-info @LIBWEBKITGTK_VERSION@ \
 	$(version_script) \
 	$(no_undefined)
 
-libwebkit_1_0_la_LIBADD = \
+libwebkittitanium_1_0_la_LIBADD = \
 	-lpthread \
 	libJavaScriptCore.la \
 	libWebCoreJS.la \
@@ -305,6 +305,7 @@ global_cppflags += \
 endif
 
 webkitgtk_h_api += \
+	$(srcdir)/WebKit/gtk/webkit/webkittitanium.h \
 	$(srcdir)/WebKit/gtk/webkit/webkit.h \
 	$(srcdir)/WebKit/gtk/webkit/webkitdefines.h \
 	$(srcdir)/WebKit/gtk/webkit/webkitdownload.h \
@@ -336,6 +337,7 @@ webkitgtk_built_sources += \
 	WebKit/gtk/webkit/webkitenumtypes.h
 
 webkitgtk_sources += \
+	WebKit/gtk/webkit/webkittitianium.cpp
 	WebKit/gtk/WebCoreSupport/ChromeClientGtk.cpp \
 	WebKit/gtk/WebCoreSupport/ChromeClientGtk.h \
 	WebKit/gtk/WebCoreSupport/ContextMenuClientGtk.cpp \
@@ -411,7 +413,7 @@ WEBKIT_GIRSOURCES += WebKit-1.0.gir
 JSCore-1.0.gir: $(srcdir)/WebKit/gtk/JSCore-1.0.gir
 	cp $(srcdir)/WebKit/gtk/JSCore-1.0.gir $(builddir)/
 
-$(WEBKIT_GIRSOURCES): $(JSCORE_GIRSOURCES) $(G_IR_SCANNER) libwebkit-1.0.la
+$(WEBKIT_GIRSOURCES): $(JSCORE_GIRSOURCES) $(G_IR_SCANNER) libwebkittitanium-1.0.la
 	$(AM_V_GEN)$(G_IR_SCANNER) -v --namespace WebKit --nsversion=1.0 \
 	     --include=GObject-2.0 \
 	     --include=Gtk-2.0 \
@@ -528,7 +530,7 @@ EXTRA_DIST += \
 	$(srcdir)/WebKit/gtk/tests/test_utils.h
 
 # extra resource files
-resourcesdir = ${datadir}/webkit-1.0/resources
+resourcesdir = ${datadir}/webkittitanium-1.0/resources
 dist_resources_DATA = \
 	$(shell ls $(srcdir)/WebKit/gtk/resources/*.html)
 
@@ -554,7 +556,7 @@ webkit_tests_cflags = \
 	$(LIBSOUP_CFLAGS)
 
 webkit_tests_ldadd = \
-	libwebkit-1.0.la \
+	libwebkittitanium-1.0.la \
 	$(GTK_LIBS)	\
 	$(GLIB_LIBS) \
 	$(LIBSOUP_LIBS)

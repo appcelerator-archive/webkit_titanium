@@ -47,7 +47,13 @@ public:
     virtual GtkTargetList* targetList() const;
     virtual gint getWebViewTargetInfoHtml() const;
 
-    void writeClipboardContents(GtkClipboard* clipboard, gpointer data = 0);
+    virtual void writeClipboardContents(GtkClipboard* clipboard, gpointer data = 0);
+    virtual void getClipboardContents(GtkClipboard*);
+    virtual void fillDataObject(GtkSelectionData*, guint, DataObjectGtk*);
+    virtual GtkTargetList* targetListForDragContext(GdkDragContext* context);
+
+    static void fillSelectionData(GtkSelectionData*, guint, DataObjectGtk*);
+    static GtkTargetList* targetListForDataObject(DataObjectGtk* dataObject);
 
 private:
     GtkTargetList* m_targetList;

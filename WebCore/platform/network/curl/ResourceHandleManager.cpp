@@ -194,10 +194,41 @@ static size_t writeCallback(void* ptr, size_t size, size_t nmemb, void* data)
     if (CURLE_OK == err && httpCode >= 300 && httpCode < 400)
         return totalSize;
 
-    if (!d->m_response.responseFired()) {
+    if (!d->m_response.responseFired() && !d->m_titaniumURL) {
         handleLocalReceiveResponse(h, job, d);
         if (d->m_cancelled)
             return 0;
+    }
+
+    if (d->m_titaniumURL) {
+        d->m_response.setResponseFired(true);
+
+        KURL titaniumURL = KURL(KURL(), d->m_titaniumURL);
+        KURL normalized(TitaniumProtocols::NormalizeURL(titaniumURL));
+
+        if (equalIgnoringFragmentIdentifier(normalized, titaniumURL)) {
+            d->m_response.setURL(titaniumURL);
+            d->m_response.setHTTPStatusCode(200);
+            d->m_response.setHTTPStatusText("OK");
+            if (d->client())
+                d->client()->didReceiveResponse(job, d->m_response);
+
+       } else {
+            d->m_response.setURL(titaniumURL);
+            d->m_response.setHTTPStatusCode(200);
+            d->m_response.setHTTPStatusText("Permanently Moved");
+            d->m_response.setHTTPHeaderField("Location", normalized.string().utf8().data());
+
+            ResourceRequest newRequest = job->request();
+            newRequest.setURL(normalized);
+            if (d->client()) {
+                d->client()->didReceiveResponse(job, d->m_response);
+                d->client()->willSendRequest(job, newRequest, d->m_response);
+            }
+        }
+
+        free(d->m_titaniumURL);
+        d->m_titaniumURL = 0;
     }
 
     if (d->client())
@@ -655,6 +686,47 @@ void ResourceHandleManager::dispatchSynchronousJob(ResourceHandle* job)
     curl_easy_cleanup(handle->m_handle);
 }
 
+bool ResourceHandleManager::preprocess(ResourceHandle* handle)
+{
+    ResourceHandleClient* client = handle->client();
+    ResourceHandleInternal* d = handle->getInternal();
+    if (d->m_cancelled)
+        return false;
+
+    //d->m_idleHandler = 0;
+
+    ASSERT(client);
+    if (!client)
+        return false;
+
+    String mimeType;
+    String data = TitaniumProtocols::Preprocess(handle->request(), mimeType);
+
+    ResourceResponse response;
+    response.setExpectedContentLength(data.length());
+
+    response.setURL(handle->request().url());
+    response.setMimeType(mimeType);
+    response.setHTTPStatusCode(200);
+    response.setHTTPStatusText("OK");
+    response.setTextEncodingName("UTF-8");
+    response.setLastModifiedDate(time(NULL));
+    client->didReceiveResponse(handle, response);
+
+    if (d->m_cancelled)
+        return false;
+
+    if (data.length() > 0)
+        client->didReceiveData(handle, data.utf8().data(), data.length(), data.length());
+
+    if (d->m_cancelled)
+        return false;
+
+    client->didFinishLoading(handle);
+
+    return false;
+}
+
 void ResourceHandleManager::startJob(ResourceHandle* job)
 {
     KURL kurl = job->request().url();
@@ -662,6 +734,15 @@ void ResourceHandleManager::startJob(ResourceHandle* job)
     if (kurl.protocolIs("data")) {
         parseDataUrl(job);
         return;
+    }
+
+    if (kurl.protocolIs("app") || kurl.protocolIs("ti")) {
+        KURL normalized(TitaniumProtocols::NormalizeURL(kurl));
+        bool isNormalized = strcmp(normalized.string().utf8().data(), kurl.string().utf8().data()) == 0;
+        if (isNormalized && TitaniumProtocols::CanPreprocess(job->request())) {
+            preprocess(job);
+            return;
+        }
     }
 
     initializeHandle(job);
@@ -688,6 +769,12 @@ void ResourceHandleManager::initializeHandle(ResourceHandle* job)
 
     ResourceHandleInternal* d = job->getInternal();
     String url = kurl.string();
+
+    if (kurl.protocolIs("app") || kurl.protocolIs("ti")) {
+        d->m_titaniumURL = strdup(url.utf8().data());
+        kurl = TitaniumProtocols::URLToFileURL(kurl);
+        url = kurl.string();
+    }
 
     if (kurl.isLocalFile()) {
         String query = kurl.query();
@@ -789,6 +876,31 @@ void ResourceHandleManager::initializeHandle(ResourceHandle* job)
         curl_easy_setopt(d->m_handle, CURLOPT_PROXY, m_proxy.utf8().data());
         curl_easy_setopt(d->m_handle, CURLOPT_PROXYTYPE, m_proxyType);
     }
+
+    String proxy(TitaniumProtocols::ProxyForURL(url));
+    if (proxy.length() <= 0)
+        return;
+    if (proxy.startsWith("direct"))
+        return;
+
+    if (proxy.startsWith("socks"))
+        curl_easy_setopt(d->m_handle, CURLOPT_PROXYTYPE, CURLPROXY_SOCKS4);
+
+    proxy = proxy.stripWhiteSpace();
+    int schemeEnd = proxy.find("://");
+    if (schemeEnd != -1)
+        proxy = proxy.substring(schemeEnd + 3);
+
+    int credentialsEnd = proxy.find('@');
+    if (credentialsEnd != -1 && credentialsEnd > 0 && proxy.length() > 1)
+    {
+        String usernamePassword = proxy.substring(0, credentialsEnd);
+        proxy = proxy.substring(credentialsEnd + 1);
+        curl_easy_setopt(d->m_handle, CURLOPT_PROXYUSERPWD, usernamePassword.utf8().data());
+        curl_easy_setopt(d->m_handle, CURLOPT_PROXYAUTH, CURLAUTH_ANY);
+    }
+
+    curl_easy_setopt(d->m_handle, CURLOPT_PROXY, proxy.utf8().data());
 }
 
 void ResourceHandleManager::cancel(ResourceHandle* job)

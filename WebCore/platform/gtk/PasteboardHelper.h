@@ -44,6 +44,10 @@ public:
     virtual GtkClipboard* getPrimary(Frame*) const = 0;
     virtual GtkTargetList* targetList() const = 0;
     virtual gint getWebViewTargetInfoHtml() const = 0;
+    virtual void getClipboardContents(GtkClipboard*) = 0;
+    virtual void writeClipboardContents(GtkClipboard*, gpointer data=0) = 0;
+    virtual void fillDataObject(GtkSelectionData*, guint, DataObjectGtk*) = 0;
+    virtual GtkTargetList* targetListForDragContext(GdkDragContext* context) = 0;
 };
 
 }

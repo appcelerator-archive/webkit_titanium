@@ -69,6 +69,7 @@ close LIST;
 my $sawError = 0;
 
 for my $file (sort @files) {
+    next if $file =~ /ScriptElement.o/;
     if (defined $buildTimestampAge && $buildTimestampAge < $scriptAge) {
         my $fileAge = -M $file;
         next if defined $fileAge && $fileAge > $buildTimestampAge;

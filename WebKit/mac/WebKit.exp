@@ -29,6 +29,7 @@
 .objc_class_name_WebRenderNode
 .objc_class_name_WebResource
 .objc_class_name_WebScriptCallFrame
+.objc_class_name_WebScriptElement
 .objc_class_name_WebScriptWorld
 .objc_class_name_WebSecurityOrigin
 .objc_class_name_WebSerializedJSValue

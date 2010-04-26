@@ -52,8 +52,7 @@ typedef struct IDataObject* DragDataRef;
 #elif PLATFORM(WX)
 typedef class wxDataObject* DragDataRef;
 #elif PLATFORM(GTK)
-// FIXME: this should probably be something gdk-specific
-typedef void* DragDataRef;
+#include "DragDataRef.h"
 #elif PLATFORM(CHROMIUM)
 #include "DragDataRef.h"
 #elif PLATFORM(HAIKU)

@@ -27,18 +27,25 @@
 #ifndef ClipboardGtk_h
 #define ClipboardGtk_h
 
+#include "DataObjectGtk.h"
+#include "CachedResourceClient.h"
 #include "Clipboard.h"
+#include "PasteboardHelper.h"
 
 namespace WebCore {
     class CachedImage;
 
     // State available during IE's events for drag and drop and copy/paste
     // Created from the EventHandlerGtk to be used by the dom
-    class ClipboardGtk : public Clipboard {
+    class ClipboardGtk : public Clipboard, public CachedResourceClient {
     public:
-        static PassRefPtr<ClipboardGtk> create(ClipboardAccessPolicy policy, bool isForDragging)
+        static PassRefPtr<ClipboardGtk> create(ClipboardAccessPolicy policy, PassRefPtr<DataObjectGtk> dataObject, bool isForDragging)
         {
-            return adoptRef(new ClipboardGtk(policy, isForDragging));
+            return adoptRef(new ClipboardGtk(policy, dataObject, isForDragging));
+        }
+        static PassRefPtr<ClipboardGtk> create(ClipboardAccessPolicy policy, GtkClipboard* clipboard, bool isForDragging)
+        {
+            return adoptRef(new ClipboardGtk(policy, clipboard, isForDragging));
         }
         virtual ~ClipboardGtk();
 
@@ -50,22 +57,26 @@ namespace WebCore {
         virtual HashSet<String> types() const;
         virtual PassRefPtr<FileList> files() const;
 
-        IntPoint dragLocation() const;
-        CachedImage* dragImage() const;
+        void setDragImage(CachedImage* image, Node* node, const IntPoint& loc);
         void setDragImage(CachedImage*, const IntPoint&);
-        Node* dragImageElement();
-        void setDragImageElement(Node*, const IntPoint&);
+        void setDragImageElement(Node *, const IntPoint&);
 
-        virtual DragImageRef createDragImage(IntPoint&) const;
-        virtual void declareAndWriteDragImage(Element*, const KURL&, const String&, Frame*);
-        virtual void writeURL(const KURL&, const String&, Frame*);
-        virtual void writeRange(Range*, Frame*);
+        virtual DragImageRef createDragImage(IntPoint& dragLoc) const;
+        virtual void declareAndWriteDragImage(Element*, const KURL&, const String& title, Frame*);
+        virtual void writeRange(Range*, Frame* frame);
+        virtual void writeURL(const KURL&, const String&, Frame* frame);
         virtual void writePlainText(const String&);
 
         virtual bool hasData();
+        PassRefPtr<DataObjectGtk> dataObject() { return m_dataObject; }
 
     private:
-        ClipboardGtk(ClipboardAccessPolicy, bool);
+        ClipboardGtk(ClipboardAccessPolicy, PassRefPtr<DataObjectGtk>, bool);
+        ClipboardGtk(ClipboardAccessPolicy, GtkClipboard*, bool);
+
+        RefPtr<DataObjectGtk> m_dataObject;
+        GtkClipboard* m_clipboard;
+        PasteboardHelper* m_helper;
     };
 }
 

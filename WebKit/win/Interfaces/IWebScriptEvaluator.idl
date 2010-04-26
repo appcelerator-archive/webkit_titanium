@@ -1,0 +1,24 @@
+#ifndef DO_NO_IMPORTS
+import "oaidl.idl";
+import "ocidl.idl";
+#endif
+
+[
+    object,
+    oleautomation,
+    uuid(C3165CB8-4E29-41A3-A7CB-431FC98D9DA6),
+    pointer_default(unique)
+]
+interface IWebScriptEvaluator : IUnknown
+{
+    /*!
+        @method matchesMimeType
+    */    
+    HRESULT matchesMimeType([in] BSTR mimeType, [out, retval] BOOL* result);
+
+    /*!
+        @method evaluate
+    */
+    HRESULT evaluate([in] BSTR mimeType, [in] BSTR sourceCode, [in] int* context);
+}
+

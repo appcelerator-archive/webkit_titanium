@@ -93,6 +93,10 @@ void ResourceResponse::platformLazyInit()
             m_httpHeaderFields.set(name, [headers objectForKey:name]);
     } else
         m_httpStatusCode = 0;
+
+    String protocol = m_url.protocol();
+    if (equalIgnoringCase(protocol, "app") || equalIgnoringCase(protocol, "ti"))
+        m_httpStatusCode = 200;
 }
 
 bool ResourceResponse::platformCompare(const ResourceResponse& a, const ResourceResponse& b)

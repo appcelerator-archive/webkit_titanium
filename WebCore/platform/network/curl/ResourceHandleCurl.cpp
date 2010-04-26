@@ -96,6 +96,9 @@ ResourceHandleInternal::~ResourceHandleInternal()
     fastFree(m_url);
     if (m_customHeaders)
         curl_slist_free_all(m_customHeaders);
+
+    if (m_titaniumURL)
+        free(m_titaniumURL);
 }
 
 ResourceHandle::~ResourceHandle()

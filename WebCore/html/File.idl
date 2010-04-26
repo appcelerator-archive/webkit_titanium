@@ -35,6 +35,7 @@ module html {
         // FIXME: obsolete attributes. To be removed.
         readonly attribute DOMString fileName;
         readonly attribute unsigned long long fileSize;
+        readonly attribute DOMString path;
     };
 
 }

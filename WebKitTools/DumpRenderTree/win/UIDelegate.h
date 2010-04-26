@@ -395,6 +395,14 @@ protected:
     virtual HRESULT STDMETHODCALLTYPE desktopNotificationsDelegate(
         /* [out] */ IWebDesktopNotificationsDelegate** result);
 
+    virtual HRESULT STDMETHODCALLTYPE newBackingStore(
+        /* [in] */ IWebView*,
+        /* [in] */ OLE_HANDLE)
+    {
+        return E_NOTIMPL;
+    }
+
+
     ULONG                   m_refCount;
 
 private:

@@ -1,0 +1,13 @@
+------------------------OS X--------------------------
+WebKit must be built against the 10.5 SDK and i386 and ppc architectures.
+This is what a typical build command might look like:
+./WebKitTools/Scripts/build-webkit --release \
+  SDKROOT=/Developer/SDKs/MacOSX10.5.sdk MACOSX_DEPLOYMENT_TARGET=10.5 \
+  WEBKIT_SYSTEM_INTERFACE_LIBRARY=WebKitSystemInterfaceLeopard \
+  ARCHS="i386 ppc" ONLY_ACTIVE_ARCH=NO
+
+------------------------Win32-------------------------
+./WebKitTools/Scripts/build-webkit --release --cairo-win32
+
+------------------------Linux-------------------------
+./WebKitTools/Scripts/build-webkit --gtk

@@ -102,7 +102,8 @@ public:
     virtual HRESULT STDMETHODCALLTYPE initWithFrame( 
         /* [in] */ RECT frame,
         /* [in] */ BSTR frameName,
-        /* [in] */ BSTR groupName);
+        /* [in] */ BSTR groupName,
+        /* [in] */ OLE_HANDLE hWnd);
     
     virtual HRESULT STDMETHODCALLTYPE setUIDelegate( 
         /* [in] */ IWebUIDelegate *d);
@@ -269,6 +270,12 @@ public:
 
     virtual HRESULT STDMETHODCALLTYPE centerSelectionInVisibleArea(
         /* [in] */ IUnknown* sender);
+
+    virtual HRESULT STDMETHODCALLTYPE forwardingWindowProc(
+        /* [in] */ OLE_HANDLE hWnd,
+        /* [in] */ UINT message,
+        /* [in] */ WPARAM wParam,
+        /* [in] */ LPARAM lParam);
 
     virtual HRESULT STDMETHODCALLTYPE moveDragCaretToPoint( 
         /* [in] */ LPPOINT point);
@@ -803,6 +810,7 @@ public:
     bool keyUp(WPARAM, LPARAM, bool systemKeyDown = false);
     bool keyPress(WPARAM, LPARAM, bool systemKeyDown = false);
     void paint(HDC, LPARAM);
+    void transparentPaint(HDC);
     void paintIntoWindow(HDC bitmapDC, HDC windowDC, const WebCore::IntRect& dirtyRect);
     bool ensureBackingStore();
     void addToDirtyRegion(const WebCore::IntRect&);
@@ -955,6 +963,7 @@ protected:
     COMPtr<IWebHistoryDelegate> m_historyDelegate;
     COMPtr<WebPreferences> m_preferences;
     COMPtr<WebInspector> m_webInspector;
+    WebInspectorClient *m_webInspectorClient;
     COMPtr<IWebPluginHalterDelegate> m_pluginHalterDelegate;
     COMPtr<IWebGeolocationProvider> m_geolocationProvider;
 
