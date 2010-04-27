@@ -119,6 +119,7 @@ private:
     bool m_attached;
 
     WebCore::String m_inspectedURL;
+    WebCore::String m_inspectorURL, m_localizedStringsURL;
     bool m_destroyingInspectorView;
 
     static friend LRESULT CALLBACK WebInspectorWndProc(HWND, UINT, WPARAM, LPARAM);

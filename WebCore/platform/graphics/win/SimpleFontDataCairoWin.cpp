@@ -96,10 +96,10 @@ void SimpleFontData::platformCharWidthInit()
     // charwidths are set in platformInit.
 }
 
-float SimpleFontData::platformWidthForGlyph(Glyph glyph) const
+GlyphMetrics SimpleFontData::platformMetricsForGlyph(Glyph glyph, GlyphMetricsMode /* metricsMode */) const
 {
     if (m_platformData.useGDI())
-       return widthForGDIGlyph(glyph);
+       return metricsForGDIGlyph(glyph);
 
     HDC hdc = GetDC(0);
     SaveDC(hdc);
@@ -116,7 +116,10 @@ float SimpleFontData::platformWidthForGlyph(Glyph glyph) const
     ReleaseDC(0, hdc);
 
     const double metricsMultiplier = cairo_win32_scaled_font_get_metrics_factor(scaledFont) * m_platformData.size();
-    return width * metricsMultiplier;
+
+    GlyphMetrics metrics;
+    metrics.horizontalAdvance = width * metricsMultiplier;
+    return metrics;
 }
 
 }

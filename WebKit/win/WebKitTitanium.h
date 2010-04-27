@@ -29,6 +29,7 @@ extern "C" {
     WEBKIT_API void setCanPreprocessCallback(CanPreprocessURLCallback cb);
     WEBKIT_API void setPreprocessCallback(PreprocessURLCallback cb);
     WEBKIT_API void setProxyCallback(ProxyForURLCallback cb);
+    WEBKIT_API void setCookieJarFilename(const char* filename);
 #ifdef __cplusplus
 }
 #endif

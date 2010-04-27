@@ -114,5 +114,19 @@ String TitaniumProtocols::ProxyForURL(String& url)
     return proxy;
 }
 
+static String cookieJarFilename;
+
+/*static*/
+void TitaniumProtocols::SetCookieJarFilename(const char* filename)
+{
+    cookieJarFilename = String::fromUTF8(filename);
+}
+
+/*static*/
+String TitaniumProtocols::GetCookieJarFilename()
+{
+    return cookieJarFilename;
+}
+
 }
 

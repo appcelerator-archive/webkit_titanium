@@ -38,6 +38,8 @@ namespace WebCore {
         static CanPreprocessURLCallback CanPreprocessCallback;
         static PreprocessURLCallback PreprocessCallback;
         static ProxyForURLCallback ProxyCallback;
+        static void SetCookieJarFilename(const char* filename);
+        static String GetCookieJarFilename();
     };
 
 } // namespace WebCore

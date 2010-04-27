@@ -101,7 +101,7 @@ void WebInspectorClient::openInspectorFrontend(InspectorController* inspectorCon
 
     RECT rect;
     GetClientRect(frontendHwnd, &rect);
-    if (FAILED(m_webView->initWithFrame(rect, 0, 0, 0)))
+    if (FAILED(frontendWebView->initWithFrame(rect, 0, 0, 0)))
         return;
 
     COMPtr<WebInspectorDelegate> delegate(AdoptCOM, WebInspectorDelegate::createInstance());
@@ -165,7 +165,7 @@ void WebInspectorClient::openInspectorFrontend(InspectorController* inspectorCon
     if (m_inspectorURL.length() == 0) {
         RetainPtr<CFURLRef> htmlURLRef(AdoptCF, CFBundleCopyResourceURL(getWebKitBundle(), CFSTR("inspector"), CFSTR("html"), CFSTR("inspector")));
         if (!htmlURLRef)
-            return 0;
+            return;
 
         urlStringRef = ::CFURLGetString(htmlURLRef.get());
     }
@@ -173,7 +173,6 @@ void WebInspectorClient::openInspectorFrontend(InspectorController* inspectorCon
         urlStringRef = m_inspectorURL.createCFString();
     }
 
-    CFStringRef urlStringRef = ::CFURLGetString(htmlURLRef.get());
     if (FAILED(request->initWithURL(BString(urlStringRef), WebURLRequestUseProtocolCachePolicy, 60)))
         return;
 

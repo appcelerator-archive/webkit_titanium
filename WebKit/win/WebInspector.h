@@ -74,6 +74,7 @@ private:
 
     ULONG m_refCount;
     WebView* m_webView;
+    WebInspectorClient *m_webInspectorClient;
 };
 
 #endif // !defined(WebInspector_h)

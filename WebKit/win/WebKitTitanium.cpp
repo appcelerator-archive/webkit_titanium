@@ -39,3 +39,7 @@ void setProxyCallback(ProxyForURLCallback cb)
     WebCore::TitaniumProtocols::ProxyCallback = cb;
 }
 
+void setCookieJarFilename(const char* filename)
+{
+    WebCore::TitaniumProtocols::SetCookieJarFilename(filename);
+}

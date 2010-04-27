@@ -129,6 +129,10 @@ ResourceHandleManager::ResourceHandleManager()
     curl_share_setopt(m_curlShareHandle, CURLSHOPT_SHARE, CURL_LOCK_DATA_DNS);
     curl_share_setopt(m_curlShareHandle, CURLSHOPT_LOCKFUNC, curl_lock_callback);
     curl_share_setopt(m_curlShareHandle, CURLSHOPT_UNLOCKFUNC, curl_unlock_callback);
+
+    String cookieJarFilename = TitaniumProtocols::GetCookieJarFilename();
+    if (cookieJarFilename.length() > 1)
+        this->setCookieJarFileName(cookieJarFilename.latin1().data());
 }
 
 ResourceHandleManager::~ResourceHandleManager()
@@ -206,26 +210,26 @@ static size_t writeCallback(void* ptr, size_t size, size_t nmemb, void* data)
         KURL titaniumURL = KURL(KURL(), d->m_titaniumURL);
         KURL normalized(TitaniumProtocols::NormalizeURL(titaniumURL));
 
-        if (equalIgnoringFragmentIdentifier(normalized, titaniumURL)) {
+        if (!equalIgnoringFragmentIdentifier(normalized, titaniumURL)) {
             d->m_response.setURL(titaniumURL);
-            d->m_response.setHTTPStatusCode(200);
-            d->m_response.setHTTPStatusText("OK");
-            if (d->client())
-                d->client()->didReceiveResponse(job, d->m_response);
-
-       } else {
-            d->m_response.setURL(titaniumURL);
-            d->m_response.setHTTPStatusCode(200);
+            d->m_response.setHTTPStatusCode(301);
             d->m_response.setHTTPStatusText("Permanently Moved");
             d->m_response.setHTTPHeaderField("Location", normalized.string().utf8().data());
 
-            ResourceRequest newRequest = job->request();
-            newRequest.setURL(normalized);
             if (d->client()) {
                 d->client()->didReceiveResponse(job, d->m_response);
+                ResourceRequest newRequest = job->request();
+                newRequest.setURL(normalized);
                 d->client()->willSendRequest(job, newRequest, d->m_response);
             }
         }
+
+        d->m_response.setURL(normalized);
+        d->m_response.setHTTPStatusCode(200);
+        d->m_response.setHTTPStatusText("OK");
+        d->m_response.setTextEncodingName("UTF-8");
+        if (d->client())
+            d->client()->didReceiveResponse(job, d->m_response);
 
         free(d->m_titaniumURL);
         d->m_titaniumURL = 0;
