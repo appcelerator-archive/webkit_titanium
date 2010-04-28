@@ -43,7 +43,6 @@ class FullscreenVideoController;
 class WebBackForwardList;
 class WebFrame;
 class WebInspector;
-class WebInspectorClient;
 
 WebView* kit(WebCore::Page*);
 WebCore::Page* core(IWebView*);
@@ -963,7 +962,6 @@ protected:
     COMPtr<IWebHistoryDelegate> m_historyDelegate;
     COMPtr<WebPreferences> m_preferences;
     COMPtr<WebInspector> m_webInspector;
-    WebInspectorClient *m_webInspectorClient;
     COMPtr<IWebPluginHalterDelegate> m_pluginHalterDelegate;
     COMPtr<IWebGeolocationProvider> m_geolocationProvider;
 

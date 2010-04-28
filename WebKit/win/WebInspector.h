@@ -37,7 +37,7 @@ class WebInspectorClient;
 
 class WebInspector : public IWebInspector, public IWebInspectorPrivate, public Noncopyable {
 public:
-    static WebInspector* createInstance(WebView*, WebInspectorClient*);
+    static WebInspector* createInstance(WebView*);
 
     void webViewClosed();
 
@@ -69,12 +69,11 @@ public:
     virtual HRESULT STDMETHODCALLTYPE setTimelineProfilingEnabled(BOOL);
 
 private:
-    WebInspector(WebView*, WebInspectorClient*);
+    WebInspector(WebView*);
     ~WebInspector();
 
     ULONG m_refCount;
     WebView* m_webView;
-    WebInspectorClient *m_webInspectorClient;
 };
 
 #endif // !defined(WebInspector_h)

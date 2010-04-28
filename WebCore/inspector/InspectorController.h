@@ -123,6 +123,7 @@ public:
     bool enabled() const;
 
     Page* inspectedPage() const { return m_inspectedPage; }
+    InspectorClient* client() { return m_client; }
 
     String setting(const String& key) const;
     void setSetting(const String& key, const String& value);

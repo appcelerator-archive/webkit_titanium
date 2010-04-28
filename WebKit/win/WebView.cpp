@@ -2562,7 +2562,7 @@ HRESULT STDMETHODCALLTYPE WebView::initWithFrame(
     if (SUCCEEDED(m_preferences->shouldUseHighResolutionTimers(&useHighResolutionTimer)))
         Settings::setShouldUseHighResolutionTimers(useHighResolutionTimer);
 
-    m_page = new Page(new WebChromeClient(this), new WebContextMenuClient(this), new WebEditorClient(this), new WebDragClient(this), m_webInspectorClient, new WebPluginHalterClient(this), geolocationControllerClient);
+    m_page = new Page(new WebChromeClient(this), new WebContextMenuClient(this), new WebEditorClient(this), new WebDragClient(this), new WebInspectorClient(this), new WebPluginHalterClient(this), geolocationControllerClient);
 
     BSTR localStoragePath;
     if (SUCCEEDED(m_preferences->localStorageDatabasePath(&localStoragePath))) {
@@ -5576,7 +5576,7 @@ bool WebView::onIMESetContext(WPARAM wparam, LPARAM)
 HRESULT STDMETHODCALLTYPE WebView::inspector(IWebInspector** inspector)
 {
     if (!m_webInspector)
-        m_webInspector.adoptRef(WebInspector::createInstance(this, m_webInspectorClient));
+        m_webInspector.adoptRef(WebInspector::createInstance(this));
 
     return m_webInspector.copyRefTo(inspector);
 }
