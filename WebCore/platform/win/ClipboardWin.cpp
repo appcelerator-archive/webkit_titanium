@@ -499,7 +499,7 @@ String ClipboardWin::getData(const String& type, bool& success) const
     if (dataType == ClipboardDataTypeText)
         return getPlainText(m_dataObject.get(), success);
     else if (dataType == ClipboardDataTypeURL) 
-        return getURL(m_dataObject.get(), success);
+        return getURIList(success);
     
     return "";
 }
@@ -603,6 +603,45 @@ PassRefPtr<FileList> ClipboardWin::files() const
     GlobalUnlock(medium.hGlobal);
     ReleaseStgMedium(&medium);
     return files.release();
+}
+
+String ClipboardWin::getURIList(bool& success) const
+{
+    success = false;
+    if (policy() != ClipboardReadable && policy() != ClipboardTypesReadable)
+        return "";
+
+    if (!m_dataObject)
+        return "";
+
+    STGMEDIUM medium;
+    if (FAILED(m_dataObject->GetData(cfHDropFormat(), &medium)))
+        return "";
+
+    HDROP hdrop = reinterpret_cast<HDROP>(GlobalLock(medium.hGlobal));
+    if (!hdrop)
+        return "";
+
+    String uriList;
+    WCHAR filename[MAX_PATH];
+    UINT fileCount = DragQueryFileW(hdrop, 0xFFFFFFFF, 0, 0);
+    bool first = true;
+    for (UINT i = 0; i < fileCount; i++) {
+        if (!DragQueryFileW(hdrop, i, filename, ARRAYSIZE(filename)))
+            continue;
+   
+        if (!first)
+            uriList.append("\r\n");
+
+        first = false;
+        uriList.append(filename);
+    }
+
+    success = true;
+    GlobalUnlock(medium.hGlobal);
+    ReleaseStgMedium(&medium);
+    return uriList;
+
 }
 
 void ClipboardWin::setDragImage(CachedImage* image, Node *node, const IntPoint &loc)

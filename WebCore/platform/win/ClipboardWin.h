@@ -82,6 +82,8 @@ namespace WebCore {
         void resetFromClipboard();
         void setDragImage(CachedImage*, Node*, const IntPoint&);
 
+        String getURIList(bool& success) const;
+
         COMPtr<IDataObject> m_dataObject;
         COMPtr<WCDataObject> m_writableDataObject;
         Frame* m_frame;
