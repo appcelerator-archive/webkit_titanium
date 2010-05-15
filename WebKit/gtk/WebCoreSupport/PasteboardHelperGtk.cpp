@@ -93,7 +93,9 @@ static Vector<KURL> urisToKURLVector(gchar** uris)
     while (*currentURI) {
         uriList.append(KURL(KURL(), *currentURI));
         currentURI++;
-   }
+    }
+
+    return uriList;
 }
 
 void PasteboardHelperGtk::getClipboardContents(GtkClipboard* clipboard)
@@ -266,7 +268,7 @@ GtkTargetList* PasteboardHelperGtk::targetListForDragContext(GdkDragContext* con
     return resultList;
 }
 
-static void PasteboardHelperGtk::fillSelectionData(GtkSelectionData* selectionData, guint info, DataObjectGtk* dataObject)
+void PasteboardHelperGtk::fillSelectionData(GtkSelectionData* selectionData, guint info, DataObjectGtk* dataObject)
 {
     if (info == WEBKIT_WEB_VIEW_TARGET_INFO_TEXT)
         gtk_selection_data_set_text(selectionData, dataObject->text().utf8().data(), -1);

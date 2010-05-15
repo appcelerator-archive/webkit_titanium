@@ -29,6 +29,9 @@
  */
 
 #include "Frame.h"
+#include "DataObjectGtk.h"
+
+#include <gtk/gtk.h>
 
 typedef struct _GtkClipboard GtkClipboard;
 typedef struct _GtkTargetList GtkTargetList;

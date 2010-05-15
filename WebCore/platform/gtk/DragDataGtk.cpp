@@ -63,7 +63,7 @@ Color DragData::asColor() const
     return Color();
 }
 
-+PassRefPtr<Clipboard> DragData::createClipboard(ClipboardAccessPolicy policy) const
+PassRefPtr<Clipboard> DragData::createClipboard(ClipboardAccessPolicy policy) const
 {
     return ClipboardGtk::create(policy, m_platformDragData, true);
 }

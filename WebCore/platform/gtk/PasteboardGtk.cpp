@@ -58,6 +58,7 @@ void Pasteboard::setHelper(PasteboardHelper* helper)
 
 void Pasteboard::writeSelection(Range* selectedRange, bool canSmartCopyOrDelete, Frame* frame)
 {
+    GtkClipboard* clipboard = gtk_clipboard_get_for_display(gdk_display_get_default(), GDK_SELECTION_CLIPBOARD);
     ASSERT(clipboard);
     DataObjectGtk* dataObject = DataObjectGtk::forClipboard(clipboard);
     ASSERT(dataObject);
@@ -69,6 +70,7 @@ void Pasteboard::writeSelection(Range* selectedRange, bool canSmartCopyOrDelete,
 
 void Pasteboard::writePlainText(const String& text)
 {
+	GtkClipboard* clipboard = gtk_clipboard_get_for_display(gdk_display_get_default(), GDK_SELECTION_CLIPBOARD);
     DataObjectGtk* dataObject = DataObjectGtk::forClipboard(clipboard);
     ASSERT(dataObject);
 
@@ -81,6 +83,7 @@ void Pasteboard::writeURL(const KURL& url, const String& label, Frame* frame)
     if (url.isEmpty())
         return;
 
+	GtkClipboard* clipboard = gtk_clipboard_get_for_display(gdk_display_get_default(), GDK_SELECTION_CLIPBOARD);
     DataObjectGtk* dataObject = DataObjectGtk::forClipboard(clipboard);
     ASSERT(dataObject);
 
@@ -94,7 +97,6 @@ void Pasteboard::writeURL(const KURL& url, const String& label, Frame* frame)
     dataObject->setText(actualLabel);
 
     m_helper->writeClipboardContents(clipboard);
-}
 }
 
 void Pasteboard::writeImage(Node* node, const KURL&, const String&)
@@ -118,7 +120,6 @@ void Pasteboard::writeImage(Node* node, const KURL&, const String&)
 
     m_helper->writeClipboardContents(clipboard);
 }
-+    m_helper->writeClipboardContents(clipboard);
 
 void Pasteboard::clear()
 {
@@ -136,7 +137,7 @@ bool Pasteboard::canSmartReplace()
     return false;
 }
 
-+PassRefPtr<DocumentFragment> Pasteboard::documentFragment(Frame* frame, PassRefPtr<Range> context, bool allowPlainText, bool& chosePlainText)
+PassRefPtr<DocumentFragment> Pasteboard::documentFragment(Frame* frame, PassRefPtr<Range> context, bool allowPlainText, bool& chosePlainText)
 {
     GtkClipboard* clipboard = m_helper->getCurrentTarget(frame);
     ASSERT(clipboard);

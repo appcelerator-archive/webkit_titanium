@@ -69,6 +69,7 @@ DragSourceAction DragClient::dragSourceActionMaskForPoint(const IntPoint&)
 void DragClient::startDrag(DragImageRef image, const IntPoint& dragImageOrigin, const IntPoint& eventPos, Clipboard* clipboard, Frame* frame, bool linkDrag)
 {
     ClipboardGtk* clipboardGtk = reinterpret_cast<ClipboardGtk*>(clipboard);
+    GdkDragAction dragAction = GDK_ACTION_COPY;
     if (linkDrag)
         dragAction = (GdkDragAction) (dragAction | GDK_ACTION_LINK);
 

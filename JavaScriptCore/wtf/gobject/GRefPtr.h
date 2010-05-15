@@ -28,6 +28,10 @@
 
 typedef struct _GHashTable GHashTable;
 
+typedef void* gpointer;
+extern "C" void g_object_unref(gpointer object);
+extern "C" gpointer  g_object_ref_sink(gpointer object);
+
 namespace WTF {
 
 enum GRefPtrAdoptType { GRefPtrAdopt };

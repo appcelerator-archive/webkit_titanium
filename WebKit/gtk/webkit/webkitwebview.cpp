@@ -1365,7 +1365,6 @@ static gboolean webkit_web_view_drag_motion(GtkWidget* widget, GdkDragContext* c
     }
 
     return TRUE;
-    }
 }
 
 static void webkit_web_view_drag_data_received(GtkWidget* widget, GdkDragContext* context, gint x, gint y, GtkSelectionData* selectionData, guint info, guint time)

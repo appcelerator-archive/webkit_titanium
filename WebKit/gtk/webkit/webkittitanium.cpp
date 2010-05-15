@@ -14,7 +14,7 @@
 #include "ScriptSourceCode.h"
 #include "ScriptEvaluator.h"
 #include "ScriptElement.h"
-#include "CString.h"
+#include <wtf/text/CString.h>
 #include "FrameLoaderClientGtk.h"
 #include "InspectorClientGtk.h"
 #include "TitaniumProtocols.h"

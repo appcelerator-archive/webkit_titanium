@@ -6,7 +6,7 @@
 
 #include "config.h"
 #include "Base64.h"
-#include "CString.h"
+#include <wtf/text/CString.h>
 #include "HTTPParsers.h"
 #include "MIMETypeRegistry.h"
 #include "NotImplemented.h"
