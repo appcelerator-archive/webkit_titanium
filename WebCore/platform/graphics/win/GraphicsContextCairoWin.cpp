@@ -100,9 +100,18 @@ void GraphicsContext::releaseWindowsContext(HDC hdc, const IntRect& dstRect, boo
     GetObject(bitmap, sizeof(info), &info);
     ASSERT(info.bmBitsPixel == 32);
 
+    unsigned char* bytes = reinterpret_cast<unsigned char*>(info.bmBits);
+
+    // If this context does not support alpha blending, then it may have
+    // been drawn with GDI functions which always set the alpha channel
+    // to zero. We need to manually set the bitmap to be fully opaque.
+    if (!supportAlphaBlend)
+        for (size_t i = 0; i < info.bmHeight * info.bmWidthBytes; i += 4)
+            bytes[i + 3] = 255;
+
     // Need to make a cairo_surface_t out of the bitmap's pixel buffer and then draw
     // it into our context.
-    cairo_surface_t* image = cairo_image_surface_create_for_data((unsigned char*)info.bmBits,
+    cairo_surface_t* image = cairo_image_surface_create_for_data(bytes,
                                             CAIRO_FORMAT_ARGB32,
                                             info.bmWidth,
                                             info.bmHeight,
