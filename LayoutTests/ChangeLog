@@ -1,3 +1,85 @@
+2011-02-24  Mihai Parparita  <mihaip@chromium.org>
+
+        Unreviewed Leopard baseline update for some text tests after r78846
+        (Snow Leopard baselines were updated with r78862). chromium-mac (the
+        Leopard bot) should be passing with the mac-leopard baselines.
+
+        * platform/chromium/test_expectations.txt:
+        * platform/mac-leopard/editing/selection/move-past-trailing-space-expected.checksum:
+        * platform/mac-leopard/editing/selection/move-past-trailing-space-expected.png:
+        * platform/mac-leopard/fast/text/trailing-white-space-2-expected.checksum:
+        * platform/mac-leopard/fast/text/trailing-white-space-2-expected.png:
+        * platform/mac-leopard/fast/text/trailing-white-space-expected.checksum:
+        * platform/mac-leopard/fast/text/trailing-white-space-expected.png:
+
+2011-02-24  Tom Sepez  <tsepez@chromium.org>
+
+        Reviewed by Darin Fisher.
+
+        Add test for frame removal during resize event handler.  Update
+        other tests to account for async onresize event disptach.
+        https://bugs.webkit.org/show_bug.cgi?id=54467
+
+        * fast/dynamic/paused-event-dispatch.html:
+        * fast/events/resize-subframe.html:
+        * fast/replaced/frame-removed-during-resize-smaller-expected.txt: Added.
+        * fast/replaced/frame-removed-during-resize-smaller.html: Added.
+
+2011-02-24  Xianzhu Wang  <wangxianzhu@google.com>
+
+        Reviewed by Adam Barth.
+
+        Add a test to ensure SVGImage won't cause ResourceLoader leaks.
+        https://bugs.webkit.org/show_bug.cgi?id=55017
+
+        * svg/misc: Added.
+        * svg/misc/SVGImage-leak-ResourceLoader-expected.txt: Added.
+        * svg/misc/SVGImage-leak-ResourceLoader.html: Added.
+        * svg/misc/resources: Added.
+        * svg/misc/resources/load-script.html: Added.
+        * svg/misc/resources/small.png: Added.
+
+2011-02-24  Anna Cavender  <annacc@chromium.org>
+
+        Reviewed by Mihai Parparita.
+
+        Rebaselines for media tests under snowleopard.
+        https://bugs.webkit.org/show_bug.cgi?id=54994
+
+        * platform/chromium-mac-leopard/media/audio-repaint-expected.checksum: Copied from LayoutTests/platform/chromium-mac/media/audio-repaint-expected.checksum.
+        * platform/chromium-mac-leopard/media/audio-repaint-expected.png: Copied from LayoutTests/platform/chromium-mac/media/audio-repaint-expected.png.
+        * platform/chromium-mac-leopard/media/audio-repaint-expected.txt: Added.
+        * platform/chromium-mac-leopard/media/video-aspect-ratio-expected.checksum: Copied from LayoutTests/platform/chromium-mac/media/video-aspect-ratio-expected.checksum.
+        * platform/chromium-mac-leopard/media/video-aspect-ratio-expected.png: Copied from LayoutTests/platform/chromium-mac/media/video-aspect-ratio-expected.png.
+        * platform/chromium-mac-leopard/media/video-zoom-expected.checksum: Copied from LayoutTests/platform/chromium-mac/media/video-zoom-expected.checksum.
+        * platform/chromium-mac-leopard/media/video-zoom-expected.png: Copied from LayoutTests/platform/chromium-mac/media/video-zoom-expected.png.
+        * platform/chromium-mac/media/audio-controls-rendering-expected.txt:
+        * platform/chromium-mac/media/audio-repaint-expected.checksum:
+        * platform/chromium-mac/media/audio-repaint-expected.png:
+        * platform/chromium-mac/media/controls-after-reload-expected.checksum:
+        * platform/chromium-mac/media/controls-after-reload-expected.png:
+        * platform/chromium-mac/media/controls-after-reload-expected.txt:
+        * platform/chromium-mac/media/controls-strict-expected.checksum:
+        * platform/chromium-mac/media/controls-strict-expected.png:
+        * platform/chromium-mac/media/controls-strict-expected.txt:
+        * platform/chromium-mac/media/controls-styling-expected.checksum:
+        * platform/chromium-mac/media/controls-styling-expected.png:
+        * platform/chromium-mac/media/controls-styling-expected.txt:
+        * platform/chromium-mac/media/controls-without-preload-expected.checksum:
+        * platform/chromium-mac/media/controls-without-preload-expected.png:
+        * platform/chromium-mac/media/media-document-audio-repaint-expected.checksum:
+        * platform/chromium-mac/media/media-document-audio-repaint-expected.png:
+        * platform/chromium-mac/media/video-aspect-ratio-expected.checksum:
+        * platform/chromium-mac/media/video-aspect-ratio-expected.png:
+        * platform/chromium-mac/media/video-empty-source-expected.txt:
+        * platform/chromium-mac/media/video-no-audio-expected.txt:
+        * platform/chromium-mac/media/video-volume-slider-expected.txt:
+        * platform/chromium-mac/media/video-zoom-controls-expected.checksum:
+        * platform/chromium-mac/media/video-zoom-controls-expected.png:
+        * platform/chromium-mac/media/video-zoom-expected.checksum:
+        * platform/chromium-mac/media/video-zoom-expected.png:
+        * platform/chromium/test_expectations.txt:
+
 2011-02-24  James Robinson  <jamesr@chromium.org>
 
         Update chromium test expectations.

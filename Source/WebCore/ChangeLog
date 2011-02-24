@@ -1,3 +1,131 @@
+2011-02-24  James Robinson  <jamesr@chromium.org>
+
+        Fix chromium compile.
+
+        * bindings/v8/custom/V8LocationCustom.cpp:
+        (WebCore::V8Location::toStringCallback):
+
+2011-02-24  Dimitri Glazkov  <dglazkov@chromium.org>
+
+        Unreviewed, rolling out r79607.
+        http://trac.webkit.org/changeset/79607
+        https://bugs.webkit.org/show_bug.cgi?id=55157
+
+        Broke Chromium layout tests.
+
+        * html/shadow/MediaControls.cpp:
+        (WebCore::MediaControls::updateVolumeSliderContainer):
+        * rendering/RenderMediaControls.cpp:
+        (WebCore::RenderMediaControls::volumeSliderOffsetFromMuteButton):
+        * rendering/RenderMediaControls.h:
+        * rendering/RenderTheme.cpp:
+        (WebCore::RenderTheme::volumeSliderOffsetFromMuteButton):
+        * rendering/RenderTheme.h:
+        * rendering/RenderThemeChromiumMac.h:
+        * rendering/RenderThemeChromiumMac.mm:
+        (WebCore::RenderThemeChromiumMac::volumeSliderOffsetFromMuteButton):
+        * rendering/RenderThemeMac.h:
+        * rendering/RenderThemeMac.mm:
+        (WebCore::RenderThemeMac::volumeSliderOffsetFromMuteButton):
+        * rendering/RenderThemeWin.cpp:
+        (WebCore::RenderThemeWin::volumeSliderOffsetFromMuteButton):
+        * rendering/RenderThemeWin.h:
+
+2011-02-24  Anders Carlsson  <andersca@apple.com>
+
+        Reviewed by Sam Weinig.
+
+        Fix the clang -Woverloaded-virtual build.
+
+        JSLocation has a toString function which conflicts with the virtual JSObject::toString  member function.
+        Fix this by renaming the implementation function from JSLocation::toString to JSLocation::toStringFunction.
+
+        * bindings/js/JSLocationCustom.cpp:
+        (WebCore::JSLocation::toStringFunction):
+        * bindings/v8/custom/V8LocationCustom.cpp:
+        (WebCore::V8Location::toStringFunctionCallback):
+        * page/Location.idl:
+
+2011-02-24  Anders Carlsson  <andersca@apple.com>
+
+        Fix clang build.
+
+        * bindings/objc/WebScriptObject.mm:
+        (-[WebUndefined release]):
+        Release should be "oneway void".
+
+        (-[WebUndefined retainCount]):
+        Return NSUIntegerMax instead of UINT_MAX.
+
+2011-02-24  Dimitri Glazkov  <dglazkov@chromium.org>
+
+        Reviewed by Darin Adler.
+
+        Simplify RenderTheme::volumeSliderOffsetFromMuteButton, unduplicate code.
+        https://bugs.webkit.org/show_bug.cgi?id=55157
+
+        Refactoring, no functional changes. Covered by existing tests.
+
+        RenderTheme::volumeSliderOffsetFromMuteButton has the same duplicated
+        logic for all platforms. This patch:
+        a) moves the common logic of determining absolute positioning to a
+           platform-agnostic place;
+        b) simplifies the method to return constant offset.
+
+        * html/shadow/MediaControls.cpp:
+        (WebCore::volumeSliderOffset): Added new helper function,
+            capturing common logic of finding the absolute position of the volume slider.
+        (WebCore::MediaControls::updateVolumeSliderContainer): Changed to use the
+            new helper.
+        * rendering/RenderMediaControls.cpp:
+        (WebCore::RenderMediaControls::volumeSliderOffsetRelativeToMuteButton): Simplified.
+        * rendering/RenderMediaControls.h: Ditto.
+        * rendering/RenderTheme.cpp:
+        (WebCore::RenderTheme::volumeSliderOffsetRelativeToMuteButton): Ditto.
+        * rendering/RenderTheme.h: Ditto.
+        * rendering/RenderThemeChromiumMac.h: Ditto.
+        * rendering/RenderThemeChromiumMac.mm: Ditto.
+        (WebCore::RenderThemeChromiumMac::volumeSliderOffsetRelativeToMuteButton): Ditto.
+        * rendering/RenderThemeMac.h: Ditto.
+        * rendering/RenderThemeMac.mm: Ditto.
+        (WebCore::RenderThemeMac::volumeSliderOffsetRelativeToMuteButton): Ditto.
+        * rendering/RenderThemeWin.cpp: Ditto.
+        (WebCore::RenderThemeWin::volumeSliderOffsetRelativeToMuteButton): Ditto.
+        * rendering/RenderThemeWin.h: Ditto.
+
+2011-02-24  Tom Sepez  <tsepez@chromium.org>
+
+        Reviewed by Darin Fisher.
+
+        Make frameview resized event dispatch async so that it occurs
+        after layout has completed.
+        
+        https://bugs.webkit.org/show_bug.cgi?id=54467
+        Test: fast/replaced/frame-removed-during-resize-smaller.html
+
+        * page/EventHandler.cpp:
+        (WebCore::EventHandler::sendResizeEvent):
+
+2011-02-24  Xianzhu Wang  <wangxianzhu@google.com>
+
+        Reviewed by Adam Barth.
+
+        Use loader->init() instead of loader->load() to avoid complex fake
+        request loading and cleanup logic, and also avoid ResourceLoader leaks.
+
+        https://bugs.webkit.org/show_bug.cgi?id=55017
+
+        Test: svg/misc/SVGImage-leak-ResourceLoader.html
+
+        * svg/graphics/SVGImage.cpp:
+        (WebCore::SVGImage::dataChanged):
+
+2011-02-24  Dimitri Glazkov  <dglazkov@chromium.org>
+
+        Chromium Mac build fix after r79591.
+
+        * WebCore.gypi: Added RenderMediaControls to WebCore.gypi.
+
 2011-02-24  Misha Tyutyunik  <michael.tyutyunik@nokia.com>
 
         Reviewed by Andreas Kling.
