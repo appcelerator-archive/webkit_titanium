@@ -222,6 +222,9 @@ private:
     virtual void documentElementAvailable();
     virtual void didPerformFirstNavigation() const;
 
+    // TITANIUM
+    virtual void foundUnknownScriptType(const String& source);
+
     virtual void registerForIconNotification(bool listen);
 
 #if ENABLE(JAVA_BRIDGE)
