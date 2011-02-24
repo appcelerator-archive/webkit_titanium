@@ -180,10 +180,6 @@ http/tests/misc/authentication-sent-to-redirect.html
 # https://bugs.webkit.org/show_bug.cgi?id=50744
 http/tests/inspector-enabled/open-close-open.html
 
-# https://bugs.webkit.org/show_bug.cgi?id=55122
-svg/dynamic-updates/SVGFEConvolveMatrixElement-dom-kernelUnitLength-attr.html
-svg/dynamic-updates/SVGFEConvolveMatrixElement-svgdom-kernelUnitLength-prop.html
-
 
 ###############################################################################
 # EXPECTED FAILURES
@@ -1030,8 +1026,6 @@ canvas/philip/tests/2d.drawImage.self.2.html
 canvas/philip/tests/2d.path.arc.selfintersect.1.html
 canvas/philip/tests/2d.path.arc.shape.3.html
 canvas/philip/tests/2d.path.arc.zeroradius.html
-canvas/philip/tests/2d.path.arcTo.collinear.2.html
-canvas/philip/tests/2d.path.arcTo.collinear.3.html
 canvas/philip/tests/2d.path.rect.selfintersect.html
 canvas/philip/tests/2d.path.rect.zero.6.html
 canvas/philip/tests/2d.pattern.paint.repeatx.coord1.html
@@ -1328,3 +1322,7 @@ plugins/invalidate_rect.html
 
 # https://bugs.webkit.org/show_bug.cgi?id=54389
 http/tests/misc/generated-content-inside-table.html
+
+# https://bugs.webkit.org/show_bug.cgi?id=40272
+canvas/philip/tests/2d.imageData.object.round.html
+canvas/philip/tests/2d.imageData.object.wrap.html

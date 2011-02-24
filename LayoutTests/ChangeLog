@@ -1,3 +1,87 @@
+2011-02-24  Zan Dobersek  <zandobersek@gmail.com>
+
+        Reviewed by Eric Seidel.
+
+        [gtk] Failing collinear arcTo canvas tests
+        https://bugs.webkit.org/show_bug.cgi?id=54658
+
+        Enable two more tests that pass after adding collinearity check
+        when drawing arcTo in canvas.
+
+        * platform/gtk/Skipped:
+
+2011-02-24  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Unreviewed Chromium test expectations update.
+        Removed tests that have been passing since r79478.
+
+        * platform/chromium/test_expectations.txt:
+
+2011-02-24  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Reviewed by Ojan Vafai.
+
+        Crash when deleting inside a blockquote with a large offset
+        https://bugs.webkit.org/show_bug.cgi?id=55098
+
+        Added a test to ensure WebKit doesn't crash when deleting line inside a blockquote
+        and the caret is programmatically set to have a large offset.
+
+        Co-author: Abhishek Arya <inferno@chromium.org>.
+
+        * editing/deleting/delete-blockquote-large-offsets-expected.txt: Added.
+        * editing/deleting/delete-blockquote-large-offsets.html: Added.
+
+2011-02-24  MORITA Hajime  <morrita@google.com>
+
+        Unreviewed test_expectations.txt update
+        
+        * platform/chromium/test_expectations.txt:
+
+2011-02-24  Andreas Kling  <kling@webkit.org>
+
+        Unreviewed Qt rebaseline.
+
+        * platform/qt/fast/table/fixed-with-auto-with-colspan-vertical-expected.txt:
+
+2011-02-24  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Unreviewed Mac rebaselines for r79490 and r79493.
+
+        * fast/repaint/text-emphasis-h-expected.txt:
+        * platform/mac/fast/table/fixed-with-auto-with-colspan-vertical-expected.txt:
+
+2011-02-24  Philippe Normand  <pnormand@igalia.com>
+
+        Unreviewed, unskip 2 fixed SVG tests on GTK after r79530.
+
+        * platform/gtk/Skipped:
+
+2011-02-24 MORITA Hajime  <morrita@google.com>
+
+        Unreviewed skipping failing tests. (r79517 removed too many.)
+
+        * platform/chromium/test_expectations.txt:
+
+2011-02-24  Philippe Normand  <pnormand@igalia.com>
+
+        Unreviewed; skip canvas/philip/tests/2d.imageData.object.round.html and
+        canvas/philip/tests/2d.imageData.object.wrap.html on GTK.
+
+        They were passing before r79501.
+
+        * platform/gtk/Skipped:
+
+2011-02-24  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Unreviewed; skip canvas/philip/tests/2d.imageData.object.round.html and
+        canvas/philip/tests/2d.imageData.object.wrap.html on Mac.
+
+        It was removed from the skipped list in r64156 but it wasn't added back
+        when r79501 reverted it.
+
+        * platform/mac/Skipped:
+
 2011-02-24  Philippe Normand  <pnormand@igalia.com>
 
         Unreviewed, skip flaky media test on GTK.
