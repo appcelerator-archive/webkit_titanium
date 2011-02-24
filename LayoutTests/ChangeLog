@@ -1,3 +1,342 @@
+2011-02-24  James Robinson  <jamesr@chromium.org>
+
+        Update chromium test expectations.
+
+        * platform/chromium-linux/media/video-display-toggle-expected.checksum:
+        * platform/chromium-linux/media/video-display-toggle-expected.png:
+        * platform/chromium-linux/transitions/default-timing-function-expected.checksum: Added.
+        * platform/chromium-linux/transitions/default-timing-function-expected.png: Added.
+        * platform/chromium-win/media/video-display-toggle-expected.checksum:
+        * platform/chromium-win/media/video-display-toggle-expected.png:
+        * platform/chromium-win/transitions/default-timing-function-expected.checksum: Added.
+        * platform/chromium-win/transitions/default-timing-function-expected.png: Added.
+        * platform/chromium-win/transitions/default-timing-function-expected.txt: Added.
+        * platform/chromium/inspector/debugger/dom-breakpoints-expected.txt: Added.
+        * platform/mac-leopard/transitions/default-timing-function-expected.checksum: Added.
+        * platform/mac-leopard/transitions/default-timing-function-expected.png: Added.
+
+2011-02-24  Victoria Kirst  <vrk@google.com>
+
+        Reviewed by Mihai Parparita.
+
+        [chromium] Move media-file.js and video-test.js back to media/ for UILayoutTests
+        https://bugs.webkit.org/show_bug.cgi?id=55089
+
+        Media's UILayoutTests rely on video-test.js and media-file.js to be in
+        the media/ folder.
+
+        * http/tests/media/pdf-served-as-pdf.html:
+        * http/tests/media/reload-after-dialog.html:
+        * http/tests/media/remove-while-loading.html:
+        * http/tests/media/text-served-as-text.html:
+        * http/tests/media/video-buffered.html:
+        * http/tests/media/video-cancel-load.html:
+        * http/tests/media/video-cookie.html:
+        * http/tests/media/video-error-abort.html:
+        * http/tests/media/video-load-twice.html:
+        * http/tests/media/video-play-stall-seek.html:
+        * http/tests/media/video-play-stall.html:
+        * http/tests/media/video-play-suspend.html:
+        * http/tests/media/video-referer.html:
+        * http/tests/media/video-seekable-stall.html:
+        * http/tests/media/video-served-as-text.html:
+        * media/adopt-node-crash.html:
+        * media/audio-constructor-preload.html:
+        * media/audio-constructor-src.html:
+        * media/audio-constructor.html:
+        * media/audio-controls-rendering.html:
+        * media/audio-data-url.html:
+        * media/audio-delete-while-slider-thumb-clicked.html:
+        * media/audio-delete-while-step-button-clicked.html:
+        * media/audio-mpeg-supported.html:
+        * media/audio-mpeg4-supported.html:
+        * media/audio-play-event.html:
+        * media/before-load-member-access.html:
+        * media/broken-video.html:
+        * media/constructors.html:
+        * media/context-menu-actions.html:
+        * media/controls-after-reload.html:
+        * media/controls-css-overload.html:
+        * media/controls-drag-timebar.html:
+        * media/controls-right-click-on-timebar.html:
+        * media/controls-strict.html:
+        * media/controls-styling.html:
+        * media/controls-without-preload.html:
+        * media/event-attributes.html:
+        * media/invalid-media-url-crash.html:
+        * media/media-can-play-mpeg-audio.html:
+        * media/media-can-play-mpeg4-video.html:
+        * media/media-can-play-octet-stream.html:
+        * media/media-can-play-ogg.html:
+        * media/media-can-play-wav-audio.html:
+        * media/media-captions.html:
+        * media/media-constants.html:
+        * media/media-file.js: Renamed from LayoutTests/http/tests/media/media-file.js.
+        * media/media-fullscreen-inline.html:
+        * media/media-fullscreen-not-in-document.html:
+        * media/media-load-event.html:
+        * media/media-startTime.html:
+        * media/remove-from-document-no-load.html:
+        * media/remove-from-document.html:
+        * media/restore-from-page-cache.html:
+        * media/unsupported-rtsp.html:
+        * media/unsupported-tracks.html:
+        * media/video-append-source.html:
+        * media/video-aspect-ratio.html:
+        * media/video-autoplay.html:
+        * media/video-buffered.html:
+        * media/video-can-play-type.html:
+        * media/video-canvas-alpha.html:
+        * media/video-canvas-source.html:
+        * media/video-click-dblckick-standalone.html:
+        * media/video-controls-rendering.html:
+        * media/video-controls-transformed.html:
+        * media/video-controls-visible-audio-only.html:
+        * media/video-controls-zoomed.html:
+        * media/video-controls.html:
+        * media/video-currentTime-delay.html:
+        * media/video-currentTime-set.html:
+        * media/video-currentTime-set2.html:
+        * media/video-currentTime.html:
+        * media/video-delay-load-event.html:
+        * media/video-display-aspect-ratio.html:
+        * media/video-display-none-crash.html:
+        * media/video-display-toggle.html:
+        * media/video-does-not-loop.html:
+        * media/video-dom-autoplay.html:
+        * media/video-dom-preload.html:
+        * media/video-dom-src.html:
+        * media/video-duration-known-after-eos.html:
+        * media/video-error-does-not-exist.html:
+        * media/video-frame-accurate-seek.html:
+        * media/video-layer-crash.html:
+        * media/video-load-networkState.html:
+        * media/video-load-readyState.html:
+        * media/video-loop.html:
+        * media/video-muted.html:
+        * media/video-no-audio.html:
+        * media/video-no-autoplay.html:
+        * media/video-pause-empty-events.html:
+        * media/video-pause-immediately.html:
+        * media/video-play-empty-events.html:
+        * media/video-play-pause-events.html:
+        * media/video-play-pause-exception.html:
+        * media/video-played-collapse.html:
+        * media/video-played-ranges-1.html:
+        * media/video-played-reset.html:
+        * media/video-poster-delayed.html:
+        * media/video-poster-scale.html:
+        * media/video-poster.html:
+        * media/video-preload.html:
+        * media/video-replaces-poster.html:
+        * media/video-reverse-play-duration.html:
+        * media/video-seek-by-small-increment.html:
+        * media/video-seek-no-src-exception.html:
+        * media/video-seek-past-end-paused.html:
+        * media/video-seek-past-end-playing.html:
+        * media/video-seekable.html:
+        * media/video-seeking.html:
+        * media/video-size-intrinsic-scale.html:
+        * media/video-size.html:
+        * media/video-source-error-no-candidate.html:
+        * media/video-source-error.html:
+        * media/video-source-inserted.html:
+        * media/video-source-media.html:
+        * media/video-source-moved.html:
+        * media/video-source-none-supported.html:
+        * media/video-source-removed.html:
+        * media/video-source-type-params.html:
+        * media/video-source-type.html:
+        * media/video-source.html:
+        * media/video-src-change.html:
+        * media/video-src-invalid-remove.html:
+        * media/video-src-none.html:
+        * media/video-src-plus-source.html:
+        * media/video-src-remove.html:
+        * media/video-src-set.html:
+        * media/video-src-source.html:
+        * media/video-src.html:
+        * media/video-test.js: Renamed from LayoutTests/http/tests/media/video-test.js.
+        * media/video-timeupdate-during-playback.html:
+        * media/video-timeupdate-reverse-play.html:
+        * media/video-transformed.html:
+        * media/video-volume-slider.html:
+        * media/video-volume.html:
+        * media/video-width-height.html:
+        * media/video-zoom-controls.html:
+        * media/video-zoom.html:
+
+2011-02-24  Anna Cavender  <annacc@chromium.org>
+
+        Reviewed by Ojan Vafai.
+
+        rebaseline for media/video-controls-rendering.html on mac
+        https://bugs.webkit.org/show_bug.cgi?id=55108
+
+        * platform/chromium-mac/media/video-controls-rendering-expected.checksum:
+        * platform/chromium-mac/media/video-controls-rendering-expected.png:
+        * platform/chromium-mac/media/video-controls-rendering-expected.txt:
+        * platform/chromium/test_expectations.txt:
+
+2011-02-20  Martin Robinson  <mrobinson@igalia.com>
+
+        Reviewed by Nikolas Zimmermann.
+
+        [CAIRO] Support ImageBuffers clip operation on all Cairo ports
+        https://bugs.webkit.org/show_bug.cgi?id=23526
+
+        Update results for tests which are now passing and unskip them.
+
+        * platform/gtk/Skipped: Unskip tests which are now passing.
+        * platform/gtk/fast/backgrounds/animated-svg-as-mask-expected.checksum: Added.
+        * platform/gtk/fast/backgrounds/animated-svg-as-mask-expected.png: Added.
+        * platform/gtk/fast/backgrounds/animated-svg-as-mask-expected.txt: Added.
+        * platform/gtk/fast/backgrounds/svg-as-mask-expected.checksum: Added.
+        * platform/gtk/fast/backgrounds/svg-as-mask-expected.png: Added.
+        * platform/gtk/fast/backgrounds/svg-as-mask-expected.txt: Added.
+        * platform/gtk/svg/W3C-SVG-1.1/filters-example-01-b-expected.checksum:
+        * platform/gtk/svg/W3C-SVG-1.1/filters-example-01-b-expected.png:
+        * platform/gtk/svg/W3C-SVG-1.1/filters-offset-01-b-expected.checksum:
+        * platform/gtk/svg/W3C-SVG-1.1/filters-offset-01-b-expected.png:
+        * platform/gtk/svg/W3C-SVG-1.1/filters-turb-02-f-expected.checksum: Added.
+        * platform/gtk/svg/W3C-SVG-1.1/filters-turb-02-f-expected.png: Added.
+        * platform/gtk/svg/W3C-SVG-1.1/filters-turb-02-f-expected.txt: Added.
+        * platform/gtk/svg/W3C-SVG-1.1/masking-intro-01-f-expected.checksum:
+        * platform/gtk/svg/W3C-SVG-1.1/masking-intro-01-f-expected.png:
+        * platform/gtk/svg/W3C-SVG-1.1/masking-mask-01-b-expected.checksum:
+        * platform/gtk/svg/W3C-SVG-1.1/masking-mask-01-b-expected.png:
+        * platform/gtk/svg/W3C-SVG-1.1/masking-path-01-b-expected.checksum:
+        * platform/gtk/svg/W3C-SVG-1.1/masking-path-01-b-expected.png:
+        * platform/gtk/svg/W3C-SVG-1.1/masking-path-04-b-expected.checksum:
+        * platform/gtk/svg/W3C-SVG-1.1/masking-path-04-b-expected.png:
+        * platform/gtk/svg/batik/masking/maskRegions-expected.checksum:
+        * platform/gtk/svg/batik/masking/maskRegions-expected.png:
+        * platform/gtk/svg/batik/text/textEffect2-expected.checksum:
+        * platform/gtk/svg/batik/text/textEffect2-expected.png:
+        * platform/gtk/svg/clip-path/clip-in-mask-expected.checksum:
+        * platform/gtk/svg/clip-path/clip-in-mask-expected.png:
+        * platform/gtk/svg/clip-path/clip-in-mask-objectBoundingBox-expected.checksum:
+        * platform/gtk/svg/clip-path/clip-in-mask-objectBoundingBox-expected.png:
+        * platform/gtk/svg/clip-path/clip-in-mask-userSpaceOnUse-expected.checksum:
+        * platform/gtk/svg/clip-path/clip-in-mask-userSpaceOnUse-expected.png:
+        * platform/gtk/svg/clip-path/clip-path-child-clipped-expected.checksum:
+        * platform/gtk/svg/clip-path/clip-path-child-clipped-expected.png:
+        * platform/gtk/svg/clip-path/clip-path-childs-clipped-expected.checksum:
+        * platform/gtk/svg/clip-path/clip-path-childs-clipped-expected.png:
+        * platform/gtk/svg/clip-path/clip-path-clipped-evenodd-twice-expected.checksum:
+        * platform/gtk/svg/clip-path/clip-path-clipped-evenodd-twice-expected.png:
+        * platform/gtk/svg/clip-path/clip-path-clipped-expected.checksum:
+        * platform/gtk/svg/clip-path/clip-path-clipped-expected.png:
+        * platform/gtk/svg/clip-path/clip-path-clipped-no-content-expected.checksum:
+        * platform/gtk/svg/clip-path/clip-path-clipped-no-content-expected.png:
+        * platform/gtk/svg/clip-path/clip-path-clipped-nonzero-expected.checksum:
+        * platform/gtk/svg/clip-path/clip-path-clipped-nonzero-expected.png:
+        * platform/gtk/svg/clip-path/clip-path-evenodd-expected.checksum:
+        * platform/gtk/svg/clip-path/clip-path-evenodd-expected.png:
+        * platform/gtk/svg/clip-path/clip-path-evenodd-nonzero-expected.checksum:
+        * platform/gtk/svg/clip-path/clip-path-evenodd-nonzero-expected.png:
+        * platform/gtk/svg/clip-path/clip-path-nonzero-evenodd-expected.checksum:
+        * platform/gtk/svg/clip-path/clip-path-nonzero-evenodd-expected.png:
+        * platform/gtk/svg/clip-path/clip-path-nonzero-expected.checksum:
+        * platform/gtk/svg/clip-path/clip-path-nonzero-expected.png:
+        * platform/gtk/svg/clip-path/clip-path-pixelation-expected.checksum:
+        * platform/gtk/svg/clip-path/clip-path-pixelation-expected.png:
+        * platform/gtk/svg/clip-path/clip-path-text-and-shape-expected.checksum:
+        * platform/gtk/svg/clip-path/clip-path-text-and-shape-expected.png:
+        * platform/gtk/svg/clip-path/clip-path-text-and-stroke-expected.checksum:
+        * platform/gtk/svg/clip-path/clip-path-text-and-stroke-expected.png:
+        * platform/gtk/svg/clip-path/clip-path-text-expected.checksum:
+        * platform/gtk/svg/clip-path/clip-path-text-expected.png:
+        * platform/gtk/svg/clip-path/clip-path-use-as-child2-expected.checksum:
+        * platform/gtk/svg/clip-path/clip-path-use-as-child2-expected.png:
+        * platform/gtk/svg/clip-path/clip-path-use-as-child3-expected.checksum:
+        * platform/gtk/svg/clip-path/clip-path-use-as-child3-expected.png:
+        * platform/gtk/svg/clip-path/clip-path-use-as-child4-expected.checksum:
+        * platform/gtk/svg/clip-path/clip-path-use-as-child4-expected.png:
+        * platform/gtk/svg/clip-path/clip-path-with-different-unittypes-expected.checksum:
+        * platform/gtk/svg/clip-path/clip-path-with-different-unittypes-expected.png:
+        * platform/gtk/svg/clip-path/clip-path-with-different-unittypes2-expected.checksum:
+        * platform/gtk/svg/clip-path/clip-path-with-different-unittypes2-expected.png:
+        * platform/gtk/svg/clip-path/clip-path-with-text-clipped-expected.checksum:
+        * platform/gtk/svg/clip-path/clip-path-with-text-clipped-expected.png:
+        * platform/gtk/svg/clip-path/deep-nested-clip-in-mask-different-unitTypes-expected.checksum:
+        * platform/gtk/svg/clip-path/deep-nested-clip-in-mask-different-unitTypes-expected.png:
+        * platform/gtk/svg/clip-path/deep-nested-clip-in-mask-expected.checksum:
+        * platform/gtk/svg/clip-path/deep-nested-clip-in-mask-expected.png:
+        * platform/gtk/svg/clip-path/deep-nested-clip-in-mask-panning-expected.checksum:
+        * platform/gtk/svg/clip-path/deep-nested-clip-in-mask-panning-expected.png:
+        * platform/gtk/svg/clip-path/nested-clip-in-mask-image-based-clipping-expected.checksum:
+        * platform/gtk/svg/clip-path/nested-clip-in-mask-image-based-clipping-expected.png:
+        * platform/gtk/svg/clip-path/nested-clip-in-mask-path-and-image-based-clipping-expected.checksum:
+        * platform/gtk/svg/clip-path/nested-clip-in-mask-path-and-image-based-clipping-expected.png:
+        * platform/gtk/svg/clip-path/nested-clip-in-mask-path-based-clipping-expected.checksum:
+        * platform/gtk/svg/clip-path/nested-clip-in-mask-path-based-clipping-expected.png:
+        * platform/gtk/svg/css/circle-in-mask-with-shadow-expected.checksum: Added.
+        * platform/gtk/svg/css/circle-in-mask-with-shadow-expected.png: Added.
+        * platform/gtk/svg/css/circle-in-mask-with-shadow-expected.txt: Added.
+        * platform/gtk/svg/css/clippath-with-shadow-expected.checksum: Added.
+        * platform/gtk/svg/css/clippath-with-shadow-expected.png: Added.
+        * platform/gtk/svg/css/clippath-with-shadow-expected.txt: Added.
+        * platform/gtk/svg/custom/absolute-sized-content-with-resources-expected.checksum: Added.
+        * platform/gtk/svg/custom/absolute-sized-content-with-resources-expected.png: Added.
+        * platform/gtk/svg/custom/absolute-sized-content-with-resources-expected.txt: Added.
+        * platform/gtk/svg/custom/circular-marker-reference-2-expected.txt:
+        * platform/gtk/svg/custom/js-late-mask-and-object-creation-expected.checksum:
+        * platform/gtk/svg/custom/js-late-mask-and-object-creation-expected.png:
+        * platform/gtk/svg/custom/js-late-mask-creation-expected.checksum:
+        * platform/gtk/svg/custom/js-late-mask-creation-expected.png:
+        * platform/gtk/svg/custom/marker-child-changes-css-expected.checksum: Added.
+        * platform/gtk/svg/custom/marker-child-changes-css-expected.png: Copied from LayoutTests/platform/gtk/svg/custom/mask-changes-expected.png.
+        * platform/gtk/svg/custom/marker-child-changes-css-expected.txt: Added.
+        * platform/gtk/svg/custom/mask-changes-expected.checksum:
+        * platform/gtk/svg/custom/mask-changes-expected.png:
+        * platform/gtk/svg/custom/mask-child-changes-expected.checksum:
+        * platform/gtk/svg/custom/mask-child-changes-expected.png:
+        * platform/gtk/svg/custom/mask-colorspace-expected.checksum: Added.
+        * platform/gtk/svg/custom/mask-colorspace-expected.png: Added.
+        * platform/gtk/svg/custom/mask-colorspace-expected.txt: Added.
+        * platform/gtk/svg/custom/mask-inside-defs-expected.checksum:
+        * platform/gtk/svg/custom/mask-inside-defs-expected.png:
+        * platform/gtk/svg/custom/mask-on-multiple-objects-expected.checksum: Added.
+        * platform/gtk/svg/custom/mask-on-multiple-objects-expected.png: Added.
+        * platform/gtk/svg/custom/mask-on-multiple-objects-expected.txt: Added.
+        * platform/gtk/svg/custom/mask-with-all-units-expected.checksum:
+        * platform/gtk/svg/custom/mask-with-all-units-expected.png:
+        * platform/gtk/svg/custom/non-circular-marker-reference-expected.txt:
+        * platform/gtk/svg/custom/recursive-mask-expected.checksum: Added.
+        * platform/gtk/svg/custom/recursive-mask-expected.png: Added.
+        * platform/gtk/svg/custom/recursive-mask-expected.txt:
+        * platform/gtk/svg/custom/visibility-override-mask-expected.checksum:
+        * platform/gtk/svg/custom/visibility-override-mask-expected.png:
+        * platform/gtk/svg/filters/feGaussianBlur-expected.checksum: Added.
+        * platform/gtk/svg/filters/feGaussianBlur-expected.png: Added.
+        * platform/gtk/svg/filters/feGaussianBlur-expected.txt: Added.
+        * platform/gtk/svg/filters/filter-clip-expected.checksum: Added.
+        * platform/gtk/svg/filters/filter-clip-expected.png: Added.
+        * platform/gtk/svg/filters/filter-clip-expected.txt: Added.
+        * platform/gtk/svg/filters/shadow-on-filter-expected.checksum: Added.
+        * platform/gtk/svg/filters/shadow-on-filter-expected.png: Added.
+        * platform/gtk/svg/filters/shadow-on-filter-expected.txt: Added.
+        * platform/gtk/svg/filters/shadow-on-rect-with-filter-expected.checksum: Added.
+        * platform/gtk/svg/filters/shadow-on-rect-with-filter-expected.png: Added.
+        * platform/gtk/svg/filters/shadow-on-rect-with-filter-expected.txt: Added.
+        * platform/gtk/svg/transforms/text-with-mask-with-svg-transform-expected.checksum: Added.
+        * platform/gtk/svg/transforms/text-with-mask-with-svg-transform-expected.png: Added.
+        * platform/gtk/svg/transforms/text-with-mask-with-svg-transform-expected.txt: Added.
+        * platform/gtk/svg/zoom/page/zoom-mask-with-percentages-expected.checksum: Added.
+        * platform/gtk/svg/zoom/page/zoom-mask-with-percentages-expected.png: Added.
+        * platform/gtk/svg/zoom/page/zoom-mask-with-percentages-expected.txt:
+
+2011-02-24  Peter Kasting  <pkasting@google.com>
+
+        Reviewed by Eric Seidel.
+
+        Drop the "U; " encryption level from the User Agent string.
+        https://bugs.webkit.org/show_bug.cgi?id=54566
+
+        * http/tests/navigation/useragent-expected.txt:
+        * http/tests/navigation/useragent.php:
+
 2011-02-24  Pavel Feldman  <pfeldman@chromium.org>
 
         Reviewed by Yury Semikhatsky.
