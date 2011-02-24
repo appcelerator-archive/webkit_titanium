@@ -1,3 +1,114 @@
+2011-02-24  James Simonsen  <simonjam@chromium.org>
+
+        Reviewed by Tony Gentilcore.
+
+        [Web Timing] Zero out navigationStart and unloadEvent on cross-origin redirect
+        https://bugs.webkit.org/show_bug.cgi?id=55068
+
+        * http/tests/misc/resources/webtiming-cross-origin-and-back2.html: Expect navStart and unload to be zero.
+        * http/tests/misc/resources/webtiming-cross-origin-redirect.html: Expect navStart to be zero.
+        * http/tests/misc/webtiming-origins-expected.txt:
+
+2011-02-24  Pavel Podivilov  <podivilov@chromium.org>
+
+        Unreviewed, fix bad expectation for new test added in r79555.
+
+        * inspector/debugger/scripts-panel-expected.txt:
+
+2011-02-24  Chris Fleizach  <cfleizach@apple.com>
+
+        Reviewed by Eric Seidel.
+
+        AX: WebKit should expose MathML at least as well as it exposes ARIA role="math"
+        https://bugs.webkit.org/show_bug.cgi?id=55049
+
+        * platform/mac/accessibility/math-alttext-expected.txt: Added.
+        * platform/mac/accessibility/math-alttext.html: Added.
+
+2011-02-23  Pavel Feldman  <pfeldman@chromium.org>
+
+        Reviewed by Yury Semikhatsky.
+
+        Web Inspector: refactor inspect() workflow so that it did not push dom nodes.
+        https://bugs.webkit.org/show_bug.cgi?id=55057
+
+        * http/tests/inspector/inspector-test.js:
+        (initialize_InspectorTest.InspectorTest.runTestSuite.runner):
+        (initialize_InspectorTest.InspectorTest.runTestSuite):
+        * inspector/console/command-line-api-inspect-expected.txt: Added.
+        * inspector/console/command-line-api-inspect.html: Added.
+
+2011-02-24  Pavel Feldman  <pfeldman@chromium.org>
+
+        Not reviewed: beautified inspector test suite output.
+
+        * http/tests/inspector/debugger-test.js:
+        (initialize_DebuggerTest.InspectorTest.runDebuggerTestSuite.runner):
+        (initialize_DebuggerTest.InspectorTest.runDebuggerTestSuite):
+        * http/tests/inspector/inspector-test.js:
+        (initialize_InspectorTest.InspectorTest.runTestSuite.runner):
+        (initialize_InspectorTest.InspectorTest.runTestSuite):
+        * inspector/debugger/source-frame-expected.txt:
+        * inspector/elements/insert-node-collapsed-expected.txt:
+        * inspector/elements/insert-node-expected.txt:
+        * inspector/elements/modify-chardata-expected.txt:
+        * inspector/elements/remove-node-expected.txt:
+        * inspector/elements/set-attribute-expected.txt:
+
+2011-02-22  Pavel Podivilov  <podivilov@chromium.org>
+
+        Reviewed by Pavel Feldman.
+
+        Web Inspector: refactor "script or resource" mess in scripts panel.
+        https://bugs.webkit.org/show_bug.cgi?id=54961
+
+        - Use sourceName instead of scriptOrResource
+        - Replace two huge functions _addScriptToFilesMenu and _showScriptOrResource that are
+          calling each other recursively with small one-purpose non-recursive functions
+
+        * http/tests/inspector/debugger-test.js:
+        (initialize_DebuggerTest.InspectorTest.showScriptSource):
+        (initialize_DebuggerTest.InspectorTest._showScriptSource):
+        * http/tests/inspector/inspector-test.js:
+        (initialize_InspectorTest.InspectorTest.assertEquals):
+        (initialize_InspectorTest.InspectorTest.safeWrap):
+        * inspector/debugger/resources/script1.js: Added.
+        (f1):
+        * inspector/debugger/resources/script2.js: Added.
+        (f2):
+        * inspector/debugger/resources/script3.js: Added.
+        (f3):
+        * inspector/debugger/scripts-panel-expected.txt: Added.
+        * inspector/debugger/scripts-panel.html: Added.
+
+2011-02-24  Eric Seidel  <eric@webkit.org>
+
+        Reviewed by Adam Barth.
+
+        Fragment parsing does not need to use HTMLSourceTracker
+        https://bugs.webkit.org/show_bug.cgi?id=55011
+
+        Remove support of XSS-filtering innerHTML content.
+
+        * http/tests/security/xssAuditor/dom-write-innerHTML-expected.txt:
+
+2011-02-24  Pavel Feldman  <pfeldman@chromium.org>
+
+        Not reviewed: beautified inspector test suite output.
+
+        * http/tests/inspector/debugger-test.js:
+        (initialize_DebuggerTest.InspectorTest.runDebuggerTestSuite.runner):
+        (initialize_DebuggerTest.InspectorTest.runDebuggerTestSuite):
+        * http/tests/inspector/inspector-test.js:
+        (initialize_InspectorTest.InspectorTest.runTestSuite.runner):
+        (initialize_InspectorTest.InspectorTest.runTestSuite):
+        * inspector/debugger/source-frame-expected.txt:
+        * inspector/elements/insert-node-collapsed-expected.txt:
+        * inspector/elements/insert-node-expected.txt:
+        * inspector/elements/modify-chardata-expected.txt:
+        * inspector/elements/remove-node-expected.txt:
+        * inspector/elements/set-attribute-expected.txt:
+
 2011-02-24  Philippe Normand  <pnormand@igalia.com>
 
         Unreviewed, skipping crashing test on GTK

@@ -1,3 +1,240 @@
+2011-02-24  James Simonsen  <simonjam@chromium.org>
+
+        Reviewed by Tony Gentilcore.
+
+        [Web Timing] Zero out navigationStart and unloadEvent on cross-origin redirect
+        https://bugs.webkit.org/show_bug.cgi?id=55068
+
+        Test: http/tests/misc/webtiming-origins.html
+
+        * page/PerformanceTiming.cpp:
+        (WebCore::PerformanceTiming::navigationStart): Zero out on cross origin redirect.
+        (WebCore::PerformanceTiming::unloadEventStart): Ditto.
+        (WebCore::PerformanceTiming::unloadEventEnd): Ditto.
+
+2011-02-24  Adam Klein  <adamk@chromium.org>
+
+        Reviewed by Darin Fisher.
+
+        [chromium] Add code to WebKit Chromium to allow access to NetworkStateNotifier
+        https://bugs.webkit.org/show_bug.cgi?id=54516
+
+        Give Chromium's NetworkStateNotifier the ability to change the value
+        of m_isOnLine, rather than making it always true.
+
+        No new tests, not sure how to test this. No other LayoutTests seem
+        to exercise navigator.onLine.
+
+        * WebCore.gypi:
+        * platform/network/NetworkStateNotifier.cpp:
+        (WebCore::NetworkStateNotifier::setOnLine): Moved and renamed from NetworkStateNotifierAndroid.
+        * platform/network/NetworkStateNotifier.h:
+        (WebCore::NetworkStateNotifier::networkStateChange): Forward to setOnLine.
+        * platform/network/android/NetworkStateNotifierAndroid.cpp: Removed.
+        * platform/network/chromium/NetworkStateNotifierChromium.cpp: Removed.
+        * platform/network/chromium/NetworkStateNotifierPrivate.h: Removed.
+
+2011-02-24  Benjamin Poulain  <benjamin.poulain@nokia.com>
+
+        Reviewed by Eric Seidel.
+
+        Support building WebKit with Python 3
+        https://bugs.webkit.org/show_bug.cgi?id=55038
+
+        Add support for Python 3 without breaking support for Python 2.
+
+        Main issues:
+        -print is a function in Python 3
+        -list.sort() no longer have the cmp parameter
+        -string.uppercase and string.lowercase have been removed
+
+        * html/parser/create-html-entity-table:
+
+2011-02-24  Chris Fleizach  <cfleizach@apple.com>
+
+        Reviewed by Eric Seidel.
+
+        AX: WebKit should expose MathML at least as well as it exposes ARIA role="math"
+        https://bugs.webkit.org/show_bug.cgi?id=55049
+
+        Make <math> elements behave as ARIA math roles and use MathML::alttext as a
+        possible accessible label.
+ 
+        Test: platform/mac/accessibility/math-alttext.html
+
+        * accessibility/AccessibilityRenderObject.cpp:
+        (WebCore::AccessibilityRenderObject::accessibilityDescription):
+        (WebCore::AccessibilityRenderObject::determineAccessibilityRole):
+        * mathml/mathattrs.in:
+
+2011-02-24  Ilya Tikhonovsky  <loislo@chromium.org>
+
+        Reviewed by Pavel Feldman.
+
+        Web Inspector: adjust protocol message format according to spec.
+        https://bugs.webkit.org/show_bug.cgi?id=55140
+
+        * inspector/CodeGeneratorInspector.pm:
+
+2011-02-24  Adam Roben  <aroben@apple.com>
+
+        Windows Production build fix
+
+        * platform/network/cf/AuthenticationCF.cpp: Add an extra #include as a workaround for
+        <rdar://problem/9042114>.
+
+2011-02-23  Pavel Feldman  <pfeldman@chromium.org>
+
+        Reviewed by Yury Semikhatsky.
+
+        Web Inspector: refactor inspect() workflow so that it did not push dom nodes.
+        https://bugs.webkit.org/show_bug.cgi?id=55057
+
+        Test: inspector/console/command-line-api-inspect.html
+
+        I am working on getting rid of DOM agent pushes - everything should happen upon
+        front-end request. This patch changes the way we handle inspect() command line
+        api: instead of pushing nodes, we are telling front-end that inspect(object) has
+        been requested. It is then up to front-end to request dom nodes and focus them in
+        the tree. I also made inspect() work in a generic manner, using same routines for
+        nodes, databases, storages and potentially new elements.
+
+        As a side-effect, we don't do console.log from within inspect() anymore, but dump
+        inspected value as inspect's result.
+
+        Also, I added individual object release method and made object groups optional.
+
+        * bindings/js/JSInjectedScriptHostCustom.cpp:
+        (WebCore::InjectedScriptHost::scriptValueAsNode):
+        (WebCore::InjectedScriptHost::nodeAsScriptValue):
+        (WebCore::JSInjectedScriptHost::inspect):
+        (WebCore::JSInjectedScriptHost::databaseId):
+        (WebCore::JSInjectedScriptHost::storageId):
+        * bindings/v8/custom/V8InjectedScriptHostCustom.cpp:
+        (WebCore::InjectedScriptHost::scriptValueAsNode):
+        (WebCore::InjectedScriptHost::nodeAsScriptValue):
+        (WebCore::V8InjectedScriptHost::inspectCallback):
+        (WebCore::V8InjectedScriptHost::databaseIdCallback):
+        (WebCore::V8InjectedScriptHost::storageIdCallback):
+        * inspector/InjectedScript.cpp:
+        (WebCore::InjectedScript::nodeForObjectId):
+        (WebCore::InjectedScript::releaseObject):
+        (WebCore::InjectedScript::wrapForConsole):
+        (WebCore::InjectedScript::inspectNode):
+        * inspector/InjectedScript.h:
+        * inspector/InjectedScriptHost.cpp:
+        (WebCore::InjectedScriptHost::inspectImpl):
+        (WebCore::InjectedScriptHost::databaseIdImpl):
+        (WebCore::InjectedScriptHost::storageIdImpl):
+        * inspector/InjectedScriptHost.h:
+        * inspector/InjectedScriptHost.idl:
+        * inspector/InjectedScriptSource.js:
+        * inspector/Inspector.idl:
+        * inspector/InspectorAgent.cpp:
+        (WebCore::InspectorAgent::focusNode):
+        * inspector/InspectorDOMAgent.cpp:
+        * inspector/InspectorDOMAgent.h:
+        * inspector/InspectorDOMStorageAgent.cpp:
+        (WebCore::InspectorDOMStorageAgent::storageId):
+        (WebCore::InspectorDOMStorageAgent::didUseDOMStorage):
+        * inspector/InspectorDOMStorageAgent.h:
+        * inspector/InspectorDOMStorageResource.cpp:
+        * inspector/InspectorDOMStorageResource.h:
+        * inspector/InspectorDatabaseAgent.cpp:
+        (WebCore::InspectorDatabaseAgent::databaseId):
+        * inspector/InspectorDatabaseAgent.h:
+        * inspector/InspectorDatabaseResource.cpp:
+        * inspector/InspectorDatabaseResource.h:
+        * inspector/InspectorRuntimeAgent.cpp:
+        (WebCore::InspectorRuntimeAgent::releaseObject):
+        * inspector/InspectorRuntimeAgent.h:
+        * inspector/front-end/AuditRules.js:
+        (WebInspector.AuditRules.evaluateInTargetWindow):
+        (WebInspector.AuditRules.ImageDimensionsRule.prototype.doRun):
+        * inspector/front-end/DOMStorage.js:
+        * inspector/front-end/Database.js:
+        * inspector/front-end/ExtensionServer.js:
+        (WebInspector.ExtensionServer.prototype._onEvaluateOnInspectedPage):
+        * inspector/front-end/inspector.js:
+        (WebInspector.inspect):
+
+2011-02-22  Pavel Podivilov  <podivilov@chromium.org>
+
+        Reviewed by Pavel Feldman.
+
+        Web Inspector: refactor "script or resource" mess in scripts panel.
+        https://bugs.webkit.org/show_bug.cgi?id=54961
+
+        - Use sourceName instead of scriptOrResource
+        - Replace two huge functions _addScriptToFilesMenu and _showScriptOrResource that are
+          calling each other recursively with small one-purpose non-recursive functions
+
+        Test: inspector/debugger/scripts-panel.html
+
+        * inspector/front-end/ScriptsPanel.js:
+        (WebInspector.ScriptsPanel):
+        (WebInspector.ScriptsPanel.prototype.get defaultFocusedElement):
+        (WebInspector.ScriptsPanel.prototype._scriptSourceChanged):
+        (WebInspector.ScriptsPanel.prototype._addScript):
+        (WebInspector.ScriptsPanel.prototype._resourceLoadingFinished):
+        (WebInspector.ScriptsPanel.prototype._addOptionToFilesSelectAndShowSourceFrameIfNeeded):
+        (WebInspector.ScriptsPanel.prototype._addOptionToFilesSelect.optionCompare):
+        (WebInspector.ScriptsPanel.prototype._addOptionToFilesSelect):
+        (WebInspector.ScriptsPanel.prototype.reset):
+        (WebInspector.ScriptsPanel.prototype.canShowSourceLine):
+        (WebInspector.ScriptsPanel.prototype.showSourceLine):
+        (WebInspector.ScriptsPanel.prototype._showSourceFrame):
+        (WebInspector.ScriptsPanel.prototype._sourceFrameForSourceName):
+        (WebInspector.ScriptsPanel.prototype._recreateSourceFrame):
+        (WebInspector.ScriptsPanel.prototype._sourceFrameLoaded):
+        (WebInspector.ScriptsPanel.prototype._addItemToBackForwardList):
+        (WebInspector.ScriptsPanel.prototype._sourceNameForScript):
+        (WebInspector.ScriptsPanel.prototype._scriptForSourceName):
+        (WebInspector.ScriptsPanel.prototype._callFrameSelected):
+        (WebInspector.ScriptsPanel.prototype._filesSelectChanged):
+        (WebInspector.ScriptsPanel.prototype._goBack):
+        (WebInspector.ScriptsPanel.prototype._goForward):
+        * inspector/front-end/SourceFrame.js:
+        (WebInspector.SourceFrame.prototype.setExecutionLine):
+
+2011-02-24  Eric Seidel  <eric@webkit.org>
+
+        Reviewed by Adam Barth.
+
+        Fragment parsing does not need to use HTMLSourceTracker
+        https://bugs.webkit.org/show_bug.cgi?id=55011
+
+        Any performance gains from this patch are likely
+        the result of working around:
+        https://bugs.webkit.org/show_bug.cgi?id=55005
+        (Which suggests that fixing bug 55005 will speed
+        up normal HTML parsing substantially.)
+
+        Assuming I ran the numbers correct, here is the
+        change from PerformanceTests/Parser/tiny-innerHTML:
+        Before patch:
+        avg 5586.1
+        median 5594
+        stdev 41.295157101045135
+        min 5425
+        max 5633
+
+        After Patch:
+        avg 2603.9
+        median 2609.5
+        stdev 32.500615378789355
+        min 2475
+        max 2649
+
+        Removing just the HTMLSourceTracker calls brought our
+        score from 5500 to 5200, removing the XSSFilter as well
+        brought it to 2600 on my machine.
+
+        * html/parser/HTMLDocumentParser.cpp:
+        (WebCore::HTMLDocumentParser::HTMLDocumentParser):
+        (WebCore::HTMLDocumentParser::pumpTokenizer):
+        * html/parser/HTMLDocumentParser.h:
+
 2011-02-24  Andras Becsi  <abecsi@webkit.org>
 
         Reviewed by Laszlo Gombos.
