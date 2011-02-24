@@ -1,3 +1,118 @@
+2011-02-24  Pavel Feldman  <pfeldman@chromium.org>
+
+        Reviewed by Yury Semikhatsky.
+
+        Web Inspector: move querySelectorAll from CSS agent to DOM agent where it belongs.
+        https://bugs.webkit.org/show_bug.cgi?id=55131
+
+        * http/tests/inspector/inspector-test.js:
+        * inspector/elements/dom-agent-query-selector-expected.txt: Added.
+        * inspector/elements/dom-agent-query-selector.html: Added.
+
+2011-02-24  Eric Seidel  <eric@webkit.org>
+
+        Reviewed by Adam Barth.
+
+        Fragment parsing does not need to use HTMLSourceTracker
+        https://bugs.webkit.org/show_bug.cgi?id=55011
+
+        Remove support of XSS-filtering innerHTML content.
+
+        * http/tests/security/xssAuditor/dom-write-innerHTML-expected.txt:
+
+2011-02-24  Pavel Feldman  <pfeldman@chromium.org>
+
+        Not reviewed: beautified inspector test suite output.
+
+        * http/tests/inspector/debugger-test.js:
+        (initialize_DebuggerTest.InspectorTest.runDebuggerTestSuite.runner):
+        (initialize_DebuggerTest.InspectorTest.runDebuggerTestSuite):
+        * http/tests/inspector/inspector-test.js:
+        (initialize_InspectorTest.InspectorTest.runTestSuite.runner):
+        (initialize_InspectorTest.InspectorTest.runTestSuite):
+        * inspector/debugger/source-frame-expected.txt:
+        * inspector/elements/insert-node-collapsed-expected.txt:
+        * inspector/elements/insert-node-expected.txt:
+        * inspector/elements/modify-chardata-expected.txt:
+        * inspector/elements/remove-node-expected.txt:
+        * inspector/elements/set-attribute-expected.txt:
+
+2011-02-24  Adam Roben  <aroben@apple.com>
+
+        Update Windows XP test results after r78846
+
+        * platform/win-xp/fast/text/backslash-to-yen-sign-euc-expected.checksum: Added.
+        * platform/win-xp/fast/text/backslash-to-yen-sign-euc-expected.png: Added.
+        * platform/win-xp/fast/text/backslash-to-yen-sign-euc-expected.txt:
+
+2011-02-24  Emil A Eklund  <eae@chromium.org>
+
+        Reviewed by Simon Fraser.
+
+        Add support for missing properties to getComputedStyle
+        https://bugs.webkit.org/show_bug.cgi?id=23668
+
+        Test getComputedStyle for the content, counter and outline-offset
+        properties.
+
+        * fast/css/getComputedStyle/computed-style-properties-expected.txt: Added.
+        * fast/css/getComputedStyle/computed-style-properties.html: Added.
+
+2011-02-24  Dirk Schulze  <krit@webkit.org>
+
+        Reviewed by Darin Adler.
+
+        Removing a SVG animation target during animation crashes WebKit
+        https://bugs.webkit.org/show_bug.cgi?id=12065
+
+        SVGAnimations with IRI references via 'xlink:href' are slow
+        https://bugs.webkit.org/show_bug.cgi?id=49437
+
+        Test that WebKit does not crash, if the target element of a SVG animation gets removed, or if
+        its id changed.
+
+        * platform/mac/svg/custom/animate-target-id-changed-expected.checksum: Added.
+        * platform/mac/svg/custom/animate-target-id-changed-expected.png: Added.
+        * platform/mac/svg/custom/animate-target-id-changed-expected.txt: Added.
+        * platform/mac/svg/custom/animate-target-removed-from-document-expected.checksum: Added.
+        * platform/mac/svg/custom/animate-target-removed-from-document-expected.png: Added.
+        * platform/mac/svg/custom/animate-target-removed-from-document-expected.txt: Added.
+        * svg/custom/animate-target-id-changed.svg: Added.
+        * svg/custom/animate-target-removed-from-document.svg: Added.
+
+2011-02-24  Simon Fraser  <simon.fraser@apple.com>
+
+        Reviewed by Eric Seidel.
+
+        REGRESSION: Accelerated transitions are jumpy
+        https://bugs.webkit.org/show_bug.cgi?id=55022
+        
+        Testcase with 'transform' and 'left' transitions whose pixel result shows whether
+        the correct timing function is being used for the accelerated transition.
+
+        * platform/mac/transitions/default-timing-function-expected.checksum: Added.
+        * platform/mac/transitions/default-timing-function-expected.png: Added.
+        * platform/mac/transitions/default-timing-function-expected.txt: Added.
+        * transitions/default-timing-function.html: Added.
+
+2011-02-24  Andrey Adaikin  <aandrey@google.com>
+
+        Reviewed by Pavel Feldman.
+
+        Web Inspector: [Text editor] Bug in the highlighter
+        https://bugs.webkit.org/show_bug.cgi?id=54876
+
+        Fixing two bugs: 1) When restoring the state from a successful updateHighlight() call, we should restore the old state only if it is greater (closer to the end) than the current one.
+        2) When a long line is being highlighted in more than one chunk (timer tick), we wrongly deleted the result of the work done in the previous tick, rather than updating it with the new results.
+
+        * inspector/editor/highlighter-long-line-expected.txt: Added.
+        * inspector/editor/highlighter-long-line.html: Added.
+        * inspector/editor/highlighter-paste-in-comment-expected.txt: Added.
+        * inspector/editor/highlighter-paste-in-comment.html: Added.
+        * inspector/editor/highlighter-test.js: Added.
+        (initialize_HighlighterTests.InspectorTest.dumpTextModel):
+        (initialize_HighlighterTests):
+
 2011-02-24  James Simonsen  <simonjam@chromium.org>
 
         Reviewed by Tony Gentilcore.

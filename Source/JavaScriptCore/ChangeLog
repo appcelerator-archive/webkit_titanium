@@ -1,5 +1,36 @@
 2011-02-24  Patrick Gansterer  <paroga@webkit.org>
 
+        Reviewed by Darin Adler.
+
+        Remove obsolete PLATFORM(CI)
+        https://bugs.webkit.org/show_bug.cgi?id=55082
+
+        * wtf/Platform.h:
+
+2011-02-24  Martin Robinson  <mrobinson@igalia.com>
+
+        Reviewed by Xan Lopez.
+
+        [GTK] Remove the GFile GOwnPtr specialization
+        https://bugs.webkit.org/show_bug.cgi?id=55154
+
+        Remove the GFile specialization of GOwnPtr. It's sufficient to use GRefPtr
+        to track GFiles since they are just regular reference-counted GObjects.
+
+        * wtf/gobject/GOwnPtr.cpp: Remove GFile specialization.
+        * wtf/gobject/GOwnPtr.h: Ditto.
+
+2011-02-24  Patrick Gansterer  <paroga@webkit.org>
+
+        Reviewed by Eric Seidel.
+
+        Rename PLATFORM(SKIA) to USE(SKIA)
+        https://bugs.webkit.org/show_bug.cgi?id=55090
+
+        * wtf/Platform.h:
+
+2011-02-24  Patrick Gansterer  <paroga@webkit.org>
+
         Reviewed by Alexey Proskuryakov.
 
         Remove pthreads dependecy for JSLock

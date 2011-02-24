@@ -532,29 +532,25 @@
 #if PLATFORM(MAC) || PLATFORM(IOS)
 #define WTF_PLATFORM_CG 1
 #endif
-#if PLATFORM(MAC) && !PLATFORM(IOS)
-#define WTF_PLATFORM_CI 1
-#endif
 #if PLATFORM(MAC) || PLATFORM(IOS) || (PLATFORM(WIN) && PLATFORM(CG))
 #define WTF_PLATFORM_CA 1
 #endif
 
-/* PLATFORM(SKIA) for Win/Linux, CG/CI for Mac */
+/* USE(SKIA) for Win/Linux, CG for Mac */
 #if PLATFORM(CHROMIUM)
 #if OS(DARWIN)
 #define WTF_PLATFORM_CG 1
-#define WTF_PLATFORM_CI 1
 #define WTF_USE_ATSUI 1
 #define WTF_USE_CORE_TEXT 1
 #define WTF_USE_ICCJPEG 1
 #else
-#define WTF_PLATFORM_SKIA 1
+#define WTF_USE_SKIA 1
 #define WTF_USE_CHROMIUM_NET 1
 #endif
 #endif
 
 #if PLATFORM(BREWMP)
-#define WTF_PLATFORM_SKIA 1
+#define WTF_USE_SKIA 1
 #endif
 
 #if PLATFORM(GTK)
