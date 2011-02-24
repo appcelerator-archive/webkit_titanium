@@ -292,8 +292,9 @@ void HTMLScriptRunner::runScript(Element* script, const TextPosition1& scriptSta
 
         ScriptElement* scriptElement = toScriptElement(script);
         ASSERT(scriptElement);
-        if (!scriptElement->shouldExecuteAsJavaScript())
-            return;
+        // TITANIUM: disable this otherwise non-javascript scripts never get executed.
+        /*if (!scriptElement->shouldExecuteAsJavaScript())
+            return;*/
         
         if (script->hasAttribute(srcAttr)) {
             if (script->hasAttribute(asyncAttr)) // Async takes precendence over defer.

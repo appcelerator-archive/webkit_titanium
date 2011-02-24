@@ -176,7 +176,8 @@ void ScriptElement::requestScript(const String& sourceUrl)
 
 void ScriptElement::evaluateScript(const ScriptSourceCode& sourceCode)
 {
-    if (wasAlreadyStarted() || sourceCode.isEmpty() || !shouldExecuteAsJavaScript())
+    // TITANIUM: do not return if non-javascript.
+    if (wasAlreadyStarted() || sourceCode.isEmpty())
         return;
 
     RefPtr<Document> document = m_element->document();
@@ -194,7 +195,14 @@ void ScriptElement::evaluateScript(const ScriptSourceCode& sourceCode)
             // Create a script from the script element node, using the script
             // block's source and the script block's type.
             // Note: This is where the script is compiled and actually executed.
-            frame->script()->evaluate(sourceCode);
+            //
+            // TITANIUM: If the script is Javascript let WebKit evaluate it.
+            // Otherwise notify Titanium to evaluate the script if possible.
+            if (shouldExecuteAsJavaScript()) {
+                frame->script()->evaluate(sourceCode);
+            } else {
+                frame->loader()->foundUnknownScriptType(sourceCode.source());
+            }
         }
 
         Document::updateStyleForAllDocuments();
@@ -213,7 +221,12 @@ void ScriptElement::executeScript(const ScriptSourceCode& sourceCode)
 
     m_wasAlreadyStarted = true;
 
-    frame->script()->executeScript(sourceCode);
+    // TITANIUM: handle non-javascript scripts with our callback.
+    if (shouldExecuteAsJavaScript()) {
+        frame->script()->executeScript(sourceCode);
+    } else {
+        frame->loader()->foundUnknownScriptType(sourceCode.source());
+    }
 }
 
 void ScriptElement::stopLoadRequest()
