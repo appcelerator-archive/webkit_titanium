@@ -1,3 +1,80 @@
+2011-02-24  Andras Becsi  <abecsi@webkit.org>
+
+        Reviewed by Laszlo Gombos.
+
+        [Qt] MinGW build fails to link
+        https://bugs.webkit.org/show_bug.cgi?id=55050
+
+        Prepend the libraries of subcomponents instead of appending them
+        to fix the library order according to the dependency of the libraries
+
+        No new tests needed.
+
+        * WebCore.pri:
+
+2011-02-24  Adam Barth  <abarth@webkit.org>
+
+        Reviewed by Eric Seidel.
+
+        CSP's script-src should block JavaScript URLs
+        https://bugs.webkit.org/show_bug.cgi?id=54787
+
+        Blocking JavaScript URLs required some re-architecting of the lifetime
+        of the ContentSecurityPolicy object.  We now manage the lifetime the
+        same way we manage the lifetime of the SecurityOrigin object.  In
+        particular, when SecurityOrigin inherits into an about:blank iframe, we
+        inherit the CSP object as well.  (This is covered by the test added in
+        this patch.) In the future, we might consider making
+        ContentSecurityPolicy a component of SecurityOrigin instead of a
+        component of Document.
+
+        I noted the trickiness in
+        http://www.w3.org/Security/wiki/Content_Security_Policies so that we'll
+        make sure it gets defined properly in the spec.
+
+        Test: http/tests/security/contentSecurityPolicy/javascript-url.html
+
+        * bindings/ScriptControllerBase.cpp:
+        (WebCore::ScriptController::executeIfJavaScriptURL):
+        * dom/Document.cpp:
+        (WebCore::Document::initSecurityContext):
+        * dom/Document.h:
+        (WebCore::Document::contentSecurityPolicy):
+        * page/ContentSecurityPolicy.cpp:
+        (WebCore::ContentSecurityPolicy::allowJavaScriptURLs):
+        * page/ContentSecurityPolicy.h:
+        (WebCore::ContentSecurityPolicy::create):
+
+2011-02-21  Philippe Normand  <pnormand@igalia.com>
+
+        Reviewed by Martin Robinson.
+
+        [GStreamer] GRefPtr support for GstElement
+        https://bugs.webkit.org/show_bug.cgi?id=54870
+
+        * CMakeListsEfl.txt:
+        * GNUmakefile.am:
+        * platform/graphics/gstreamer/GRefPtrGStreamer.cpp: Added.
+        (WTF::GstElement):
+        * platform/graphics/gstreamer/GRefPtrGStreamer.h: Added.
+        * platform/graphics/gstreamer/WebKitWebSourceGStreamer.cpp:
+        (webKitWebSrcQuery):
+
+2011-02-24  Emil A Eklund  <eae@chromium.org>
+
+        Reviewed by Eric Seidel.
+
+        Share code between elementFromPoint and caretRangeFromPoint in Document.
+        https://bugs.webkit.org/show_bug.cgi?id=54610
+
+        Eliminate duplicate code by moving shared logic from elementFromPoint and
+        caretRangeFromPoint into helper function.
+
+        * dom/Document.cpp:
+        (WebCore::nodeFromPoint):
+        (WebCore::Document::elementFromPoint):
+        (WebCore::Document::caretRangeFromPoint):
+
 2011-02-24  Ilya Tikhonovsky  <loislo@chromium.org>
 
         Unreviewed build fix.

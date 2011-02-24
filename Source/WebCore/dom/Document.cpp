@@ -1154,12 +1154,8 @@ PassRefPtr<NodeList> Document::handleZeroPadding(const HitTestRequest& request, 
     return StaticHashSetNodeList::adopt(list);
 }
 
-Element* Document::elementFromPoint(int x, int y) const
+static Node* nodeFromPoint(Frame* frame, RenderView* renderView, int x, int y, IntPoint* localPoint = 0)
 {
-    // FIXME: Share code between this and caretRangeFromPoint.
-    if (!renderer())
-        return 0;
-    Frame* frame = this->frame();
     if (!frame)
         return 0;
     FrameView* frameView = frame->view();
@@ -1167,46 +1163,39 @@ Element* Document::elementFromPoint(int x, int y) const
         return 0;
 
     float zoomFactor = frame->pageZoomFactor();
-    IntPoint point = roundedIntPoint(FloatPoint(x * zoomFactor  + view()->scrollX(), y * zoomFactor + view()->scrollY()));
+    IntPoint point = roundedIntPoint(FloatPoint(x * zoomFactor  + frameView->scrollX(), y * zoomFactor + frameView->scrollY()));
 
     if (!frameView->visibleContentRect().contains(point))
         return 0;
 
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active);
     HitTestResult result(point);
-    renderView()->layer()->hitTest(request, result);
+    renderView->layer()->hitTest(request, result);
 
-    Node* n = result.innerNode();
-    while (n && !n->isElementNode())
-        n = n->parentNode();
-    if (n)
-        n = n->shadowAncestorNode();
-    return static_cast<Element*>(n);
+    if (localPoint)
+        *localPoint = result.localPoint();
+
+    return result.innerNode();
+}
+
+Element* Document::elementFromPoint(int x, int y) const
+{
+    if (!renderer())
+        return 0;
+    Node* node = nodeFromPoint(frame(), renderView(), x, y);
+    while (node && !node->isElementNode())
+        node = node->parentNode();
+    if (node)
+        node = node->shadowAncestorNode();
+    return static_cast<Element*>(node);
 }
 
 PassRefPtr<Range> Document::caretRangeFromPoint(int x, int y)
 {
-    // FIXME: Share code between this and elementFromPoint.
     if (!renderer())
         return 0;
-    Frame* frame = this->frame();
-    if (!frame)
-        return 0;
-    FrameView* frameView = frame->view();
-    if (!frameView)
-        return 0;
-
-    float zoomFactor = frame->pageZoomFactor();
-    IntPoint point = roundedIntPoint(FloatPoint(x * zoomFactor + view()->scrollX(), y * zoomFactor + view()->scrollY()));
-
-    if (!frameView->visibleContentRect().contains(point))
-        return 0;
-
-    HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active);
-    HitTestResult result(point);
-    renderView()->layer()->hitTest(request, result);
-
-    Node* node = result.innerNode();
+    IntPoint localPoint;
+    Node* node = nodeFromPoint(frame(), renderView(), x, y, &localPoint);
     if (!node)
         return 0;
 
@@ -1220,7 +1209,7 @@ PassRefPtr<Range> Document::caretRangeFromPoint(int x, int y)
     RenderObject* renderer = node->renderer();
     if (!renderer)
         return 0;
-    VisiblePosition visiblePosition = renderer->positionForPoint(result.localPoint());
+    VisiblePosition visiblePosition = renderer->positionForPoint(localPoint);
     if (visiblePosition.isNull())
         return 0;
 
@@ -4428,13 +4417,15 @@ void Document::initSecurityContext()
         // This can occur via document.implementation.createDocument().
         m_cookieURL = KURL(ParsedURLString, "");
         ScriptExecutionContext::setSecurityOrigin(SecurityOrigin::createEmpty());
+        m_contentSecurityPolicy = ContentSecurityPolicy::create();
         return;
     }
 
     // In the common case, create the security context from the currently
-    // loading URL.
+    // loading URL with a fresh content security policy.
     m_cookieURL = m_url;
     ScriptExecutionContext::setSecurityOrigin(SecurityOrigin::create(m_url, m_frame->loader()->sandboxFlags()));
+    m_contentSecurityPolicy = ContentSecurityPolicy::create();
 
     if (SecurityOrigin::allowSubstituteDataAccessToLocal()) {
         // If this document was loaded with substituteData, then the document can
@@ -4478,6 +4469,8 @@ void Document::initSecurityContext()
         // We alias the SecurityOrigins to match Firefox, see Bug 15313
         // https://bugs.webkit.org/show_bug.cgi?id=15313
         ScriptExecutionContext::setSecurityOrigin(ownerFrame->document()->securityOrigin());
+        // FIXME: Consider moving m_contentSecurityPolicy into SecurityOrigin.
+        m_contentSecurityPolicy = ownerFrame->document()->contentSecurityPolicy();
     }
 }
 
