@@ -1,5 +1,78 @@
 2011-02-24  James Robinson  <jamesr@chromium.org>
 
+        Update chromium-linux expectations for media/video-replaces-poster.html and expectations for V8 bugs.
+
+        * platform/chromium-linux/media/video-replaces-poster-expected.checksum:
+        * platform/chromium-linux/media/video-replaces-poster-expected.png:
+        * platform/chromium/test_expectations.txt:
+
+2011-02-24  Mihai Parparita  <mihaip@chromium.org>
+
+        Unreviewed Chromium expectations update.
+        
+        Add LEOPARD modifier to tests that only fail on Leopard, not on Snow
+        Leopard.
+        
+        Also updates Leopard expectations for fast/box-shadow/inset-expected.html
+        (SL expectations were updated in r78062).
+
+        * platform/chromium/test_expectations.txt:
+        * platform/mac-leopard/fast/box-shadow/inset-expected.checksum:
+        * platform/mac-leopard/fast/box-shadow/inset-expected.png:
+
+2011-02-24  James Robinson  <jamesr@chromium.org>
+
+        Update chromium test expectations and baselines.
+
+        * platform/chromium-mac-leopard/media/media-document-audio-repaint-expected.checksum: Added.
+        * platform/chromium-mac-leopard/media/media-document-audio-repaint-expected.png: Added.
+        * platform/chromium-mac-leopard/media/video-controls-rendering-expected.checksum: Added.
+        * platform/chromium-mac-leopard/media/video-controls-rendering-expected.png: Added.
+        * platform/chromium-mac-leopard/media/video-replaces-poster-expected.checksum: Added.
+        * platform/chromium-mac-leopard/media/video-replaces-poster-expected.png: Added.
+        * platform/chromium-win/fast/block/positioning/vertical-rl/001-expected.checksum:
+        * platform/chromium-win/fast/block/positioning/vertical-rl/001-expected.png:
+        * platform/chromium-win/fast/block/positioning/vertical-rl/001-expected.txt:
+        * platform/chromium/test_expectations.txt:
+
+2011-02-24  James Robinson  <jamesr@chromium.org>
+
+        Update chromium test expectations and baselines.
+
+        * platform/chromium-linux/fast/ruby/base-shorter-than-text-expected.checksum: Added.
+        * platform/chromium-linux/fast/ruby/base-shorter-than-text-expected.png: Added.
+        * platform/chromium-linux/fast/ruby/base-shorter-than-text-expected.txt: Added.
+        * platform/chromium-win/fast/ruby/base-shorter-than-text-expected.checksum: Added.
+        * platform/chromium-win/fast/ruby/base-shorter-than-text-expected.png: Added.
+        * platform/chromium-win/fast/ruby/base-shorter-than-text-expected.txt: Added.
+        * platform/chromium/test_expectations.txt:
+        * platform/mac-leopard/fast/ruby/base-shorter-than-text-expected.checksum: Added.
+        * platform/mac-leopard/fast/ruby/base-shorter-than-text-expected.png: Added.
+
+2011-02-24  Mihai Parparita  <mihaip@chromium.org>
+
+        Unreviewed expectations update.
+
+        - svg/custom/use-multiple-on-nested-disallowed-font.html has not crashed
+          recently
+        - Rebaseline fast/css/text-overflow-ellipsis.html for Leopard (Snow
+          Leopard baselines were checked in with r78890)
+        - Rebaseline fast/table/colspanMinWidth-vertical.html and 
+          fast/table/fixed-with-auto-with-colspan-vertical.html after r79618
+
+        * platform/chromium-mac/fast/table/fixed-with-auto-with-colspan-vertical-expected.txt: Removed.
+        * platform/chromium-win/fast/table/colspanMinWidth-vertical-expected.txt:
+        * platform/chromium-win/fast/table/fixed-with-auto-with-colspan-vertical-expected.txt: Removed.
+        * platform/chromium/test_expectations.txt:
+        * platform/mac-leopard/fast/css/text-overflow-ellipsis-expected.checksum:
+        * platform/mac-leopard/fast/css/text-overflow-ellipsis-expected.png:
+        * platform/mac/fast/table/colspanMinWidth-vertical-expected.txt:
+        * platform/mac/fast/table/fixed-with-auto-with-colspan-vertical-expected.checksum:
+        * platform/mac/fast/table/fixed-with-auto-with-colspan-vertical-expected.png:
+        * platform/mac/fast/table/fixed-with-auto-with-colspan-vertical-expected.txt:
+
+2011-02-24  James Robinson  <jamesr@chromium.org>
+
         Add chromium baselines for new fast/block/position/vertical- tests.
 
         * platform/chromium-linux/fast/block/positioning/vertical-lr/001-expected.checksum: Added.

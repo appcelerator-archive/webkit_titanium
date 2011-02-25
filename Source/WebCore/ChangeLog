@@ -1,3 +1,34 @@
+2011-02-24  Simon Fraser  <simon.fraser@apple.com>
+
+        Reviewed by Dan Bernstein.
+
+        RenderBoxModelObject::paintBoxShadow should bail earlier
+        https://bugs.webkit.org/show_bug.cgi?id=55186
+
+        Make paintBoxShadow() bail early if there is no shadow, and make
+        callers consistent in not checking for box-shadow before calling it.
+
+        * rendering/InlineFlowBox.cpp:
+        (WebCore::InlineFlowBox::paintBoxDecorations):
+        * rendering/RenderBoxModelObject.cpp:
+        (WebCore::RenderBoxModelObject::paintBoxShadow):
+        * rendering/RenderTableCell.cpp:
+        (WebCore::RenderTableCell::paintBoxDecorations):
+
+2011-02-24  James Robinson  <jamesr@chromium.org>
+
+        Reviewed by Darin Fisher.
+
+        Add a USE() macro to control use of the built-in UTF8 codec
+        https://bugs.webkit.org/show_bug.cgi?id=55189
+
+        Guards the built in UTF8 codec registration with USE(BUILTIN_UTF8_CODEC). ICU is used if the USE() is not set.
+
+        * platform/text/TextCodecICU.cpp:
+        (WebCore::TextCodecICU::registerEncodingNames):
+        * platform/text/TextEncodingRegistry.cpp:
+        (WebCore::buildBaseTextCodecMaps):
+
 2011-02-24  Dan Bernstein  <mitz@apple.com>
 
         Reviewed by Dave Hyatt.
