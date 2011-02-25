@@ -196,6 +196,7 @@ libWebKit2_la_SOURCES = \
 	Source/WebKit2/Shared/ImmutableArray.h \
 	Source/WebKit2/Shared/ImmutableDictionary.cpp \
 	Source/WebKit2/Shared/ImmutableDictionary.h \
+	Source/WebKit2/Shared/LayerTreeContext.h \
 	Source/WebKit2/Shared/MutableArray.cpp \
 	Source/WebKit2/Shared/MutableArray.h \
 	Source/WebKit2/Shared/MutableDictionary.cpp \
@@ -369,8 +370,12 @@ libWebKit2_la_SOURCES = \
 	Source/WebKit2/UIProcess/gtk/ChunkedUpdateDrawingAreaProxyGtk.cpp \
 	Source/WebKit2/UIProcess/gtk/TextCheckerGtk.cpp \
 	Source/WebKit2/UIProcess/gtk/WebInspectorGtk.cpp \
+	Source/WebKit2/UIProcess/gtk/WebViewWidget.cpp \
+	Source/WebKit2/UIProcess/gtk/WebViewWidget.h \
 	Source/WebKit2/UIProcess/gtk/WebPageProxyGtk.cpp \
 	Source/WebKit2/UIProcess/gtk/WebPreferencesGtk.cpp \
+	Source/WebKit2/UIProcess/gtk/WebView.cpp \
+	Source/WebKit2/UIProcess/gtk/WebView.h \
 	Source/WebKit2/UIProcess/Launcher/gtk/ProcessLauncherGtk.cpp \
 	Source/WebKit2/UIProcess/Launcher/gtk/ThreadLauncherGtk.cpp \
 	Source/WebKit2/UIProcess/Launcher/ProcessLauncher.cpp \
@@ -437,8 +442,8 @@ libWebKit2_la_SOURCES = \
 	Source/WebKit2/UIProcess/WebHistoryClient.h \
 	Source/WebKit2/UIProcess/WebInspectorProxy.cpp \
 	Source/WebKit2/UIProcess/WebInspectorProxy.h \
-	Source/WebKit2/UIProcess/WebKeyValueManagerProxy.cpp \
-	Source/WebKit2/UIProcess/WebKeyValueManagerProxy.h \
+	Source/WebKit2/UIProcess/WebKeyValueStorageManagerProxy.cpp \
+	Source/WebKit2/UIProcess/WebKeyValueStorageManagerProxy.h \
 	Source/WebKit2/UIProcess/WebLoaderClient.cpp \
 	Source/WebKit2/UIProcess/WebLoaderClient.h \
 	Source/WebKit2/UIProcess/WebNavigationData.cpp \
@@ -542,8 +547,8 @@ libWebKit2_la_SOURCES = \
 	Source/WebKit2/WebProcess/InjectedBundle/InjectedBundleScriptWorld.cpp \
 	Source/WebKit2/WebProcess/InjectedBundle/InjectedBundleScriptWorld.h \
 	Source/WebKit2/WebProcess/InjectedBundle/InjectedBundleUserMessageCoders.h \
-	Source/WebKit2/WebProcess/KeyValueStorage/KeyValueStorageManager.cpp \
-	Source/WebKit2/WebProcess/KeyValueStorage/KeyValueStorageManager.h \
+	Source/WebKit2/WebProcess/KeyValueStorage/WebKeyValueStorageManager.cpp \
+	Source/WebKit2/WebProcess/KeyValueStorage/WebKeyValueStorageManager.h \
 	Source/WebKit2/WebProcess/Plugins/Netscape/gtk/NetscapePluginGtk.cpp \
 	Source/WebKit2/WebProcess/Plugins/Netscape/JSNPMethod.cpp \
 	Source/WebKit2/WebProcess/Plugins/Netscape/JSNPMethod.h \
