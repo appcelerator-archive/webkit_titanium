@@ -1,3 +1,80 @@
+2011-02-25  Pavel Feldman  <pfeldman@chromium.org>
+
+        Not reviewed: added missing handle scope into V8InjectedScriptHostCustom.
+        https://bugs.webkit.org/show_bug.cgi?id=55256
+
+        * bindings/v8/custom/V8InjectedScriptHostCustom.cpp:
+        (WebCore::InjectedScriptHost::nodeAsScriptValue):
+        (WebCore::V8InjectedScriptHost::currentCallFrameCallback):
+
+2011-02-25  David Hyatt  <hyatt@apple.com>
+
+        Reviewed by Sam Weinig.
+
+        https://bugs.webkit.org/show_bug.cgi?id=46500, make positioned elements work with vertical text.
+        
+        Make positioned objects work with all possible crazy combinations of mixed writing modes.  Added new helper
+        functions that flip around the padding box of the containing block and then add in the appropriate border
+        side to ensure that the offset of the positioned object is actually correctly placed in the containing block's
+        local coordinate space.
+
+        Added two new tests of both replaced and non-replaced positioned elements in mixed writing mode environments.
+
+        * rendering/RenderBox.cpp:
+        (WebCore::computeLogicalLeftPositionedOffset):
+        (WebCore::RenderBox::computePositionedLogicalWidthUsing):
+        (WebCore::computeLogicalTopPositionedOffset):
+        (WebCore::RenderBox::computePositionedLogicalHeightUsing):
+        (WebCore::RenderBox::computePositionedLogicalWidthReplaced):
+        (WebCore::RenderBox::computePositionedLogicalHeightReplaced):
+
+2011-02-25  Brian Weinstein  <bweinstein@apple.com>
+
+        Reviewed by Brady Eidson and looked over by Jessie Berlin.
+
+        WebKit2: Need a way to manage cookies from the web process
+        https://bugs.webkit.org/show_bug.cgi?id=55086
+        
+        Implement the functions needed to manage cookies in CookieJar (getHostnamesWithCookies,
+        deleteCookiesWithHostname, and deleteAllCookies) for Mac and CFNetwork (stub out the rest),
+        and call them from WebKit2's WebCookieManager.
+
+        No change in behavior needing tests.
+
+        * WebCore.exp.in: Added needed functions to export.
+        * platform/CookieJar.h:
+
+        * platform/mac/CookieJar.mm:
+        (WebCore::getHostnamesWithCookies): Gets all hostnames with cookies from NSHTTPCookieStorage.
+        (WebCore::deleteCookiesForHostname): Deletes all cookies with a given hostname from
+            NSHTTPCookieStorage.
+        (WebCore::deleteAllCookies): Deletes all cookies from NSHTTPCookieStorage.
+        
+        * platform/network/cf/CookieJarCFNet.cpp:
+        (WebCore::getHostnamesWithCookies): Implement using CFNetwork cookie APIs.
+        (WebCore::deleteCookiesForHostname): Ditto.
+        (WebCore::deleteAllCookies): Ditto.
+
+        * platform/efl/CookieJarEfl.cpp: Added stub functions.
+        * platform/haiku/CookieJarHaiku.cpp: Ditto.
+        * platform/network/android/CookieJarAndroid.cpp: Ditto.
+        * platform/network/chromium/CookieJarChromium.cpp: Ditto.
+        * platform/network/curl/CookieJarCurl.cpp: Ditto.
+        * platform/network/soup/CookieJarSoup.cpp: Ditto.
+        * platform/network/win/CookieJarWin.cpp: Ditto.
+        * platform/qt/CookieJarQt.cpp: Ditto.
+
+2011-02-25  Eric Carlson  <eric.carlson@apple.com>
+
+        Reviewed by Eric Seidel.
+
+        'load' and 'error' events fired for @poster
+        https://bugs.webkit.org/show_bug.cgi?id=54908
+
+        * html/HTMLImageLoader.cpp:
+        (WebCore::HTMLImageLoader::dispatchLoadEvent): Don't fire events when being used
+        by a video element.
+
 2011-02-25  David Hyatt  <hyatt@apple.com>
 
         Reviewed by Sam Weinig.
@@ -2154,8 +2231,8 @@
 
         * page/EventHandler.cpp:
         (WebCore::EventHandler::EventHandler): Initialize m_activationEventNumber
-        to -1. Since WebKit2 doesnÕt support non-activating clicks yet (<http://webkit.org/b/55053>
-        <rdar://problem/9042197>) and doesnÕt send event numbers, all events were considered to be
+        to -1. Since WebKit2 doesnï¿½t support non-activating clicks yet (<http://webkit.org/b/55053>
+        <rdar://problem/9042197>) and doesnï¿½t send event numbers, all events were considered to be
         window-activating events. This in turn prevented them from clearing the selection and resuming
         caret blinking on mouse up.
 

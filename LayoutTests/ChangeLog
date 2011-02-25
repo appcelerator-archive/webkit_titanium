@@ -1,3 +1,153 @@
+2011-02-25  David Hyatt  <hyatt@apple.com>
+
+        Reviewed by Sam Weinig.
+
+        https://bugs.webkit.org/show_bug.cgi?id=46500, make positioned elements work with vertical text.
+        
+        Make positioned objects work with all possible crazy combinations of mixed writing modes.  Added new helper
+        functions that flip around the padding box of the containing block and then add in the appropriate border
+        side to ensure that the offset of the positioned object is actually correctly placed in the containing block's
+        local coordinate space.
+
+        Added two new tests of both replaced and non-replaced positioned elements in mixed writing mode environments.
+
+        * fast/block/positioning/differing-writing-modes-replaced.html: Added.
+        * fast/block/positioning/differing-writing-modes.html: Added.
+        * platform/mac/fast/block/positioning/differing-writing-modes-expected.checksum: Added.
+        * platform/mac/fast/block/positioning/differing-writing-modes-expected.png: Added.
+        * platform/mac/fast/block/positioning/differing-writing-modes-expected.txt: Added.
+        * platform/mac/fast/block/positioning/differing-writing-modes-replaced-expected.checksum: Added.
+        * platform/mac/fast/block/positioning/differing-writing-modes-replaced-expected.png: Added.
+        * platform/mac/fast/block/positioning/differing-writing-modes-replaced-expected.txt: Added.
+
+2011-02-25  Jessie Berlin  <jberlin@apple.com>
+
+        [Windows 7 Release Tests] http/tests/xmlhttprequest/basic-auth-nouser.html and
+        basic-auth-nopassword.html failing since introduction in r74609
+        https://bugs.webkit.org/show_bug.cgi?id=51596
+
+        Unreviewed. Adding http/tests/xmlhttprequest/basic-auth-nopassword.html to the Skipped list
+        because it is consistently timing out on the Windows XP Debug bot.
+
+        * platform/win-xp/Skipped:
+
+2011-02-25  Mihai Parparita  <mihaip@chromium.org>
+
+        Fix 10 tests for Chromium Snow Leopard by promoting chromium-mac-leopard
+        results to mac-leopard and removing outdated chromium-mac and
+        chromium-mac-snowleopard ones.
+
+        * platform/chromium-mac-leopard/fast/blockflow/vertical-baseline-alignment-expected.checksum: Removed.
+        * platform/chromium-mac-leopard/fast/blockflow/vertical-baseline-alignment-expected.png: Removed.
+        * platform/chromium-mac-leopard/fast/forms/select-baseline-expected.checksum: Removed.
+        * platform/chromium-mac-leopard/fast/forms/select-baseline-expected.png: Removed.
+        * platform/chromium-mac-snowleopard/fast/text/atsui-negative-spacing-features-expected.checksum: Removed.
+        * platform/chromium-mac-snowleopard/fast/text/atsui-negative-spacing-features-expected.png: Removed.
+        * platform/chromium-mac-snowleopard/fast/text/atsui-spacing-features-expected.checksum: Removed.
+        * platform/chromium-mac-snowleopard/fast/text/atsui-spacing-features-expected.png: Removed.
+        * platform/chromium-mac/fast/blockflow/vertical-baseline-alignment-expected.checksum: Removed.
+        * platform/chromium-mac/fast/blockflow/vertical-baseline-alignment-expected.png: Removed.
+        * platform/chromium-mac/fast/forms/select-baseline-expected.checksum: Removed.
+        * platform/chromium-mac/fast/forms/select-baseline-expected.png: Removed.
+        * platform/chromium-mac/fast/forms/text-style-color-expected.checksum: Removed.
+        * platform/chromium-mac/fast/forms/text-style-color-expected.png: Removed.
+        * platform/chromium-mac/fast/multicol/shadow-breaking-expected.checksum: Removed.
+        * platform/chromium-mac/fast/multicol/shadow-breaking-expected.png: Removed.
+        * platform/chromium-mac/fast/table/028-vertical-expected.checksum: Removed.
+        * platform/chromium-mac/fast/table/028-vertical-expected.png: Removed.
+        * platform/chromium-mac/fast/text/complex-text-opacity-expected.checksum: Removed.
+        * platform/chromium-mac/fast/text/complex-text-opacity-expected.png: Removed.
+        * platform/chromium/test_expectations.txt:
+        * platform/mac-leopard/fast/blockflow/vertical-baseline-alignment-expected.checksum:
+        * platform/mac-leopard/fast/blockflow/vertical-baseline-alignment-expected.png:
+        * platform/mac-leopard/fast/dom/isindex-002-expected.checksum: Renamed from LayoutTests/platform/chromium-mac/fast/dom/isindex-002-expected.checksum.
+        * platform/mac-leopard/fast/dom/isindex-002-expected.png: Renamed from LayoutTests/platform/chromium-mac/fast/dom/isindex-002-expected.png.
+        * platform/mac-leopard/fast/dom/replaceChild-expected.checksum: Renamed from LayoutTests/platform/chromium-mac/fast/dom/replaceChild-expected.checksum.
+        * platform/mac-leopard/fast/dom/replaceChild-expected.png: Renamed from LayoutTests/platform/chromium-mac/fast/dom/replaceChild-expected.png.
+        * platform/mac-leopard/fast/forms/select-baseline-expected.checksum:
+        * platform/mac-leopard/fast/forms/select-baseline-expected.png:
+        * platform/mac-leopard/fast/forms/text-style-color-expected.checksum: Renamed from LayoutTests/platform/chromium-mac-leopard/fast/forms/text-style-color-expected.checksum.
+        * platform/mac-leopard/fast/forms/text-style-color-expected.png: Renamed from LayoutTests/platform/chromium-mac-leopard/fast/forms/text-style-color-expected.png.
+        * platform/mac-leopard/fast/multicol/shadow-breaking-expected.checksum: Renamed from LayoutTests/platform/chromium-mac-leopard/fast/multicol/shadow-breaking-expected.checksum.
+        * platform/mac-leopard/fast/multicol/shadow-breaking-expected.png: Renamed from LayoutTests/platform/chromium-mac-leopard/fast/multicol/shadow-breaking-expected.png.
+        * platform/mac-leopard/fast/table/028-vertical-expected.checksum:
+        * platform/mac-leopard/fast/table/028-vertical-expected.png:
+        * platform/mac-leopard/fast/text/atsui-negative-spacing-features-expected.checksum: Renamed from LayoutTests/platform/chromium-mac-leopard/fast/text/atsui-negative-spacing-features-expected.checksum.
+        * platform/mac-leopard/fast/text/atsui-negative-spacing-features-expected.png: Renamed from LayoutTests/platform/chromium-mac-leopard/fast/text/atsui-negative-spacing-features-expected.png.
+        * platform/mac-leopard/fast/text/atsui-spacing-features-expected.checksum: Renamed from LayoutTests/platform/chromium-mac-leopard/fast/text/atsui-spacing-features-expected.checksum.
+        * platform/mac-leopard/fast/text/atsui-spacing-features-expected.png: Renamed from LayoutTests/platform/chromium-mac-leopard/fast/text/atsui-spacing-features-expected.png.
+        * platform/mac-leopard/fast/text/complex-text-opacity-expected.checksum:
+        * platform/mac-leopard/fast/text/complex-text-opacity-expected.png:
+
+2011-02-25  James Robinson  <jamesr@chromium.org>
+
+        Add chromium win/linux baselines for new vertical replaced test and update various expectations.
+
+        * platform/chromium-gpu-win/platform/chromium/compositing/layout-width-change-expected.checksum:
+        * platform/chromium-gpu-win/platform/chromium/compositing/layout-width-change-expected.png:
+        * platform/chromium-linux/fast/replaced/vertical-lr/absolute-position-percentage-width-expected.checksum: Added.
+        * platform/chromium-linux/fast/replaced/vertical-lr/absolute-position-percentage-width-expected.png: Added.
+        * platform/chromium-linux/fast/replaced/vertical-lr/absolute-position-with-auto-height-and-top-and-bottom-expected.checksum: Added.
+        * platform/chromium-linux/fast/replaced/vertical-lr/absolute-position-with-auto-height-and-top-and-bottom-expected.png: Added.
+        * platform/chromium-linux/fast/replaced/vertical-lr/absolute-position-with-auto-width-and-left-and-right-expected.checksum: Added.
+        * platform/chromium-linux/fast/replaced/vertical-lr/absolute-position-with-auto-width-and-left-and-right-expected.png: Added.
+        * platform/chromium-linux/fast/replaced/vertical-rl/absolute-position-percentage-width-expected.checksum: Added.
+        * platform/chromium-linux/fast/replaced/vertical-rl/absolute-position-percentage-width-expected.png: Added.
+        * platform/chromium-linux/fast/replaced/vertical-rl/absolute-position-with-auto-height-and-top-and-bottom-expected.checksum: Added.
+        * platform/chromium-linux/fast/replaced/vertical-rl/absolute-position-with-auto-height-and-top-and-bottom-expected.png: Added.
+        * platform/chromium-linux/fast/replaced/vertical-rl/absolute-position-with-auto-width-and-left-and-right-expected.checksum: Added.
+        * platform/chromium-linux/fast/replaced/vertical-rl/absolute-position-with-auto-width-and-left-and-right-expected.png: Added.
+        * platform/chromium-win/fast/replaced/vertical-lr/absolute-position-percentage-width-expected.checksum: Added.
+        * platform/chromium-win/fast/replaced/vertical-lr/absolute-position-percentage-width-expected.png: Added.
+        * platform/chromium-win/fast/replaced/vertical-lr/absolute-position-percentage-width-expected.txt: Added.
+        * platform/chromium-win/fast/replaced/vertical-lr/absolute-position-with-auto-height-and-top-and-bottom-expected.checksum: Added.
+        * platform/chromium-win/fast/replaced/vertical-lr/absolute-position-with-auto-height-and-top-and-bottom-expected.png: Added.
+        * platform/chromium-win/fast/replaced/vertical-lr/absolute-position-with-auto-height-and-top-and-bottom-expected.txt: Added.
+        * platform/chromium-win/fast/replaced/vertical-lr/absolute-position-with-auto-width-and-left-and-right-expected.checksum: Added.
+        * platform/chromium-win/fast/replaced/vertical-lr/absolute-position-with-auto-width-and-left-and-right-expected.png: Added.
+        * platform/chromium-win/fast/replaced/vertical-lr/absolute-position-with-auto-width-and-left-and-right-expected.txt: Added.
+        * platform/chromium-win/fast/replaced/vertical-rl/absolute-position-percentage-width-expected.checksum: Added.
+        * platform/chromium-win/fast/replaced/vertical-rl/absolute-position-percentage-width-expected.png: Added.
+        * platform/chromium-win/fast/replaced/vertical-rl/absolute-position-percentage-width-expected.txt: Added.
+        * platform/chromium-win/fast/replaced/vertical-rl/absolute-position-with-auto-height-and-top-and-bottom-expected.checksum: Added.
+        * platform/chromium-win/fast/replaced/vertical-rl/absolute-position-with-auto-height-and-top-and-bottom-expected.png: Added.
+        * platform/chromium-win/fast/replaced/vertical-rl/absolute-position-with-auto-height-and-top-and-bottom-expected.txt: Added.
+        * platform/chromium-win/fast/replaced/vertical-rl/absolute-position-with-auto-width-and-left-and-right-expected.checksum: Added.
+        * platform/chromium-win/fast/replaced/vertical-rl/absolute-position-with-auto-width-and-left-and-right-expected.png: Added.
+        * platform/chromium-win/fast/replaced/vertical-rl/absolute-position-with-auto-width-and-left-and-right-expected.txt: Added.
+        * platform/chromium/test_expectations.txt:
+
+2011-02-25  Tony Chang  <tony@chromium.org>
+
+        Unreviewed, updating chromium linux baselines after changes to
+        RGBToHSL code in chromium.
+
+        * platform/chromium-linux/fast/forms/menulist-restrict-line-height-expected.checksum:
+        * platform/chromium-linux/fast/forms/menulist-restrict-line-height-expected.png:
+        * platform/chromium-linux/fast/forms/menulist-style-color-expected.checksum:
+        * platform/chromium-linux/fast/forms/menulist-style-color-expected.png:
+        * platform/chromium-linux/fast/forms/select-baseline-expected.checksum:
+        * platform/chromium-linux/fast/forms/select-baseline-expected.png:
+
+2011-02-25  Eric Carlson  <eric.carlson@apple.com>
+
+        Reviewed by Eric Seidel.
+
+        'load' and 'error' events fired for @poster
+        https://bugs.webkit.org/show_bug.cgi?id=54908
+
+        * media/video-poster.html: Register listeners for 'load' and 'error' events so the test will
+        fail if they ever fire.
+
+2011-02-25  Jessie Berlin  <jberlin@apple.com>
+
+        media/controls-without-preload.html failing on Windows.
+        https://bugs.webkit.org/show_bug.cgi?id=50471
+
+        Unreviewed. Add Windows-XP specific (failing?) results to get the bots green.
+
+        * platform/win-xp/media/controls-without-preload-expected.txt: Added.
+
 2011-02-25  Mihai Parparita  <mihaip@chromium.org>
 
         Unreviewed Chromium expectations update.
@@ -2832,7 +2982,11 @@
 
         Reviewed by Eric Carlson.
 
-        Fix for media/video-replaces-poster.html.  The test was failing because it assumes the results of a seek will be immediately available, when in fact the seek is asynchronous.  I did not remove the line in test-expectations because rebaselines for many (all?) platforms will likely be needed after this patch lands.  See also, http://code.google.com/p/chromium/issues/detail?id=60244
+        Fix for media/video-replaces-poster.html.  The test was failing because it assumes the
+        results of a seek will be immediately available, when in fact the seek is asynchronous.
+        I did not remove the line in test-expectations because rebaselines for many (all?) platforms
+        will likely be needed after this patch lands.
+        See also, http://code.google.com/p/chromium/issues/detail?id=60244
         https://bugs.webkit.org/show_bug.cgi?id=54910
 
         * media/video-replaces-poster.html:
