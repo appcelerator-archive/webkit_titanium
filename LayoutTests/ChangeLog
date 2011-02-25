@@ -1,3 +1,185 @@
+2011-02-25  Mihai Parparita  <mihaip@chromium.org>
+
+        Unreviewed Chromium expectations update.
+        
+        Add recent Snow Leopard failures.
+
+        * platform/chromium/test_expectations.txt:
+
+2011-02-25  Mihai Parparita  <mihaip@chromium.org>
+
+        Unreviewed Chromium expectations update.
+
+        Fix fast/inline/inline-box-background-repeat-x.html, fast/inline/
+        inline-box-background-repeat-y.html and fast/inline/
+        inline-box-background.html for Chromium Snow Leopard by promoting
+        chromium-mac-leopard results to mac-leopard and removing outdated
+        chromium-mac ones.        
+
+        * platform/chromium-mac/fast/inline/inline-box-background-expected.checksum: Removed.
+        * platform/chromium-mac/fast/inline/inline-box-background-expected.png: Removed.
+        * platform/chromium-mac/fast/inline/inline-box-background-repeat-x-expected.checksum: Removed.
+        * platform/chromium-mac/fast/inline/inline-box-background-repeat-x-expected.png: Removed.
+        * platform/chromium-mac/fast/inline/inline-box-background-repeat-y-expected.checksum: Removed.
+        * platform/chromium-mac/fast/inline/inline-box-background-repeat-y-expected.png: Removed.
+        * platform/chromium/test_expectations.txt:
+        * platform/mac-leopard/fast/inline/inline-box-background-expected.checksum: Renamed from LayoutTests/platform/chromium-mac-leopard/fast/inline/inline-box-background-expected.checksum.
+        * platform/mac-leopard/fast/inline/inline-box-background-expected.png: Renamed from LayoutTests/platform/chromium-mac-leopard/fast/inline/inline-box-background-expected.png.
+        * platform/mac-leopard/fast/inline/inline-box-background-repeat-x-expected.checksum: Renamed from LayoutTests/platform/chromium-mac-leopard/fast/inline/inline-box-background-repeat-x-expected.checksum.
+        * platform/mac-leopard/fast/inline/inline-box-background-repeat-x-expected.png: Renamed from LayoutTests/platform/chromium-mac-leopard/fast/inline/inline-box-background-repeat-x-expected.png.
+        * platform/mac-leopard/fast/inline/inline-box-background-repeat-y-expected.checksum: Renamed from LayoutTests/platform/chromium-mac-leopard/fast/inline/inline-box-background-repeat-y-expected.checksum.
+        * platform/mac-leopard/fast/inline/inline-box-background-repeat-y-expected.png: Renamed from LayoutTests/platform/chromium-mac-leopard/fast/inline/inline-box-background-repeat-y-expected.png.
+
+2011-02-25  Mihai Parparita  <mihaip@chromium.org>
+
+        Unreviewed Chromium expectations update.
+
+        Fix fast/dom/34176.html and fast/dom/52776.html for Chromium Snow
+        Leopard by promoting chromium-mac-leopard results to mac-leopard and
+        removing outdated chromium-mac ones.
+
+        * platform/chromium-mac-leopard/fast/dom/52776-expected.txt: Removed.
+        * platform/chromium-mac/fast/dom/52776-expected.txt: Removed.
+        * platform/mac-leopard/fast/dom/34176-expected.checksum: Renamed from LayoutTests/platform/chromium-mac/fast/dom/34176-expected.checksum.
+        * platform/mac-leopard/fast/dom/34176-expected.png: Renamed from LayoutTests/platform/chromium-mac/fast/dom/34176-expected.png.
+        * platform/mac-leopard/fast/dom/52776-expected.checksum: Renamed from LayoutTests/platform/chromium-mac/fast/dom/52776-expected.checksum.
+        * platform/mac-leopard/fast/dom/52776-expected.png: Renamed from LayoutTests/platform/chromium-mac/fast/dom/52776-expected.png.
+
+2011-02-25  James Robinson  <jamesr@chromium.org>
+
+        More chromium expectations and baselines.
+
+        * platform/chromium-gpu-linux/platform/chromium/compositing/layout-width-change-expected.checksum: Added.
+        * platform/chromium-gpu-linux/platform/chromium/compositing/layout-width-change-expected.png: Added.
+        * platform/chromium-gpu-mac/platform/chromium/compositing/layout-width-change-expected.checksum: Added.
+        * platform/chromium-gpu-mac/platform/chromium/compositing/layout-width-change-expected.png: Added.
+        * platform/chromium-gpu-win/platform/chromium/compositing/layout-width-change-expected.checksum: Added.
+        * platform/chromium-gpu-win/platform/chromium/compositing/layout-width-change-expected.png: Added.
+        * platform/chromium/test_expectations.txt:
+
+2011-02-25  James Robinson  <jamesr@chromium.org>
+
+        Fix typo in Chromium test expectations.
+
+        * platform/chromium/test_expectations.txt:
+
+2011-02-25  David Hyatt  <hyatt@apple.com>
+
+        Reviewed by Sam Weinig.
+
+        https://bugs.webkit.org/show_bug.cgi?id=46500, make positioned elements work with vertical text.
+        
+        Patch computePositionedLogicalHeightReplaced to be writing-mode aware.
+        
+        Added six new tests in fast/replaced.
+
+        * fast/replaced/vertical-lr: Added.
+        * fast/replaced/vertical-lr/absolute-position-percentage-width.html: Added.
+        * fast/replaced/vertical-lr/absolute-position-with-auto-height-and-top-and-bottom.html: Added.
+        * fast/replaced/vertical-lr/absolute-position-with-auto-width-and-left-and-right.html: Added.
+        * fast/replaced/vertical-rl: Added.
+        * fast/replaced/vertical-rl/absolute-position-percentage-width.html: Added.
+        * fast/replaced/vertical-rl/absolute-position-with-auto-height-and-top-and-bottom.html: Added.
+        * fast/replaced/vertical-rl/absolute-position-with-auto-width-and-left-and-right.html: Added.
+
+2011-02-25  James Robinson  <jamesr@chromium.org>
+
+        Update chromium expectations and baselines for some ruby tests.
+
+        * platform/chromium-mac/fast/blockflow/Kusa-Makura-background-canvas-expected.checksum: Added.
+        * platform/chromium-mac/fast/blockflow/Kusa-Makura-background-canvas-expected.png: Added.
+        * platform/chromium-mac/fast/blockflow/japanese-ruby-vertical-lr-expected.checksum: Added.
+        * platform/chromium-mac/fast/blockflow/japanese-ruby-vertical-lr-expected.png: Added.
+        * platform/chromium-mac/fast/blockflow/japanese-ruby-vertical-rl-expected.checksum: Added.
+        * platform/chromium-mac/fast/blockflow/japanese-ruby-vertical-rl-expected.png: Added.
+        * platform/chromium/test_expectations.txt:
+
+2011-02-25  Mihai Parparita  <mihaip@chromium.org>
+
+        Unreviewed Chromium expectations update.
+        
+        Fix editing/selection/caret-rtl* for Chromium Snow Leopard. Remove
+        outdated chromium-mac baselines (the test will pass on Chromium SL with
+        the mac/ baselines). Promote the chromium-mac-leopard baselines to
+        mac-leopard (since the Mac port will pass with them on Leopard).
+
+        * platform/chromium-mac/editing/selection/caret-rtl-2-expected.checksum: Removed.
+        * platform/chromium-mac/editing/selection/caret-rtl-2-expected.png: Removed.
+        * platform/chromium-mac/editing/selection/caret-rtl-2-left-expected.checksum: Removed.
+        * platform/chromium-mac/editing/selection/caret-rtl-2-left-expected.png: Removed.
+        * platform/chromium-mac/editing/selection/caret-rtl-expected.checksum: Removed.
+        * platform/chromium-mac/editing/selection/caret-rtl-expected.png: Removed.
+        * platform/chromium-mac/editing/selection/caret-rtl-right-expected.checksum: Removed.
+        * platform/chromium-mac/editing/selection/caret-rtl-right-expected.png: Removed.
+        * platform/chromium/test_expectations.txt:
+        * platform/mac-leopard/editing/selection/caret-rtl-2-expected.checksum: Renamed from LayoutTests/platform/chromium-mac-leopard/editing/selection/caret-rtl-2-expected.checksum.
+        * platform/mac-leopard/editing/selection/caret-rtl-2-expected.png: Renamed from LayoutTests/platform/chromium-mac-leopard/editing/selection/caret-rtl-2-expected.png.
+        * platform/mac-leopard/editing/selection/caret-rtl-2-left-expected.checksum: Renamed from LayoutTests/platform/chromium-mac-leopard/editing/selection/caret-rtl-2-left-expected.checksum.
+        * platform/mac-leopard/editing/selection/caret-rtl-2-left-expected.png: Renamed from LayoutTests/platform/chromium-mac-leopard/editing/selection/caret-rtl-2-left-expected.png.
+        * platform/mac-leopard/editing/selection/caret-rtl-expected.checksum: Renamed from LayoutTests/platform/chromium-mac-leopard/editing/selection/caret-rtl-expected.checksum.
+        * platform/mac-leopard/editing/selection/caret-rtl-expected.png: Renamed from LayoutTests/platform/chromium-mac-leopard/editing/selection/caret-rtl-expected.png.
+        * platform/mac-leopard/editing/selection/caret-rtl-right-expected.checksum: Renamed from LayoutTests/platform/chromium-mac-leopard/editing/selection/caret-rtl-right-expected.checksum.
+        * platform/mac-leopard/editing/selection/caret-rtl-right-expected.png: Renamed from LayoutTests/platform/chromium-mac-leopard/editing/selection/caret-rtl-right-expected.png.
+
+2011-02-25  Mihai Parparita  <mihaip@chromium.org>
+
+        Unreviewed Chromium expectations update.
+        
+        editing/pasteboard/merge-end-list.html was failing on Chromium Snow
+        Leopard because it was picking up the .checksum file in chromium-mac/,
+        even though it would pass with the mac/ .png/.checksum. Additionally, the
+        chromium-mac .checksum had no corresponding .png.
+        
+        Fixes things by deleting the lone .checksum in chromium-mac and updating
+        the mac-leopard results (which can be used by both the Mac and Chromium
+        ports).
+
+        * platform/chromium-mac/editing/pasteboard/merge-end-list-expected.checksum: Removed.
+        * platform/chromium/test_expectations.txt:
+        * platform/mac-leopard/editing/pasteboard/merge-end-list-expected.checksum:
+        * platform/mac-leopard/editing/pasteboard/merge-end-list-expected.png:
+
+2011-02-25  Vangelis Kokkevis  <vangelis@chromium.org>
+
+        Reviewed by Simon Fraser.
+
+        [chromium] Adding test to ensure clipping layer gets updated when layout
+        width/height change in the page.
+        https://bugs.webkit.org/show_bug.cgi?id=55103
+
+        * platform/chromium/compositing/layout-width-change-expected.checksum: Added.
+        * platform/chromium/compositing/layout-width-change-expected.png: Added.
+        * platform/chromium/compositing/layout-width-change-expected.txt: Added.
+        * platform/chromium/compositing/layout-width-change.html: Added.
+
+2011-02-25  Jessie Berlin  <jberlin@apple.com>
+
+        [Windows 7 Release Tests] fast/ruby/base-shorter-than-text.html failing since introduction
+        in r79629.
+        https://bugs.webkit.org/show_bug.cgi?id=55230
+ 
+        Add Windows-specific expected results. Unreviewed.
+
+        * platform/win/fast/ruby/base-shorter-than-text-expected.checksum: Added.
+        * platform/win/fast/ruby/base-shorter-than-text-expected.png: Added.
+        * platform/win/fast/ruby/base-shorter-than-text-expected.txt: Added.
+
+2011-02-25  Sergio Villar Senin  <svillar@igalia.com>
+
+        Unreviewed.
+
+        Added new GTK+ expectations for new tests.
+
+        * platform/gtk/svg/custom/animate-target-id-changed-expected.checksum: Added.
+        * platform/gtk/svg/custom/animate-target-id-changed-expected.png: Added.
+        * platform/gtk/svg/custom/animate-target-id-changed-expected.txt: Added.
+        * platform/gtk/svg/custom/animate-target-removed-from-document-expected.checksum: Added.
+        * platform/gtk/svg/custom/animate-target-removed-from-document-expected.png: Added.
+        * platform/gtk/svg/custom/animate-target-removed-from-document-expected.txt: Added.
+        * platform/gtk/transitions/default-timing-function-expected.checksum: Added.
+        * platform/gtk/transitions/default-timing-function-expected.png: Added.
+        * platform/gtk/transitions/default-timing-function-expected.txt: Added.
+
 2011-02-25  Abhishek Arya  <inferno@chromium.org>
 
         Reviewed by Dave Hyatt.

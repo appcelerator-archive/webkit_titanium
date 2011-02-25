@@ -2602,6 +2602,25 @@ sub createDebuggerCommandFile()
     return $commandFile;
 }
 
+sub readRegistryString($)
+{
+    my ($valueName) = @_;
+    chomp(my $string = `regtool --wow32 get "$valueName"`);
+    return $string;
+}
+
+sub writeRegistryString($$)
+{
+    my ($valueName, $string) = @_;
+
+    my $error = system "regtool", "--wow32", "set", "-s", $valueName, $string;
+
+    # On Windows Vista/7 with UAC enabled, regtool will fail to modify the registry, but will still
+    # return a successful exit code. So we double-check here that the value we tried to write to the
+    # registry was really written.
+    return !$error && readRegistryString($valueName) eq $string;
+}
+
 sub setUpWindowsCrashLogSaving()
 {
     return unless isCygwin();
@@ -2641,9 +2660,8 @@ sub setUpWindowsCrashLogSaving()
     );
 
     foreach my $value (keys %values) {
-        chomp($previousWindowsPostMortemDebuggerValues{$value} = `regtool get "$windowsPostMortemDebuggerKey/$value"`);
-        my $result = system "regtool", "set", "-s", "$windowsPostMortemDebuggerKey/$value", $values{$value};
-        next unless $result;
+        $previousWindowsPostMortemDebuggerValues{$value} = readRegistryString("$windowsPostMortemDebuggerKey/$value");
+        next if writeRegistryString("$windowsPostMortemDebuggerKey/$value", $values{$value});
 
         print "Failed to set \"$windowsPostMortemDebuggerKey/$value\". Crash logs will not be saved.\nSee <http://trac.webkit.org/wiki/BuildingOnWindows#GettingCrashLogs>.\n";
         return;
@@ -2656,7 +2674,7 @@ END {
     return unless isCygwin();
 
     foreach my $value (keys %previousWindowsPostMortemDebuggerValues) {
-        my $result = system "regtool", "set", "-s", "$windowsPostMortemDebuggerKey/$value", $previousWindowsPostMortemDebuggerValues{$value};
-        !$result or print "Failed to restore \"$windowsPostMortemDebuggerKey/$value\" to its previous value \"$previousWindowsPostMortemDebuggerValues{$value}\"\n.";
+        next if writeRegistryString("$windowsPostMortemDebuggerKey/$value", $previousWindowsPostMortemDebuggerValues{$value});
+        print "Failed to restore \"$windowsPostMortemDebuggerKey/$value\" to its previous value \"$previousWindowsPostMortemDebuggerValues{$value}\"\n.";
     }
 }

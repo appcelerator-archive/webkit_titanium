@@ -324,7 +324,15 @@ int jscmain(int argc, char** argv, JSGlobalData*);
 
 int main(int argc, char** argv)
 {
-#if defined(_DEBUG) && OS(WINDOWS)
+#if OS(WINDOWS)
+#if !OS(WINCE)
+    // Cygwin calls ::SetErrorMode(SEM_FAILCRITICALERRORS), which we will inherit. This is bad for
+    // testing/debugging, as it causes the post-mortem debugger not to be invoked. We reset the
+    // error mode here to work around Cygwin's behavior. See <http://webkit.org/b/55222>.
+    ::SetErrorMode(0);
+#endif
+
+#if defined(_DEBUG)
     _CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDERR);
     _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
     _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
@@ -333,7 +341,6 @@ int main(int argc, char** argv)
     _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
 #endif
 
-#if COMPILER(MSVC) && !OS(WINCE)
     timeBeginPeriod(1);
 #endif
 

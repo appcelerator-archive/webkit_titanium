@@ -1,3 +1,81 @@
+2011-02-25  Adam Roben  <aroben@apple.com>
+
+        Double-check that modifying the registry worked
+
+        On Windows Vista/7 with UAC enabled, regtool will fail to modify the registry, but it will
+        still return a successful exit code. So we double-check here that the value we tried to
+        write to the registry was really written.
+
+        Fixes <http://webkit.org/b/55227> old-run-webkit-tests falsely claims to be saving crash
+        logs on Windows Vista/7
+
+        Reviewed by Darin Adler.
+
+        * Scripts/old-run-webkit-tests:
+        (writeRegistryString): After trying to write the string value, check that it was really
+        written.
+
+2011-02-25  Adam Roben  <aroben@apple.com>
+
+        Set the 32-bit post-mortem debugger on 64-bit OSes
+
+        The post-mortem debugger is controlled by some registry values in
+        HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AeDebug. On 64-bit OSes, you can either
+        set the values in that key, which will be used for 64-bit apps, or in the equivalent key
+        under Wow6432Node, which will be used for 32-bit apps. Since DumpRenderTree and
+        WebKitTestRunner are 32-bit, we want to use the latter location.
+
+        Fixes <http://webkit.org/b/55225> old-run-webkit-tests sets the post-mortem debugger for
+        64-bit apps, but should set it for 32-bit apps instead
+
+        Reviewed by Darin Adler.
+
+        * Scripts/old-run-webkit-tests:
+        (readRegistryString):
+        (writeRegistryString):
+        Pass --wow32 to regtool so it will get/set values beneath Wow6432Node, which is where
+        Windows looks for the post-mortem debugger values when a 32-bit app crashes on a 64-bit OS.
+        Passing --wow32 on a 32-bit OS will not have any effect.
+
+2011-02-25  Adam Roben  <aroben@apple.com>
+
+        Clean up code to set up crash log saving on Windows
+
+        Fixes <http://webkit.org/b/55224> old-run-webkit-test's Windows registry code is ugly
+
+        Reviewed by David Kilzer.
+
+        * Scripts/old-run-webkit-tests:
+        (readRegistryString):
+        (writeRegistryString):
+        Moved code to read strings from and write strings to the registry here...
+
+        (setUpWindowsCrashLogSaving): ...from here.
+
+2011-02-25  Adam Roben  <aroben@apple.com>
+
+        Work around Cygwin's crash-suppression behavior
+
+        Cygwin calls ::SetErrorMode(SEM_FAILCRITICALERRORS), which any processes it launches will
+        inherit. This is bad for testing/debugging, as it causes the post-mortem debugger not to be
+        invoked. (Cygwin does this because it makes crashes more UNIX-y.) We reset the error mode
+        when our test apps launch to work around Cygwin's behavior.
+
+        Fixes <http://webkit.org/b/55222> Test apps crash silently (without invoking post-mortem
+        debugger) when launched from Cygwin 1.7
+
+        Reviewed by Darin Adler.
+
+        * DumpRenderTree/win/DumpRenderTree.cpp:
+        (main):
+        * TestWebKitAPI/win/main.cpp:
+        (main):
+        * WebKitAPITest/main.cpp:
+        (main):
+        * WebKitTestRunner/win/TestControllerWin.cpp:
+        (WTR::TestController::platformInitialize):
+        Call ::SetErrorMode(0) to undo Cygwin's folly.
+
 2011-02-24  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
 
         Reviewed by Andreas Kling.
