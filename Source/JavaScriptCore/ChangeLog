@@ -1,3 +1,113 @@
+2011-02-24  Geoffrey Garen  <ggaren@apple.com>
+
+        Reviewed by Darin Adler.
+
+        Variable-sized allocation (but still capped at 64 bytes)
+        https://bugs.webkit.org/show_bug.cgi?id=55159
+        
+        SunSpider reports no change.
+
+        * JavaScriptCore.exp: Some day, I hope not to have to edit this file.
+
+        * runtime/Heap.cpp:
+        (JSC::Heap::allocateSlowCase): Split allocation into a fast and slow
+        case, so the fast case can inline size class selection and turn it into
+        a compile-time constant.
+        
+        Changed the collect-on-every allocation debugging switch to collect only
+        on every slow allocation, so you can still flip the switch without
+        recompiling the world. This may also be preferable for debugging purposes,
+        since collecting after every single allocation can be unusably slow,
+        and can mask problems by running destructors early.
+
+        * runtime/Heap.h: Ditto.
+
+        * runtime/JSCell.h:
+        (JSC::JSCell::MarkedSpace::sizeClassFor):
+        (JSC::JSCell::Heap::allocate):
+        (JSC::JSCell::JSCell::operator new): The inlining mentioned above.
+
+        * runtime/MarkedBlock.h: Dropped the block size from 256KB to 16KB. With
+        multiple size classes, allocating a full 256KB for the first allocation
+        in a given class can be pathologically wasteful. (8KB, or 4KB Mac and
+        8KB Windows, would be even better, but that seems to be a peformance
+        regression for now.)
+        
+        * runtime/MarkedSpace.cpp:
+        (JSC::MarkedSpace::MarkedSpace):
+        (JSC::MarkedSpace::allocateBlock):
+        (JSC::MarkedSpace::reset): There's more than one size class now, and its
+        cell size is not constant.
+
+        * runtime/MarkedSpace.h:
+        (JSC::MarkedSpace::SizeClass::SizeClass): Ditto.
+
+2011-02-23  Oliver Hunt  <oliver@apple.com>
+
+        Reviewed by Geoffrey Garen.
+
+        Make WeakGCMap use new handle infrastructure
+        https://bugs.webkit.org/show_bug.cgi?id=55100
+
+        Remove old WeakGCMap implementation and move over to new handle
+        based logic.
+
+        This has a number of benefits, most notably it makes a WeakGCMap
+        always reflect the true state of the world by as all entries are
+        removed at the first gc cycle that makes them dead.  This allows
+        us to get rid of code in a wide variety of objects where the only
+        purpose was to remove themselves from maps.
+
+        It also means that we no longer need to have special "unchecked"
+        versions of any functions on WeakGCMap.  Alas in order to maintain
+        compatibility with the JSWeakObjectMapClear API it is still
+        necessary to have an api that resembles uncheckedRemove, this is
+        now deprecatedRemove and will be dealt with in a later patch.
+
+        In order to get correct semantics in WeakGCMap we need more
+        contextual information in the finalizer, so we've added an
+        abstract class based finaliser and a context parameter to the
+        calls.
+
+        The new an improved WeakGCMap also results in sigificantly more
+        churn in the weak handle lists so exposed some potential problems
+        during the post mark phase which have been rectified as well.
+
+        * API/JSWeakObjectMapRefPrivate.cpp:
+        * API/JSWeakObjectMapRefPrivate.h:
+        * runtime/Heap.cpp:
+        (JSC::Heap::globalObjectCount):
+        (JSC::Heap::protectedGlobalObjectCount):
+        * runtime/JSGlobalData.cpp:
+        (JSC::JSGlobalData::JSGlobalData):
+        * runtime/JSGlobalData.h:
+        * runtime/JSGlobalObject.cpp:
+        (JSC::JSGlobalObject::~JSGlobalObject):
+        (JSC::JSGlobalObject::init):
+        * runtime/WeakGCMap.h:
+        (JSC::WeakGCMap::iterator::iterator):
+        (JSC::WeakGCMap::iterator::get):
+        (JSC::WeakGCMap::iterator::getSlot):
+        (JSC::WeakGCMap::iterator::operator++):
+        (JSC::WeakGCMap::iterator::operator==):
+        (JSC::WeakGCMap::iterator::operator!=):
+        (JSC::WeakGCMap::WeakGCMap):
+        (JSC::WeakGCMap::isEmpty):
+        (JSC::WeakGCMap::clear):
+        (JSC::WeakGCMap::get):
+        (JSC::WeakGCMap::getSlot):
+        (JSC::WeakGCMap::set):
+        (JSC::WeakGCMap::take):
+        (JSC::WeakGCMap::size):
+        (JSC::WeakGCMap::deprecatedRemove):
+        (JSC::WeakGCMap::begin):
+        (JSC::WeakGCMap::end):
+        (JSC::WeakGCMap::~WeakGCMap):
+        (JSC::WeakGCMap::finalize):
+        * runtime/WeakGCPtr.h:
+        (JSC::WeakGCPtr::WeakGCPtr):
+        (JSC::WeakGCPtr::set):
+
 2011-02-24  Oliver Hunt  <oliver@apple.com>
 
         Reviewed by Gavin Barraclough.

@@ -1,3 +1,124 @@
+2011-02-24  Dan Bernstein  <mitz@apple.com>
+
+        Reviewed by Dave Hyatt.
+
+        <rdar://problem/8902740> Expand ruby base when it is shorter than the ruby text
+        https://bugs.webkit.org/show_bug.cgi?id=55183
+
+        Test: fast/ruby/base-shorter-than-text.html
+
+        * rendering/RenderBlock.cpp:
+        (WebCore::RenderBlock::availableLogicalWidthForLine):
+        * rendering/RenderBlock.h:
+        (WebCore::RenderBlock::adjustInlineDirectionLineBounds): Added. The base clase implementation does nothing.
+        * rendering/RenderBlockLineLayout.cpp:
+        (WebCore::RenderBlock::textAlignmentForLine): Added. Implements the logic that changes "justify" to "auto" for
+        the last line or a line that ends with a hard break.
+        (WebCore::RenderBlock::computeInlineDirectionPositionsForLine): Use textAlignmentForLine(), compute the available
+        width more efficiently, and call adjustInlineDirectionLineBounds() for justified lines.
+        * rendering/RenderRubyBase.cpp:
+        (WebCore::RenderRubyBase::rubyRun): Added.
+        (WebCore::RenderRubyBase::textAlignmentForLine): Added. Alwyas returns "justify".
+        (WebCore::RenderRubyBase::adjustInlineDirectionLineBounds): Added. Insets the line such that the inset is
+        half the width of a single intra-line expansion.
+        * rendering/RenderRubyBase.h:
+        * rendering/RenderRubyRun.cpp:
+        (WebCore::RenderRubyRun::addChild): 
+
+2011-02-24  James Robinson  <jamesr@chromium.org>
+
+        Unreviewed, rolling out r79604.
+        http://trac.webkit.org/changeset/79604
+        https://bugs.webkit.org/show_bug.cgi?id=55017
+
+        Causes assertions to fail on some SVG tests
+
+        * svg/graphics/SVGImage.cpp:
+        (WebCore::SVGImage::dataChanged):
+
+2011-02-24  Oliver Hunt  <oliver@apple.com>
+
+        Build fix
+
+        * bindings/js/JSBindingsAllInOne.cpp:
+
+2011-02-24  David Hyatt  <hyatt@apple.com>
+
+        Reviewed by Simon Fraser.
+
+        https://bugs.webkit.org/show_bug.cgi?id=46500, make positioned elements work with vertical text.
+
+        Rework the logical height computation for positioned elements to work in terms of before and after.  That way the offset is determined from
+        the correct container side in flipped block writing modes (e.g., vertical-rl).
+        
+        Patch locationOffsetIncludingFlipping to use the containing block to flip so that it will behave correctly with absolute/fixed positioned
+        elements.
+        
+        Patch offsetFromContainer to use the flipped location offset for absolute/fixed positioned elements so that localToAbsolute works properly.
+
+        Added twelve tests in fast/block/positioning/vertical-rl and fast/block/positioning/vertical-lr.
+
+        * rendering/RenderBox.cpp:
+        (WebCore::RenderBox::offsetFromContainer):
+        (WebCore::RenderBox::computePositionedLogicalHeight):
+        (WebCore::RenderBox::computePositionedLogicalHeightUsing):
+        (WebCore::RenderBox::locationOffsetIncludingFlipping):
+        * rendering/style/RenderStyle.h:
+        (WebCore::InheritedFlags::logicalTop):
+        (WebCore::InheritedFlags::logicalBottom):
+
+2011-02-23  Oliver Hunt  <oliver@apple.com>
+
+        Reviewed by Geoffrey Garen.
+
+        Make WeakGCMap use new handle infrastructure
+        https://bugs.webkit.org/show_bug.cgi?id=55100
+
+        Update to new WeakGCMap APIs, this requires threading global
+        data to a few functions that did not need it in the past, but
+        also gets rid of a large number of destructors, as well as the
+        forgetDOMNode, etc APIs.
+
+        We can also drop the JSDebugWrapperSet as its only purpose was
+        to ensure that we retained correct semantics in the old WeakGCMap,
+        but happilly these semantics are now guaranteed by the map itself.
+
+        * CMakeLists.txt:
+        * GNUmakefile.am:
+        * WebCore.gypi:
+        * WebCore.pro:
+        * WebCore.vcproj/WebCore.vcproj:
+        * WebCore.xcodeproj/project.pbxproj:
+        * bindings/js/JSDOMBinding.cpp:
+        (WebCore::hasCachedDOMObjectWrapperUnchecked):
+        (WebCore::cacheDOMObjectWrapper):
+        (WebCore::hasCachedDOMNodeWrapperUnchecked):
+        (WebCore::cacheDOMNodeWrapper):
+        (WebCore::isObservableThroughDOM):
+        (WebCore::markDOMNodesForDocument):
+        (WebCore::takeWrappers):
+        (WebCore::updateDOMNodeDocument):
+        (WebCore::markDOMObjectWrapper):
+        (WebCore::markDOMNodeWrapper):
+        (WebCore::stringWrapperDestroyed):
+        (WebCore::jsStringSlowCase):
+        * bindings/js/JSDOMBinding.h:
+        * bindings/js/JSDOMWrapper.cpp:
+        (WebCore::DOMObject::~DOMObject):
+        * bindings/js/JSDebugWrapperSet.cpp: Removed.
+        * bindings/js/JSDebugWrapperSet.h: Removed.
+        * bindings/scripts/CodeGeneratorJS.pm:
+        * bridge/jsc/BridgeJSC.cpp:
+        (JSC::Bindings::Instance::createRuntimeObject):
+        * bridge/jsc/BridgeJSC.h:
+        * bridge/runtime_object.cpp:
+        (JSC::Bindings::RuntimeObject::~RuntimeObject):
+        * bridge/runtime_root.cpp:
+        (JSC::Bindings::RootObject::invalidate):
+        (JSC::Bindings::RootObject::addRuntimeObject):
+        (JSC::Bindings::RootObject::removeRuntimeObject):
+        * bridge/runtime_root.h:
+
 2011-02-24  James Robinson  <jamesr@chromium.org>
 
         Fix chromium compile.

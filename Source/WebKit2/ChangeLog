@@ -1,3 +1,54 @@
+2011-02-24  Anders Carlsson  <andersca@apple.com>
+
+        Reviewed by Dan Bernstein.
+
+        Crash when trying to send a sync message on an invalid connection
+        https://bugs.webkit.org/show_bug.cgi?id=55190
+        <rdar://problem/9035806>
+
+        * Platform/CoreIPC/Connection.cpp:
+        (CoreIPC::Connection::sendSyncMessage):
+        Don't try to call a client function if isValid() returns false since the client
+        will be null in that case.
+
+2011-02-24  Anders Carlsson  <andersca@apple.com>
+
+        Reviewed by Dan Bernstein.
+
+        Remove the layer backed drawing area
+        https://bugs.webkit.org/show_bug.cgi?id=55174
+
+        * GNUmakefile.am:
+        * Shared/DrawingAreaInfo.h:
+        * UIProcess/API/mac/WKView.mm:
+        * UIProcess/LayerBackedDrawingAreaProxy.cpp: Removed.
+        * UIProcess/LayerBackedDrawingAreaProxy.h: Removed.
+        * UIProcess/mac/LayerBackedDrawingAreaProxyMac.mm: Removed.
+        * UIProcess/win/LayerBackedDrawingAreaProxyWin.cpp: Removed.
+        * UIProcess/win/WebView.cpp:
+        * WebKit2.xcodeproj/project.pbxproj:
+        * WebProcess/WebPage/DrawingArea.cpp:
+        (WebKit::DrawingArea::create):
+        * WebProcess/WebPage/LayerBackedDrawingArea.cpp: Removed.
+        * WebProcess/WebPage/LayerBackedDrawingArea.h: Removed.
+        * WebProcess/WebPage/mac/LayerBackedDrawingAreaMac.mm: Removed.
+        * WebProcess/WebPage/win/LayerBackedDrawingAreaWin.cpp: Removed.
+        * win/WebKit2.vcproj:
+
+2011-02-24  Mike Thole  <mthole@apple.com>
+
+        Reviewed by Sam Weinig.
+
+        WK2: Add ability to get document node for a WKBundleNodeHandle
+        https://bugs.webkit.org/post_bug.cgi
+
+        * WebProcess/InjectedBundle/API/c/WKBundleNodeHandle.cpp:
+        (WKBundleNodeHandleCopyDocument):
+        * WebProcess/InjectedBundle/API/c/WKBundleNodeHandlePrivate.h:
+        * WebProcess/InjectedBundle/DOM/InjectedBundleNodeHandle.cpp:
+        (WebKit::InjectedBundleNodeHandle::document):
+        * WebProcess/InjectedBundle/DOM/InjectedBundleNodeHandle.h:
+
 2011-02-24  Brady Eidson  <beidson@apple.com>
 
         Reviewed by Adam Roben and looked at by Brian Weinstein.

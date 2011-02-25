@@ -32,7 +32,7 @@
 #include "Tracing.h"
 #include <algorithm>
 
-#define COLLECT_ON_EVERY_ALLOCATION 0
+#define COLLECT_ON_EVERY_SLOW_ALLOCATION 0
 
 using namespace std;
 
@@ -102,29 +102,24 @@ void Heap::reportExtraMemoryCostSlowCase(size_t cost)
     m_extraCost += cost;
 }
 
-void* Heap::allocate(size_t s)
+void* Heap::allocateSlowCase(size_t bytes)
 {
     ASSERT(globalData()->identifierTable == wtfThreadData().currentIdentifierTable());
     ASSERT(JSLock::lockCount() > 0);
     ASSERT(JSLock::currentThreadIsHoldingLock());
-    ASSERT_UNUSED(s, s <= MarkedSpace::cellSize);
+    ASSERT(bytes <= MarkedSpace::maxCellSize);
     ASSERT(m_operationInProgress == NoOperation);
 
-#if COLLECT_ON_EVERY_ALLOCATION
+#if COLLECT_ON_EVERY_SLOW_ALLOCATION
     collectAllGarbage();
     ASSERT(m_operationInProgress == NoOperation);
 #endif
 
-    m_operationInProgress = Allocation;
-    void* result = m_markedSpace.allocate(s);
-    m_operationInProgress = NoOperation;
-    if (!result) {
-        reset(DoNotSweep);
+    reset(DoNotSweep);
 
-        m_operationInProgress = Allocation;
-        result = m_markedSpace.allocate(s);
-        m_operationInProgress = NoOperation;
-    }
+    m_operationInProgress = Allocation;
+    void* result = m_markedSpace.allocate(bytes);
+    m_operationInProgress = NoOperation;
 
     ASSERT(result);
     return result;
@@ -272,18 +267,17 @@ size_t Heap::capacity() const
 
 size_t Heap::globalObjectCount()
 {
-    return m_globalData->globalObjects.uncheckedSize();
+    return m_globalData->globalObjectCount;
 }
 
 size_t Heap::protectedGlobalObjectCount()
 {
-    size_t count = 0;
+    size_t count = m_handleHeap.protectedGlobalObjectCount();
 
-    GlobalObjectMap& map = m_globalData->globalObjects;
-    GlobalObjectMap::iterator end = map.uncheckedEnd();
-    for (GlobalObjectMap::iterator it = map.uncheckedBegin(); it != end; ++it) {
-        if (map.isValid(it) && m_protectedValues.contains(it->second.get()))
-            ++count;
+    ProtectCountSet::iterator end = m_protectedValues.end();
+    for (ProtectCountSet::iterator it = m_protectedValues.begin(); it != end; ++it) {
+        if (it->first->isObject() && asObject(it->first)->isGlobalObject())
+            count++;
     }
 
     return count;

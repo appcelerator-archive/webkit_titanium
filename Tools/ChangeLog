@@ -1,3 +1,67 @@
+2011-02-24  Dirk Pranke  <dpranke@chromium.org>
+
+        Reviewed by Mihai Parparita.
+
+        rebaseline-chromium-webkit-tests can't handle GPU variants
+        https://bugs.webkit.org/show_bug.cgi?id=55002
+
+        * Scripts/webkitpy/layout_tests/port/chromium_gpu.py:
+        * Scripts/webkitpy/layout_tests/rebaseline_chromium_webkit_tests.py:
+
+2011-02-24  Dirk Pranke  <dpranke@chromium.org>
+
+        Reviewed by Mihai Parparita.
+
+        nrwt: log command used to start web server to --verbose
+
+        https://bugs.webkit.org/show_bug.cgi?id=55188
+
+        * Scripts/webkitpy/layout_tests/port/apache_http_server.py:
+        * Scripts/webkitpy/layout_tests/port/http_server.py:
+
+2011-02-24  Victoria Kirst  <vrk@google.com>
+
+        Reviewed by Mihai Parparita.
+
+        [chromium] Move media-file.js and video-test.js back to media/ for UILayoutTests
+        https://bugs.webkit.org/show_bug.cgi?id=55089
+
+        This adds an alias into the media/ directory so that http/tests/media
+        tests can access the media resources when running in an httpd process.
+
+        * Scripts/webkitperl/httpd.pm:
+        * Scripts/webkitpy/layout_tests/port/apache_http_server.py:
+        * Scripts/webkitpy/layout_tests/port/http_server.py:
+
+2011-02-24  Dirk Pranke  <dpranke@chromium.org>
+
+        Reviewed by Mihai Parparita.
+
+        nrwt: enable multiple processes by default on Chromium Win.
+
+        https://bugs.webkit.org/show_bug.cgi?id=55163
+
+        * Scripts/webkitpy/layout_tests/port/chromium_win.py:
+        * Scripts/webkitpy/layout_tests/port/chromium_win_unittest.py:
+
+2011-02-24  Sam Weinig  <sam@webkit.org>
+
+        Attempt to fix Qt.
+
+        * WebKitTestRunner/TestInvocation.cpp:
+
+2011-02-24  James Robinson  <jamesr@chromium.org>
+
+        Unreviewed, rolling out r79598.
+        http://trac.webkit.org/changeset/79598
+        https://bugs.webkit.org/show_bug.cgi?id=55089
+
+        Appears to be causing trouble with httpd on windows
+
+        * Scripts/webkitperl/httpd.pm:
+        * Scripts/webkitpy/layout_tests/port/apache_http_server.py:
+        * Scripts/webkitpy/layout_tests/port/http_server.py:
+
 2011-02-24  Sam Weinig  <sam@webkit.org>
 
         Reviewed by Darin Adler.

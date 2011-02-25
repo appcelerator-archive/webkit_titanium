@@ -1,3 +1,539 @@
+2011-02-24  James Robinson  <jamesr@chromium.org>
+
+        Add chromium baselines for new fast/block/position/vertical- tests.
+
+        * platform/chromium-linux/fast/block/positioning/vertical-lr/001-expected.checksum: Added.
+        * platform/chromium-linux/fast/block/positioning/vertical-lr/001-expected.png: Added.
+        * platform/chromium-linux/fast/block/positioning/vertical-lr/002-expected.checksum: Added.
+        * platform/chromium-linux/fast/block/positioning/vertical-lr/002-expected.png: Added.
+        * platform/chromium-linux/fast/block/positioning/vertical-rl/001-expected.checksum: Added.
+        * platform/chromium-linux/fast/block/positioning/vertical-rl/001-expected.png: Added.
+        * platform/chromium-linux/fast/block/positioning/vertical-rl/001-expected.txt: Added.
+        * platform/chromium-linux/fast/block/positioning/vertical-rl/002-expected.checksum: Added.
+        * platform/chromium-linux/fast/block/positioning/vertical-rl/002-expected.png: Added.
+        * platform/chromium-win/fast/block/positioning/vertical-lr/001-expected.checksum: Added.
+        * platform/chromium-win/fast/block/positioning/vertical-lr/001-expected.png: Added.
+        * platform/chromium-win/fast/block/positioning/vertical-lr/001-expected.txt: Added.
+        * platform/chromium-win/fast/block/positioning/vertical-lr/002-expected.checksum: Added.
+        * platform/chromium-win/fast/block/positioning/vertical-lr/002-expected.png: Added.
+        * platform/chromium-win/fast/block/positioning/vertical-lr/002-expected.txt: Added.
+        * platform/chromium-win/fast/block/positioning/vertical-rl/001-expected.checksum: Added.
+        * platform/chromium-win/fast/block/positioning/vertical-rl/001-expected.png: Added.
+        * platform/chromium-win/fast/block/positioning/vertical-rl/001-expected.txt: Added.
+        * platform/chromium-win/fast/block/positioning/vertical-rl/002-expected.checksum: Added.
+        * platform/chromium-win/fast/block/positioning/vertical-rl/002-expected.png: Added.
+        * platform/chromium-win/fast/block/positioning/vertical-rl/002-expected.txt: Added.
+
+2011-02-24  Alexey Proskuryakov  <ap@apple.com>
+
+        Rubber-stamped by Eric Seidel
+
+        Moving a test that doesn't need to be an http one out of http/tests.
+
+        * fast/css/counter-crash-expected.txt: Copied from http/tests/css/counter-crash-expected.txt.
+        * fast/css/counter-crash.html: Copied from http/tests/css/counter-crash.html.
+        * fast/css/resources/counter-crash-frame-src.html: Copied from http/tests/css/resources/counter-crash-frame-src.html.
+        * http/tests/css/counter-crash-expected.txt: Removed.
+        * http/tests/css/counter-crash.html: Removed.
+        * http/tests/css/resources/counter-crash-frame-src.html: Removed.
+
+2011-02-24  Anna Cavender  <annacc@chromium.org>
+
+        Reviewed by Eric Seidel.
+
+        New baselines for media/video-replaces-poster.html needed after r79401
+        https://bugs.webkit.org/show_bug.cgi?id=54910
+
+        * platform/chromium-linux/media/video-replaces-poster-expected.checksum:
+        * platform/chromium-linux/media/video-replaces-poster-expected.png:
+        * platform/chromium-mac/media/video-replaces-poster-expected.checksum:
+        * platform/chromium-mac/media/video-replaces-poster-expected.png:
+        * platform/chromium-win/media/video-replaces-poster-expected.checksum:
+        * platform/chromium-win/media/video-replaces-poster-expected.png:
+        * platform/chromium/test_expectations.txt:
+
+2011-02-24  Victoria Kirst  <vrk@google.com>
+
+        Reviewed by Mihai Parparita.
+
+        [chromium] Move media-file.js and video-test.js back to media/ for UILayoutTests
+        https://bugs.webkit.org/show_bug.cgi?id=55089
+
+        Media's UILayoutTests rely on video-test.js and media-file.js to be in
+        the media/ folder.
+
+        * http/tests/media/pdf-served-as-pdf.html:
+        * http/tests/media/reload-after-dialog.html:
+        * http/tests/media/remove-while-loading.html:
+        * http/tests/media/text-served-as-text.html:
+        * http/tests/media/video-buffered.html:
+        * http/tests/media/video-cancel-load.html:
+        * http/tests/media/video-cookie.html:
+        * http/tests/media/video-error-abort.html:
+        * http/tests/media/video-load-twice.html:
+        * http/tests/media/video-play-stall-seek.html:
+        * http/tests/media/video-play-stall.html:
+        * http/tests/media/video-play-suspend.html:
+        * http/tests/media/video-referer.html:
+        * http/tests/media/video-seekable-stall.html:
+        * http/tests/media/video-served-as-text.html:
+        * media/adopt-node-crash.html:
+        * media/audio-constructor-preload.html:
+        * media/audio-constructor-src.html:
+        * media/audio-constructor.html:
+        * media/audio-controls-rendering.html:
+        * media/audio-data-url.html:
+        * media/audio-delete-while-slider-thumb-clicked.html:
+        * media/audio-delete-while-step-button-clicked.html:
+        * media/audio-mpeg-supported.html:
+        * media/audio-mpeg4-supported.html:
+        * media/audio-play-event.html:
+        * media/before-load-member-access.html:
+        * media/broken-video.html:
+        * media/constructors.html:
+        * media/context-menu-actions.html:
+        * media/controls-after-reload.html:
+        * media/controls-css-overload.html:
+        * media/controls-drag-timebar.html:
+        * media/controls-right-click-on-timebar.html:
+        * media/controls-strict.html:
+        * media/controls-styling.html:
+        * media/controls-without-preload.html:
+        * media/event-attributes.html:
+        * media/invalid-media-url-crash.html:
+        * media/media-can-play-mpeg-audio.html:
+        * media/media-can-play-mpeg4-video.html:
+        * media/media-can-play-octet-stream.html:
+        * media/media-can-play-ogg.html:
+        * media/media-can-play-wav-audio.html:
+        * media/media-captions.html:
+        * media/media-constants.html:
+        * media/media-file.js: Renamed from LayoutTests/http/tests/media/media-file.js.
+        * media/media-fullscreen-inline.html:
+        * media/media-fullscreen-not-in-document.html:
+        * media/media-load-event.html:
+        * media/media-startTime.html:
+        * media/remove-from-document-no-load.html:
+        * media/remove-from-document.html:
+        * media/restore-from-page-cache.html:
+        * media/unsupported-rtsp.html:
+        * media/unsupported-tracks.html:
+        * media/video-append-source.html:
+        * media/video-aspect-ratio.html:
+        * media/video-autoplay.html:
+        * media/video-buffered.html:
+        * media/video-can-play-type.html:
+        * media/video-canvas-alpha.html:
+        * media/video-canvas-source.html:
+        * media/video-click-dblckick-standalone.html:
+        * media/video-controls-rendering.html:
+        * media/video-controls-transformed.html:
+        * media/video-controls-visible-audio-only.html:
+        * media/video-controls-zoomed.html:
+        * media/video-controls.html:
+        * media/video-currentTime-delay.html:
+        * media/video-currentTime-set.html:
+        * media/video-currentTime-set2.html:
+        * media/video-currentTime.html:
+        * media/video-delay-load-event.html:
+        * media/video-display-aspect-ratio.html:
+        * media/video-display-none-crash.html:
+        * media/video-display-toggle.html:
+        * media/video-does-not-loop.html:
+        * media/video-dom-autoplay.html:
+        * media/video-dom-preload.html:
+        * media/video-dom-src.html:
+        * media/video-duration-known-after-eos.html:
+        * media/video-error-does-not-exist.html:
+        * media/video-frame-accurate-seek.html:
+        * media/video-layer-crash.html:
+        * media/video-load-networkState.html:
+        * media/video-load-readyState.html:
+        * media/video-loop.html:
+        * media/video-muted.html:
+        * media/video-no-audio.html:
+        * media/video-no-autoplay.html:
+        * media/video-pause-empty-events.html:
+        * media/video-pause-immediately.html:
+        * media/video-play-empty-events.html:
+        * media/video-play-pause-events.html:
+        * media/video-play-pause-exception.html:
+        * media/video-played-collapse.html:
+        * media/video-played-ranges-1.html:
+        * media/video-played-reset.html:
+        * media/video-poster-delayed.html:
+        * media/video-poster-scale.html:
+        * media/video-poster.html:
+        * media/video-preload.html:
+        * media/video-replaces-poster.html:
+        * media/video-reverse-play-duration.html:
+        * media/video-seek-by-small-increment.html:
+        * media/video-seek-no-src-exception.html:
+        * media/video-seek-past-end-paused.html:
+        * media/video-seek-past-end-playing.html:
+        * media/video-seekable.html:
+        * media/video-seeking.html:
+        * media/video-size-intrinsic-scale.html:
+        * media/video-size.html:
+        * media/video-source-error-no-candidate.html:
+        * media/video-source-error.html:
+        * media/video-source-inserted.html:
+        * media/video-source-media.html:
+        * media/video-source-moved.html:
+        * media/video-source-none-supported.html:
+        * media/video-source-removed.html:
+        * media/video-source-type-params.html:
+        * media/video-source-type.html:
+        * media/video-source.html:
+        * media/video-src-change.html:
+        * media/video-src-invalid-remove.html:
+        * media/video-src-none.html:
+        * media/video-src-plus-source.html:
+        * media/video-src-remove.html:
+        * media/video-src-set.html:
+        * media/video-src-source.html:
+        * media/video-src.html:
+        * media/video-test.js: Renamed from LayoutTests/http/tests/media/video-test.js.
+        * media/video-timeupdate-during-playback.html:
+        * media/video-timeupdate-reverse-play.html:
+        * media/video-transformed.html:
+        * media/video-volume-slider.html:
+        * media/video-volume.html:
+        * media/video-width-height.html:
+        * media/video-zoom-controls.html:
+        * media/video-zoom.html:
+
+2011-02-24  Dan Bernstein  <mitz@apple.com>
+
+        Reviewed by Dave Hyatt.
+
+        <rdar://problem/8902740> Expand ruby base when it is shorter than the ruby text
+        https://bugs.webkit.org/show_bug.cgi?id=55183
+
+        * fast/ruby/base-shorter-than-text.html: Added.
+        * platform/mac/fast/ruby/base-shorter-than-text-expected.checksum: Added.
+        * platform/mac/fast/ruby/base-shorter-than-text-expected.png: Added.
+        * platform/mac/fast/ruby/base-shorter-than-text-expected.txt: Added.
+
+2011-02-24  Xianzhu Wang  <wangxianzhu@google.com>
+
+        Reviewed by Eric Seidel.
+
+        In layout tests, iframe's onload handler should not use script function
+        defined after the iframe.
+        https://bugs.webkit.org/show_bug.cgi?id=54942
+
+        * editing/pasteboard/paste-noscript-svg-expected.txt:
+        * editing/pasteboard/paste-noscript-svg.html:
+        * editing/selection/cleared-by-relayout.html:
+        * editing/undo/undo-iframe-location-change.html:
+        * fast/dom/DOMImplementation/createDocument-with-used-doctype-expected.txt:
+        * fast/dom/DOMImplementation/createDocument-with-used-doctype.html:
+        * fast/dom/Window/window-postmessage-clone-frames.html:
+        * fast/dom/wrapper-classes.html:
+        * fast/dynamic/paused-event-dispatch.html:
+        * fast/replaced/max-width-percent.html:
+
+2011-02-24  James Robinson  <jamesr@chromium.org>
+
+        Unreviewed, rolling out r79598.
+        http://trac.webkit.org/changeset/79598
+        https://bugs.webkit.org/show_bug.cgi?id=55089
+
+        Appears to be causing trouble with httpd on windows
+
+        * http/tests/media/media-file.js: Renamed from LayoutTests/media/media-file.js.
+        ():
+        (mimeTypeForExtension):
+        (setSrcByTagName):
+        (setSrcById):
+        (stripExtension):
+        * http/tests/media/pdf-served-as-pdf.html:
+        * http/tests/media/reload-after-dialog.html:
+        * http/tests/media/remove-while-loading.html:
+        * http/tests/media/text-served-as-text.html:
+        * http/tests/media/video-buffered.html:
+        * http/tests/media/video-cancel-load.html:
+        * http/tests/media/video-cookie.html:
+        * http/tests/media/video-error-abort.html:
+        * http/tests/media/video-load-twice.html:
+        * http/tests/media/video-play-stall-seek.html:
+        * http/tests/media/video-play-stall.html:
+        * http/tests/media/video-play-suspend.html:
+        * http/tests/media/video-referer.html:
+        * http/tests/media/video-seekable-stall.html:
+        * http/tests/media/video-served-as-text.html:
+        * http/tests/media/video-test.js: Renamed from LayoutTests/media/video-test.js.
+        (disableFullTestDetailsPrinting):
+        (enableFullTestDetailsPrinting):
+        (logConsole):
+        (findMediaElement):
+        (testAndEnd):
+        (test):
+        (testExpected):
+        (reportExpected):
+        (runSilently):
+        (run):
+        (waitForEventAndEnd):
+        (waitForEvent._eventCallback):
+        (waitForEvent):
+        (waitForEventTestAndEnd):
+        (waitForEventAndFail):
+        (waitForEventAndTest._eventCallback):
+        (waitForEventAndTest):
+        (testException):
+        (endTest):
+        (endTestLater):
+        (failTestIn):
+        (failTest):
+        (logResult):
+        (consoleWrite):
+        (relativeURL):
+        (isInTimeRanges):
+        * media/adopt-node-crash.html:
+        * media/audio-constructor-preload.html:
+        * media/audio-constructor-src.html:
+        * media/audio-constructor.html:
+        * media/audio-controls-rendering.html:
+        * media/audio-data-url.html:
+        * media/audio-delete-while-slider-thumb-clicked.html:
+        * media/audio-delete-while-step-button-clicked.html:
+        * media/audio-mpeg-supported.html:
+        * media/audio-mpeg4-supported.html:
+        * media/audio-play-event.html:
+        * media/before-load-member-access.html:
+        * media/broken-video.html:
+        * media/constructors.html:
+        * media/context-menu-actions.html:
+        * media/controls-after-reload.html:
+        * media/controls-css-overload.html:
+        * media/controls-drag-timebar.html:
+        * media/controls-right-click-on-timebar.html:
+        * media/controls-strict.html:
+        * media/controls-styling.html:
+        * media/controls-without-preload.html:
+        * media/event-attributes.html:
+        * media/invalid-media-url-crash.html:
+        * media/media-can-play-mpeg-audio.html:
+        * media/media-can-play-mpeg4-video.html:
+        * media/media-can-play-octet-stream.html:
+        * media/media-can-play-ogg.html:
+        * media/media-can-play-wav-audio.html:
+        * media/media-captions.html:
+        * media/media-constants.html:
+        * media/media-fullscreen-inline.html:
+        * media/media-fullscreen-not-in-document.html:
+        * media/media-load-event.html:
+        * media/media-startTime.html:
+        * media/remove-from-document-no-load.html:
+        * media/remove-from-document.html:
+        * media/restore-from-page-cache.html:
+        * media/unsupported-rtsp.html:
+        * media/unsupported-tracks.html:
+        * media/video-append-source.html:
+        * media/video-aspect-ratio.html:
+        * media/video-autoplay.html:
+        * media/video-buffered.html:
+        * media/video-can-play-type.html:
+        * media/video-canvas-alpha.html:
+        * media/video-canvas-source.html:
+        * media/video-click-dblckick-standalone.html:
+        * media/video-controls-in-media-document.html:
+        * media/video-controls-rendering.html:
+        * media/video-controls-transformed.html:
+        * media/video-controls-visible-audio-only.html:
+        * media/video-controls-zoomed.html:
+        * media/video-controls.html:
+        * media/video-currentTime-delay.html:
+        * media/video-currentTime-set.html:
+        * media/video-currentTime-set2.html:
+        * media/video-currentTime.html:
+        * media/video-delay-load-event.html:
+        * media/video-display-aspect-ratio.html:
+        * media/video-display-none-crash.html:
+        * media/video-display-toggle.html:
+        * media/video-does-not-loop.html:
+        * media/video-dom-autoplay.html:
+        * media/video-dom-preload.html:
+        * media/video-dom-src.html:
+        * media/video-duration-known-after-eos.html:
+        * media/video-error-does-not-exist.html:
+        * media/video-frame-accurate-seek.html:
+        * media/video-layer-crash.html:
+        * media/video-load-networkState.html:
+        * media/video-load-readyState.html:
+        * media/video-loop.html:
+        * media/video-muted.html:
+        * media/video-no-audio.html:
+        * media/video-no-autoplay.html:
+        * media/video-pause-empty-events.html:
+        * media/video-pause-immediately.html:
+        * media/video-play-empty-events.html:
+        * media/video-play-pause-events.html:
+        * media/video-play-pause-exception.html:
+        * media/video-played-collapse.html:
+        * media/video-played-ranges-1.html:
+        * media/video-played-reset.html:
+        * media/video-plays-past-end-of-test.html:
+        * media/video-poster-delayed.html:
+        * media/video-poster-scale.html:
+        * media/video-poster.html:
+        * media/video-preload.html:
+        * media/video-replaces-poster.html:
+        * media/video-reverse-play-duration.html:
+        * media/video-seek-by-small-increment.html:
+        * media/video-seek-no-src-exception.html:
+        * media/video-seek-past-end-paused.html:
+        * media/video-seek-past-end-playing.html:
+        * media/video-seekable.html:
+        * media/video-seeking.html:
+        * media/video-size-intrinsic-scale.html:
+        * media/video-size.html:
+        * media/video-source-error-no-candidate.html:
+        * media/video-source-error.html:
+        * media/video-source-inserted.html:
+        * media/video-source-media.html:
+        * media/video-source-moved.html:
+        * media/video-source-none-supported.html:
+        * media/video-source-removed.html:
+        * media/video-source-type-params.html:
+        * media/video-source-type.html:
+        * media/video-source.html:
+        * media/video-src-change.html:
+        * media/video-src-invalid-remove.html:
+        * media/video-src-none.html:
+        * media/video-src-plus-source.html:
+        * media/video-src-remove.html:
+        * media/video-src-set.html:
+        * media/video-src-source.html:
+        * media/video-src.html:
+        * media/video-timeupdate-during-playback.html:
+        * media/video-timeupdate-reverse-play.html:
+        * media/video-transformed.html:
+        * media/video-volume-slider.html:
+        * media/video-volume.html:
+        * media/video-width-height.html:
+        * media/video-zoom-controls.html:
+        * media/video-zoom.html:
+
+2011-02-24  Mihai Parparita  <mihaip@chromium.org>
+
+        Unreviewed Chromium Snow Leopard expectations update.
+
+        * platform/chromium-mac/editing/deleting/delete-tab-003-expected.checksum: Added.
+        * platform/chromium-mac/editing/deleting/delete-tab-003-expected.png: Added.
+        * platform/chromium-mac/editing/deleting/delete-ws-fixup-001-expected.checksum: Added.
+        * platform/chromium-mac/editing/deleting/delete-ws-fixup-001-expected.png: Added.
+        * platform/chromium-mac/editing/inserting/insert-tab-003-expected.checksum: Added.
+        * platform/chromium-mac/editing/inserting/insert-tab-003-expected.png: Added.
+        * platform/chromium-mac/editing/pasteboard/paste-blockquote-2-expected.checksum: Added.
+        * platform/chromium-mac/editing/pasteboard/paste-blockquote-2-expected.png: Added.
+        * platform/chromium-mac/editing/selection/replaced-boundaries-3-expected.checksum:
+        * platform/chromium-mac/editing/selection/replaced-boundaries-3-expected.png: Added.
+        * platform/chromium-mac/editing/selection/select-from-textfield-outwards-expected.checksum: Added.
+        * platform/chromium-mac/editing/selection/select-from-textfield-outwards-expected.png: Added.
+        * platform/chromium-mac/fast/speech/input-appearance-speechbutton-expected.checksum:
+        * platform/chromium-mac/fast/speech/input-appearance-speechbutton-expected.png:
+        * platform/chromium-mac/fast/speech/input-appearance-speechbutton-expected.txt:
+        * platform/chromium/test_expectations.txt:
+
+2011-02-24  James Robinson  <jamesr@chromium.org>
+
+        Unreviewed, rolling out r79604.
+        http://trac.webkit.org/changeset/79604
+        https://bugs.webkit.org/show_bug.cgi?id=55017
+
+        Causes assertions to fail on some SVG tests
+
+        * svg/misc/SVGImage-leak-ResourceLoader-expected.txt: Removed.
+        * svg/misc/SVGImage-leak-ResourceLoader.html: Removed.
+        * svg/misc/resources/load-script.html: Removed.
+        * svg/misc/resources/small.png: Removed.
+
+2011-02-24  David Hyatt  <hyatt@apple.com>
+
+        Reviewed by Simon Fraser.
+
+        https://bugs.webkit.org/show_bug.cgi?id=46500, make positioned elements work with vertical text.
+
+        Rework the logical height computation for positioned elements to work in terms of before and after.  That way the offset is determined from
+        the correct container side in flipped block writing modes (e.g., vertical-rl).
+        
+        Patch locationOffsetIncludingFlipping to use the containing block to flip so that it will behave correctly with absolute/fixed positioned
+        elements.
+        
+        Patch offsetFromContainer to use the flipped location offset for absolute/fixed positioned elements so that localToAbsolute works properly.
+
+        Added twelve tests in fast/block/positioning/vertical-rl and fast/block/positioning/vertical-lr.
+
+        * fast/block/positioning/vertical-lr: Added.
+        * fast/block/positioning/vertical-lr/001.html: Added.
+        * fast/block/positioning/vertical-lr/002.html: Added.
+        * fast/block/positioning/vertical-lr/003.html: Added.
+        * fast/block/positioning/vertical-lr/004.html: Added.
+        * fast/block/positioning/vertical-lr/005.html: Added.
+        * fast/block/positioning/vertical-lr/006.html: Added.
+        * fast/block/positioning/vertical-rl: Added.
+        * fast/block/positioning/vertical-rl/001.html: Added.
+        * fast/block/positioning/vertical-rl/002.html: Added.
+        * fast/block/positioning/vertical-rl/003.html: Added.
+        * fast/block/positioning/vertical-rl/004.html: Added.
+        * fast/block/positioning/vertical-rl/005.html: Added.
+        * fast/block/positioning/vertical-rl/006.html: Added.
+        * platform/mac/fast/block/positioning/vertical-lr: Added.
+        * platform/mac/fast/block/positioning/vertical-lr/001-expected.checksum: Added.
+        * platform/mac/fast/block/positioning/vertical-lr/001-expected.png: Added.
+        * platform/mac/fast/block/positioning/vertical-lr/001-expected.txt: Added.
+        * platform/mac/fast/block/positioning/vertical-lr/002-expected.checksum: Added.
+        * platform/mac/fast/block/positioning/vertical-lr/002-expected.png: Added.
+        * platform/mac/fast/block/positioning/vertical-lr/002-expected.txt: Added.
+        * platform/mac/fast/block/positioning/vertical-lr/003-expected.checksum: Added.
+        * platform/mac/fast/block/positioning/vertical-lr/003-expected.png: Added.
+        * platform/mac/fast/block/positioning/vertical-lr/003-expected.txt: Added.
+        * platform/mac/fast/block/positioning/vertical-lr/004-expected.checksum: Added.
+        * platform/mac/fast/block/positioning/vertical-lr/004-expected.png: Added.
+        * platform/mac/fast/block/positioning/vertical-lr/004-expected.txt: Added.
+        * platform/mac/fast/block/positioning/vertical-lr/005-expected.checksum: Added.
+        * platform/mac/fast/block/positioning/vertical-lr/005-expected.png: Added.
+        * platform/mac/fast/block/positioning/vertical-lr/005-expected.txt: Added.
+        * platform/mac/fast/block/positioning/vertical-lr/006-expected.checksum: Added.
+        * platform/mac/fast/block/positioning/vertical-lr/006-expected.png: Added.
+        * platform/mac/fast/block/positioning/vertical-lr/006-expected.txt: Added.
+        * platform/mac/fast/block/positioning/vertical-rl: Added.
+        * platform/mac/fast/block/positioning/vertical-rl/001-expected.checksum: Added.
+        * platform/mac/fast/block/positioning/vertical-rl/001-expected.png: Added.
+        * platform/mac/fast/block/positioning/vertical-rl/001-expected.txt: Added.
+        * platform/mac/fast/block/positioning/vertical-rl/002-expected.checksum: Added.
+        * platform/mac/fast/block/positioning/vertical-rl/002-expected.png: Added.
+        * platform/mac/fast/block/positioning/vertical-rl/002-expected.txt: Added.
+        * platform/mac/fast/block/positioning/vertical-rl/003-expected.checksum: Added.
+        * platform/mac/fast/block/positioning/vertical-rl/003-expected.png: Added.
+        * platform/mac/fast/block/positioning/vertical-rl/003-expected.txt: Added.
+        * platform/mac/fast/block/positioning/vertical-rl/004-expected.checksum: Added.
+        * platform/mac/fast/block/positioning/vertical-rl/004-expected.png: Added.
+        * platform/mac/fast/block/positioning/vertical-rl/004-expected.txt: Added.
+        * platform/mac/fast/block/positioning/vertical-rl/005-expected.checksum: Added.
+        * platform/mac/fast/block/positioning/vertical-rl/005-expected.png: Added.
+        * platform/mac/fast/block/positioning/vertical-rl/005-expected.txt: Added.
+        * platform/mac/fast/block/positioning/vertical-rl/006-expected.checksum: Added.
+        * platform/mac/fast/block/positioning/vertical-rl/006-expected.png: Added.
+        * platform/mac/fast/block/positioning/vertical-rl/006-expected.txt: Added.
+
+2011-02-24  Kenneth Russell  <kbr@google.com>
+
+        Reviewed by Darin Fisher.
+
+        Layout test fast/dom/timer-increase-then-decrease-min-interval.html is flaky
+        https://bugs.webkit.org/show_bug.cgi?id=55176
+
+        Wait twice as long (1 second instead of 0.5 seconds) for results
+        from these two tests. They were on the verge of passing when
+        failures occurred previously, so this increase should push them
+        well over the passing threshold.
+
+        * fast/dom/timer-increase-then-decrease-min-interval-repeating.html:
+        * fast/dom/timer-increase-then-decrease-min-interval.html:
+
 2011-02-24  Mihai Parparita  <mihaip@chromium.org>
 
         Unreviewed Leopard baseline update for some text tests after r78846

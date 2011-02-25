@@ -152,7 +152,7 @@ class Lighttpd(http_server_base.HttpServerBase):
                     (self._js_test_resource))
 
         # Setup a link to where the media resources are stored.
-        f.write(('alias.url = ( "/media-resources" => "%s" )\n\n') %
+        f.write(('alias.url += ( "/media-resources" => "%s" )\n\n') %
                     (self._media_resource))
 
         # dump out of virtual host config at the bottom.
@@ -207,7 +207,7 @@ class Lighttpd(http_server_base.HttpServerBase):
                             os.path.join(tmp_module_path, lib_file))
 
         env = self._port_obj.setup_environ_for_server()
-        _log.debug('Starting http server')
+        _log.debug('Starting http server, cmd="%s"' % str(start_cmd))
         # FIXME: Should use Executive.run_command
         self._process = subprocess.Popen(start_cmd, env=env)
 

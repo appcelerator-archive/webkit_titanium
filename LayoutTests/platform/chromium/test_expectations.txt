@@ -791,11 +791,6 @@ BUGCR59675 BUGCR59263 SKIP : media/event-attributes.html = PASS FAIL TIMEOUT
 // These tests are flaky with subtle pixel differences.
 BUGCR60744 LINUX : media/video-layer-crash.html = IMAGE PASS
 
-// This is flaky with a subtle pixel difference in the bottom right corner,
-// which I believe is due to new video scaling algorithm.
-// We should rewrite this test so that we wait for timeupdate event until the time is no less than 1. 
-BUGCR60244 : media/video-replaces-poster.html = IMAGE PASS
-
 // These tests are failing because they use position-dependent mouse clicks.
 // TESTISSUE 
 BUGCR25375 : media/video-controls-transformed.html = FAIL
@@ -3164,6 +3159,7 @@ BUGWK54322 MAC SNOWLEOPARD : editing/selection/replaced-boundaries-2.html = IMAG
 BUGWK54322 MAC SNOWLEOPARD : fast/backgrounds/svg-as-background-5.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : fast/backgrounds/svg-as-background-6.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : fast/block/margin-collapse/103.html = IMAGE
+BUGWK54322 MAC SNOWLEOPARD : fast/blockflow/Kusa-Makura-background-canvas.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : fast/blockflow/border-vertical-lr.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : fast/blockflow/english-lr-text.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : fast/blockflow/japanese-lr-selection.html = IMAGE
@@ -3390,6 +3386,7 @@ BUGWK54322 MAC SNOWLEOPARD : tables/mozilla/marvin/x_thead_align_justify.xml = I
 BUGWK54322 MAC SNOWLEOPARD : tables/mozilla/other/cell_widths.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : transforms/no_transform_hit_testing.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : transforms/svg-vs-css.xhtml = IMAGE
+BUGWK54322 MAC SNOWLEOPARD : transitions/default-timing-function.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : transitions/move-after-transition.html = IMAGE
 
 // Snow Leopard-only flakiness
