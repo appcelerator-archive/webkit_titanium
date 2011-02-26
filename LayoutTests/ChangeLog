@@ -1,3 +1,107 @@
+2011-02-25  Martin Robinson  <mrobinson@igalia.com>
+
+        Add the next set of missing GTK+ SVG pixel results.
+
+        * platform/gtk/svg/dom/SVGRectElement: Add missing pixel reults.
+        * platform/gtk/svg/dynamic-updates: Ditto.
+
+2011-02-25  Martin Robinson  <mrobinson@igalia.com>
+
+        Add some missing GTK+ SVG pixel results.
+
+        * platform/gtk/svg: Add missing GTK+ SVG pixel results.
+
+2011-02-25  Martin Robinson  <mrobinson@igalia.com>
+
+        Update GTK+ SVG pixel results which have changed.
+
+        * platform/gtk/svg: Update SVG pixel resultsj
+
+2011-02-25  Abhishek Arya  <inferno@chromium.org>
+
+        Reviewed by Dave Hyatt.
+
+        Ensure that we do not add the inline continuation flow to the table's continuation
+        table map for painting. The layout test should not crash on assert and should show
+        a solid outline around the inline child.
+        https://bugs.webkit.org/show_bug.cgi?id=54690        
+
+        * fast/table/table-continuation-outline-paint-crash.html: Added.
+        * platform/mac/fast/table/table-continuation-outline-paint-crash-expected.checksum: Added.
+        * platform/mac/fast/table/table-continuation-outline-paint-crash-expected.png: Added.
+        * platform/mac/fast/table/table-continuation-outline-paint-crash-expected.txt: Added.
+
+2011-02-25  James Robinson  <jamesr@chromium.org>
+
+        Update chromium test expectations.
+
+        * platform/chromium/test_expectations.txt:
+
+2011-02-25  Mihai Parparita  <mihaip@chromium.org>
+
+        Unreviewed Chromium expectations update.
+
+        Fix 16 tests for Chromium Snow Leopard by promoting chromium-mac-leopard
+        results to mac-leopard and removing outdated chromium-mac and
+        chromium-mac-snowleopard ones.
+
+        * platform/chromium-mac-leopard/svg/batik/masking/maskRegions-expected.checksum: Removed.
+        * platform/chromium-mac-leopard/svg/batik/masking/maskRegions-expected.png: Removed.
+        * platform/chromium-mac-leopard/svg/batik/masking/maskRegions-expected.txt: Removed.
+        * platform/chromium-mac-leopard/svg/custom/absolute-sized-content-with-resources-expected.checksum: Removed.
+        * platform/chromium-mac-leopard/svg/custom/absolute-sized-content-with-resources-expected.png: Removed.
+        * platform/chromium-mac-leopard/svg/custom/junk-data-expected.checksum: Renamed from LayoutTests/platform/chromium-mac/svg/custom/junk-data-expected.checksum.
+        * platform/chromium-mac-leopard/svg/custom/junk-data-expected.png: Renamed from LayoutTests/platform/chromium-mac/svg/custom/junk-data-expected.png.
+        * platform/chromium-mac-leopard/svg/custom/junk-data-expected.txt: Renamed from LayoutTests/platform/chromium-mac/svg/custom/junk-data-expected.txt.
+        * platform/chromium-mac-leopard/svg/custom/missing-xlink-expected.checksum: Renamed from LayoutTests/platform/chromium-mac/svg/custom/missing-xlink-expected.checksum.
+        * platform/chromium-mac-leopard/svg/custom/missing-xlink-expected.png: Renamed from LayoutTests/platform/chromium-mac/svg/custom/missing-xlink-expected.png.
+        * platform/chromium-mac-leopard/svg/custom/missing-xlink-expected.txt: Renamed from LayoutTests/platform/chromium-mac/svg/custom/missing-xlink-expected.txt.
+        * platform/chromium-mac-leopard/svg/custom/viewBox-hit-expected.checksum: Removed.
+        * platform/chromium-mac-leopard/svg/custom/viewBox-hit-expected.png: Removed.
+        * platform/chromium-mac-leopard/svg/filters/filterRes-expected.checksum: Renamed from LayoutTests/platform/chromium-mac/svg/filters/filterRes-expected.checksum.
+        * platform/chromium-mac-leopard/tables/mozilla/marvin/x_thead_align_justify-expected.checksum: Removed.
+        * platform/chromium-mac-leopard/tables/mozilla/marvin/x_thead_align_justify-expected.png: Removed.
+        * platform/chromium-mac/fast/text/justify-ideograph-simple-expected.checksum:
+        * platform/chromium-mac/fast/text/justify-ideograph-simple-expected.png:
+        * platform/chromium-mac/svg/W3C-SVG-1.1/text-intro-05-t-expected.checksum: Removed.
+        * platform/chromium-mac/svg/W3C-SVG-1.1/text-intro-05-t-expected.png: Removed.
+        * platform/chromium-mac/svg/batik/masking/maskRegions-expected.checksum: Removed.
+        * platform/chromium-mac/svg/batik/masking/maskRegions-expected.png: Removed.
+        * platform/chromium-mac/svg/css/text-gradient-shadow-expected.checksum: Removed.
+        * platform/chromium-mac/svg/custom/absolute-sized-content-with-resources-expected.checksum: Removed.
+        * platform/chromium-mac/svg/custom/absolute-sized-content-with-resources-expected.png: Removed.
+        * platform/chromium-mac/svg/custom/viewBox-hit-expected.checksum: Removed.
+        * platform/chromium-mac/svg/custom/viewBox-hit-expected.png: Removed.
+        * platform/chromium-mac/svg/filters/feComposite-expected.checksum: Removed.
+        * platform/chromium-mac/svg/filters/feComposite-expected.png: Removed.
+        * platform/chromium-mac/svg/hixie/perf/007-expected.checksum: Removed.
+        * platform/chromium-mac/svg/hixie/perf/007-expected.png: Removed.
+        * platform/chromium-mac/svg/repaint/filter-repaint-expected.checksum: Removed.
+        * platform/chromium-mac/svg/repaint/filter-repaint-expected.png: Removed.
+        * platform/chromium-mac/tables/mozilla/bugs/bug23235-expected.checksum: Removed.
+        * platform/chromium-mac/tables/mozilla/bugs/bug23235-expected.png: Removed.
+        * platform/chromium-mac/tables/mozilla/marvin/x_thead_align_justify-expected.checksum: Removed.
+        * platform/chromium-mac/tables/mozilla/marvin/x_thead_align_justify-expected.png: Removed.
+        * platform/chromium-mac/tables/mozilla_expected_failures/bugs/97619-expected.checksum: Removed.
+        * platform/chromium/test_expectations.txt:
+        * platform/mac-leopard/svg/W3C-SVG-1.1-SE/coords-units-03-b-expected.checksum: Renamed from LayoutTests/platform/chromium-mac/svg/W3C-SVG-1.1-SE/coords-units-03-b-expected.checksum.
+        * platform/mac-leopard/svg/W3C-SVG-1.1-SE/coords-units-03-b-expected.png: Renamed from LayoutTests/platform/chromium-mac/svg/W3C-SVG-1.1-SE/coords-units-03-b-expected.png.
+        * platform/mac-leopard/svg/W3C-SVG-1.1/text-intro-05-t-expected.checksum:
+        * platform/mac-leopard/svg/W3C-SVG-1.1/text-intro-05-t-expected.png:
+        * platform/mac-leopard/svg/batik/masking/maskRegions-expected.checksum:
+        * platform/mac-leopard/svg/batik/masking/maskRegions-expected.png:
+        * platform/mac-leopard/svg/batik/masking/maskRegions-expected.txt: Removed.
+        * platform/mac-leopard/svg/custom/absolute-sized-content-with-resources-expected.checksum:
+        * platform/mac-leopard/svg/custom/absolute-sized-content-with-resources-expected.png:
+        * platform/mac-leopard/svg/custom/viewBox-hit-expected.checksum:
+        * platform/mac-leopard/svg/custom/viewBox-hit-expected.png:
+        * platform/mac-leopard/tables/mozilla/bugs/bug23235-expected.checksum:
+        * platform/mac-leopard/tables/mozilla/bugs/bug23235-expected.png:
+        * platform/mac-leopard/tables/mozilla/marvin/x_thead_align_justify-expected.checksum:
+        * platform/mac-leopard/tables/mozilla/marvin/x_thead_align_justify-expected.png:
+        * platform/mac-leopard/tables/mozilla_expected_failures/bugs/97619-expected.checksum:
+        * platform/mac-leopard/tables/mozilla_expected_failures/bugs/97619-expected.png:
+
 2011-02-25  David Hyatt  <hyatt@apple.com>
 
         Reviewed by Sam Weinig.
