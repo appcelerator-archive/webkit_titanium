@@ -48,6 +48,7 @@ struct WebResourceDelegateImplementationCache {
     IMP willCacheResponseFunc;
     IMP plugInFailedWithErrorFunc;
     IMP shouldUseCredentialStorageFunc;
+    IMP shouldPaintBrokenImageForURLFunc;
 };
 
 struct WebFrameLoadDelegateImplementationCache {
@@ -134,6 +135,7 @@ id CallResourceLoadDelegate(IMP, WebView *, SEL, id, id, id, id);
 id CallResourceLoadDelegate(IMP, WebView *, SEL, id, NSInteger, id);
 id CallResourceLoadDelegate(IMP, WebView *, SEL, id, id, NSInteger, id);
 
+BOOL CallResourceLoadDelegateReturningBoolean(BOOL, IMP, WebView *, SEL, id);
 BOOL CallResourceLoadDelegateReturningBoolean(BOOL, IMP, WebView *, SEL, id, id);
 BOOL CallResourceLoadDelegateReturningBoolean(BOOL, IMP, WebView *, SEL, id, id, id);
 

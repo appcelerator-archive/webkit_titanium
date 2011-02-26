@@ -1,3 +1,87 @@
+2011-02-26  Yongjun Zhang  <yongjun_zhang@apple.com>
+
+        Reviewed by David Kilzer.
+
+        https://bugs.webkit.org/show_bug.cgi?id=48781
+
+        Add a resource load delegate method to query if WebCore should paint the default broken image for failed images.
+
+        * fast/images/resources/broken-image-with-invalid-format.png: Added.
+        * fast/images/support-broken-image-delegate.html: Added.
+        * platform/mac/fast/images/support-broken-image-delegate-expected.txt: Added.
+
+2011-02-26  Eric Seidel  <eric@webkit.org>
+
+        Reviewed by Alexey Proskuryakov.
+
+        Remove disabled xmlhttprequest/web-apps tests
+        https://bugs.webkit.org/show_bug.cgi?id=55181
+
+        Per ap's suggestion in:
+        https://bugs.webkit.org/show_bug.cgi?id=55164#c15
+
+        I don't think we've ever run these tests.  Some of them
+        depend on 10 minute timeouts and another nonsense. :)
+
+        * http/tests/xmlhttprequest/web-apps/006-test.cgi: Removed.
+        * http/tests/xmlhttprequest/web-apps/006.html-disabled: Removed.
+        * http/tests/xmlhttprequest/web-apps/009-test.cgi: Removed.
+        * http/tests/xmlhttprequest/web-apps/009.html-disabled: Removed.
+        * http/tests/xmlhttprequest/web-apps/016-test.cgi: Removed.
+        * http/tests/xmlhttprequest/web-apps/016.html-disabled: Removed.
+        * http/tests/xmlhttprequest/web-apps/017.html-disabled: Removed.
+        * http/tests/xmlhttprequest/web-apps/recursion/001.html-disabled: Removed.
+        * http/tests/xmlhttprequest/web-apps/recursion/README: Removed.
+
+2011-02-26  Adam Barth  <abarth@webkit.org>
+
+        Reviewed by Eric Seidel.
+
+        Synchronized tests with html5lib
+        https://bugs.webkit.org/show_bug.cgi?id=55128
+
+        I didn't copy all of plain-test-unsafe because it confuses pretty-diff.
+
+        * html5lib/resources/pending-spec-changes-plain-text-unsafe.dat:
+        * html5lib/resources/pending-spec-changes.dat:
+        * html5lib/resources/tests1.dat:
+        * html5lib/resources/tests10.dat:
+        * html5lib/resources/tests19.dat:
+        * html5lib/resources/tests20.dat:
+        * html5lib/resources/tests22.dat: Added.
+        * html5lib/resources/tests23.dat: Added.
+        * html5lib/resources/tests24.dat: Added.
+        * html5lib/resources/tests25.dat: Added.
+        * html5lib/resources/tests26.dat: Added.
+        * html5lib/resources/tests3.dat:
+        * html5lib/resources/tests6.dat:
+        * html5lib/runner-expected.txt:
+        * html5lib/runner.html:
+
+2011-02-26  Xianzhu Wang  <wangxianzhu@google.com>
+
+        Reviewed by Eric Seidel.
+
+        Fix Chromium test failure http://crbug.com/33358
+        https://bugs.webkit.org/show_bug.cgi?id=55125
+
+        * platform/chromium/test_expectations.txt:
+        * platform/chromium/fast/dom/Window/window-postmessage-clone-frames-expected.txt: Added.
+
+2011-02-26  Chang Shu  <chang.shu@nokia.com>
+
+        Reviewed by Antonio Gomes.
+
+        Spatial Navigation: Add support for <select> element in multiple selection mode
+        https://bugs.webkit.org/show_bug.cgi?id=49261
+
+        Enhanced existing tests and added new tests for the bug.
+
+        * fast/spatial-navigation/snav-multiple-select-expected.txt:
+        * fast/spatial-navigation/snav-multiple-select.html:
+        * fast/spatial-navigation/snav-single-select-list-expected.txt: Added.
+        * fast/spatial-navigation/snav-single-select-list.html: Added.
+
 2011-02-25  Ryosuke Niwa  <rniwa@webkit.org>
 
         Reviewed by Eric Seidel.

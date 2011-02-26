@@ -1,3 +1,154 @@
+2011-02-26  Tony Gentilcore  <tonyg@chromium.org>
+
+        Reviewed by Adam Barth.
+
+        Prevent parser yields from triggering early dumpAsText()
+        https://bugs.webkit.org/show_bug.cgi?id=55187
+
+        DRT's dumpAsText() takes a snapshot when DocumentLoader::isLoadingInAPISense()
+        indicates the page is done. isLoadingInAPISense depends on
+        HTMLDocumentParser::isProcessingData(), which just checks if the parser is in an
+        insert() or append().
+
+        This means that if the parser is pumping in a resumeParsingAfterScriptExecution() or
+        resumeParsingAfterYield(), isLoadingInAPISense() may not be blocked. This patch
+        fixes that by repurposing m_writeNestingLevel as m_pumpSessionNestingLevel and
+        incrementing it in pumpTokenizer().
+
+        When I locally cause the parser to yield after every token, a lot of tests fail
+        because DRT snapshots too early. This patch fixes those tests, however I'm having
+        trouble writing a test case that reliably reproduces the problem without this patch
+        and passes with it (without changing yield constants). This is because it requires
+        4,096 tokens in a single pump session to yield and (len('<b>' * 4096 = 12k, which
+        doesn't always happen).
+
+        * html/parser/HTMLDocumentParser.cpp:
+        (WebCore::HTMLDocumentParser::HTMLDocumentParser):
+        (WebCore::HTMLDocumentParser::~HTMLDocumentParser):
+        (WebCore::HTMLDocumentParser::processingData):
+        (WebCore::HTMLDocumentParser::pumpTokenizer):
+        (WebCore::HTMLDocumentParser::insert):
+        (WebCore::HTMLDocumentParser::append):
+        * html/parser/HTMLDocumentParser.h:
+        (WebCore::HTMLDocumentParser::inPumpSession):
+        (WebCore::HTMLDocumentParser::shouldDelayEnd):
+        * html/parser/HTMLParserScheduler.h:
+        (WebCore::PumpSession::PumpSession):
+        * html/parser/NestingLevelIncrementer.h:
+
+2011-02-26  Yongjun Zhang  <yongjun_zhang@apple.com>
+
+        Reviewed by David Kilzer.
+
+        https://bugs.webkit.org/show_bug.cgi?id=48781
+
+        Add a resource load delegate method to query if WebCore should paint the default broken image for failed images.
+
+        Add a new resource load client method (shouldPaintBrokenImage).  WebKit client can decide if WebCore
+        should paint the default broken image when an image fails to load or decode.  The method also passes the
+        URL of the failed image.
+
+        Test: fast/images/support-broken-image-delegate.html
+
+        * loader/FrameLoaderClient.h:
+        (WebCore::FrameLoaderClient::shouldPaintBrokenImage):
+        * loader/cache/CachedImage.cpp:
+        (WebCore::CachedImage::CachedImage):
+        (WebCore::CachedImage::image):
+        (WebCore::CachedImage::checkShouldPaintBrokenImage):
+        (WebCore::CachedImage::error):
+        * loader/cache/CachedImage.h:
+
+2011-02-26  Chris Evans  <cevans@chromium.org>
+
+        Reviewed by Adam Barth.
+
+        Database: Data race: should only touch the transaction queue inside the
+        lock.
+        https://bugs.webkit.org/show_bug.cgi?id=55031
+
+        * storage/Database.cpp:
+        (WebCore::Database::changeVersion): only touch queue inside lock.
+        (WebCore::Database::runTransaction): only touch queue inside lock.
+
+2011-02-26  Yi Shen  <yi.4.shen@nokia.com>
+
+        Reviewed by Eric Carlson.
+
+        Missing volumechangeEvent in case of mediaPlayerVolumeChanged gets callback
+        https://bugs.webkit.org/show_bug.cgi?id=55147
+
+        When HTMLMediaElement::mediaPlayerVolumeChanged() gets callback, 
+        a volumechangeEvent event should be fired if the volume gets changed.
+
+        Test: media/event-attributes.html
+
+        * html/HTMLMediaElement.cpp:
+        (WebCore::HTMLMediaElement::setMuted): Remove updateVolume() since it does nothing when m_player is 0.
+        (WebCore::HTMLMediaElement::mediaPlayerVolumeChanged): Fire a volumechangeEvent when the volume is changed.
+
+2011-02-26  Eric Seidel  <eric@webkit.org>
+
+        Reviewed by Maciej Stachowiak.
+
+        disableRangeMutation quirk for mail slows down peacekeeper domDynamicCreationCreateElement
+        https://bugs.webkit.org/show_bug.cgi?id=55127
+
+        Before:
+        avg 513.4
+        median 515
+        stdev 7.234638899074368
+        min 490
+        max 528
+
+        After:
+        avg 508.15
+        median 510
+        stdev 6.966168243733426
+        min 485
+        max 515
+
+        Yes, the stdev is a bit high to actually support my conclusions.  But looking
+        at the profile, this change makes a lot of sense.  I'll up the iterations
+        for future testing.
+
+        * dom/Document.cpp:
+        (WebCore::disableRangeMutation):
+         - This check should only be compiled in if we're planning to run on Tiger or Leopard.
+
+2011-02-26  Vsevolod Vlasov  <vsevik@chromium.org>
+
+        Reviewed by Pavel Feldman.
+
+        DumpRenderTree should reset frame opener between tests.
+        https://bugs.webkit.org/show_bug.cgi?id=54874
+
+        No new tests. (no code affected, just exporting a method for DumpRenderTree use)
+
+        * WebCore.exp.in:
+
+2011-02-26  Chang Shu  <chang.shu@nokia.com>
+
+        Reviewed by Antonio Gomes.
+
+        Based on patch by Carlos Garcia Campos  <cgarcia@igalia.com>.
+
+        Spatial Navigation: Add support for <select> element in multiple selection mode
+        https://bugs.webkit.org/show_bug.cgi?id=49261
+
+        When spatial navigation is enabled, use space key to toggle select
+        items. And the up and down keys should not affect selection but just
+        navigate through items, which is indicated visually by a focus ring.
+
+        New Test: fast/spatial-navigation/snav-single-select-list.html
+        Enhanced Test: fast/spatial-navigation/snav-multiple-select.html
+
+        * dom/SelectElement.cpp:
+        (WebCore::SelectElement::listBoxDefaultEventHandler):
+        * rendering/RenderListBox.cpp:
+        (WebCore::RenderListBox::addFocusRingRects):
+        * rendering/RenderListBox.h:
+
 2011-02-25  Ryosuke Niwa  <rniwa@webkit.org>
 
         Unreviewed Qt build fix; included CSSValueList.h in EditingStyle.cpp.
