@@ -1,3 +1,35 @@
+2011-02-26  Adam Klein  <adamk@chromium.org>
+
+        Reviewed by Adam Barth.
+
+        [fileapi] Implement EntrySync.toURI by moving Entry::toURI to EntryBase
+        https://bugs.webkit.org/show_bug.cgi?id=54585
+
+        * fast/filesystem/resources/file-entry-to-uri-sync.js: Added.
+        * fast/filesystem/workers/file-entry-to-uri-sync-expected.txt: Added.
+        * fast/filesystem/workers/file-entry-to-uri-sync.html: Added.
+
+2011-02-26  Alice Boxhall  <aboxhall@chromium.org>
+
+        Reviewed by Ojan Vafai.
+
+        Tests that typing enter in the input element does not fire textInput.
+        https://bugs.webkit.org/show_bug.cgi?id=54152
+
+        * fast/forms/textinput-not-fired-on-enter-in-input-expected.txt: Added.
+        * fast/forms/textinput-not-fired-on-enter-in-input.html: Added.
+
+2011-02-26  James Simonsen  <simonjam@chromium.org>
+
+        Reviewed by Tony Gentilcore.
+
+        [Web Timing] loadEvent timing should refer to first load event if there are many
+        https://bugs.webkit.org/show_bug.cgi?id=55201
+
+        * fast/dom/script-tests/webtiming-document-open.js:
+        (testTimingWithDocumentOpen): Fire via setTimeout to match w3c test and reveal loadEventEnd.
+        (finishTest): Fire via setTimeout to match w3c test.
+
 2011-02-26  Yongjun Zhang  <yongjun_zhang@apple.com>
 
         Reviewed by David Kilzer.

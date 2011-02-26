@@ -1,3 +1,123 @@
+2011-02-26  Eric Seidel  <eric@webkit.org>
+
+        Reviewed by Maciej Stachowiak.
+
+        malloc in removeChildren shows up on profile of peacekeeper domDynamicCreationCreateElement
+        https://bugs.webkit.org/show_bug.cgi?id=55204
+
+        * dom/ContainerNode.cpp:
+        (WebCore::ContainerNode::removeChildren):
+         - Using an inlineCapacity of 10 for now. We may want to tweak it later.
+         - This removes yet another malloc from code which removes nodes (which is rather common).
+
+2011-02-26  Eric Seidel  <eric@webkit.org>
+
+        Reviewed by Maciej Stachowiak.
+
+        HashSet<T>::end() creation is expensive and should be avoided
+        https://bugs.webkit.org/show_bug.cgi?id=55205
+
+        In the common case, m_ranges is an empty set.  When that's
+        the case, we spend all our time in skipEmptyBuckets, walking
+        the hash storage skipping over empty buckets.
+        
+        This looks to be at least a 5% speedup on (my local version of) peacekeeper's domDynamicCreationCreateElement.
+
+        Before:
+        avg 383.6666666666667
+        median 386
+        stdev 7.152311203768722
+        min 360
+        max 391
+
+        After:
+        avg 366.3333333333333
+        median 366
+        stdev 2.712112747574399
+        min 362
+        max 377
+
+        * dom/Document.cpp:
+        (WebCore::Document::nodeChildrenChanged):
+        (WebCore::Document::nodeChildrenWillBeRemoved):
+        (WebCore::Document::nodeWillBeRemoved):
+        (WebCore::Document::textInserted):
+        (WebCore::Document::textRemoved):
+        (WebCore::Document::textNodesMerged):
+        (WebCore::Document::textNodeSplit):
+
+2011-02-26  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r79764.
+        http://trac.webkit.org/changeset/79764
+        https://bugs.webkit.org/show_bug.cgi?id=55295
+
+        "broke Chromium builds" (Requested by rniwa on #webkit).
+
+        * WebCore.exp.in:
+
+2011-02-26  Adam Klein  <adamk@chromium.org>
+
+        Reviewed by Adam Barth.
+
+        [fileapi] Implement EntrySync.toURI by moving Entry::toURI to EntryBase
+        https://bugs.webkit.org/show_bug.cgi?id=54585
+
+        In order to move toURI to EntryBase, it needed access to
+        SecurityOrigin. Most of the changes below were to pass a
+        ScriptExecutionContext to DOMFileSystemBase to enable this.
+
+        Test: fast/filesystem/workers/file-entry-to-uri-sync.html
+
+        * WebCore.gypi:
+        * WebCore.xcodeproj/project.pbxproj:
+        * fileapi/DOMFileSystem.cpp:
+        (WebCore::DOMFileSystem::DOMFileSystem):
+        * fileapi/DOMFileSystemBase.cpp:
+        (WebCore::DOMFileSystemBase::DOMFileSystemBase):
+        (WebCore::DOMFileSystemBase::securityOrigin):
+        * fileapi/DOMFileSystemBase.h:
+        (WebCore::DOMFileSystemBase::create):
+        * fileapi/DOMFileSystemSync.cpp:
+        (WebCore::DOMFileSystemSync::create):
+        (WebCore::DOMFileSystemSync::DOMFileSystemSync):
+        * fileapi/DOMFileSystemSync.h:
+        (WebCore::DOMFileSystemSync::create):
+        * fileapi/Entry.cpp:
+        * fileapi/Entry.h:
+        * fileapi/EntryBase.cpp: Added.
+        (WebCore::EntryBase::EntryBase):
+        (WebCore::EntryBase::~EntryBase):
+        (WebCore::EntryBase::toURI):
+        * fileapi/EntryBase.h:
+        * fileapi/EntrySync.idl:
+
+2011-02-26  Alice Boxhall  <aboxhall@chromium.org>
+
+        Reviewed by Ojan Vafai.
+
+        typing enter in the input element should not fire textInput
+        https://bugs.webkit.org/show_bug.cgi?id=54152
+
+        Stop textInput event propagation in HTMLInputElement::preDispatchEventHandler if the event target should submit implicitly.
+
+        Test: fast/forms/textinput-not-fired-on-enter-in-input.html
+
+        * html/HTMLInputElement.cpp:
+        (WebCore::HTMLInputElement::preDispatchEventHandler): Check m_inputType->shouldSubmitImplicitly for textInputEvents and stop propagation if true.
+
+2011-02-26  James Simonsen  <simonjam@chromium.org>
+
+        Reviewed by Tony Gentilcore.
+
+        [Web Timing] loadEvent timing should refer to first load event if there are many
+        https://bugs.webkit.org/show_bug.cgi?id=55201
+
+        Test: fast/dom/webtiming-document-open.html
+
+        * page/DOMWindow.cpp:
+        (WebCore::DOMWindow::dispatchLoadEvent):
+
 2011-02-26  Tony Gentilcore  <tonyg@chromium.org>
 
         Reviewed by Adam Barth.
