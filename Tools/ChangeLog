@@ -1,3 +1,67 @@
+2011-02-26  Yael Aharon  <yael.aharon@nokia.com>
+
+        Reviewed by Andreas Kling.
+
+        [Qt] Fix the focus in MiniBrowser.
+        https://bugs.webkit.org/show_bug.cgi?id=55288
+
+        Give focus to the web view when a load starts.
+
+        * MiniBrowser/qt/BrowserWindow.cpp:
+        (BrowserWindow::urlChanged):
+
+2011-02-26  Gyuyoung Kim  <gyuyoung.kim@samsung.com>
+
+        Reviewed by Adam Barth.
+
+        [EFL] Add coding style exceptions for EFL port
+        https://bugs.webkit.org/show_bug.cgi?id=54733
+
+        The EFL APIs use EFL naming style, which includes both lower-cased and camel-cased,
+        underscore-sparated values. But, style checking rule have found parameter_name errors
+        in efl directories so far.
+
+        * Scripts/webkitpy/style/checker.py: Add prameter_name rule's exception and efl directories.
+
+2011-02-26  David Levin  <levin@chromium.org>
+
+        Reviewed by Darin Adler.
+
+        check-webkit-style should check for spaces after periods in comments
+        https://bugs.webkit.org/show_bug.cgi?id=55253
+
+        * Scripts/webkitpy/style/checkers/cpp.py: Added the check.
+        * Scripts/webkitpy/style/checkers/cpp_unittest.py: Added tests
+          and fixed the name of one related test.
+
+2011-02-26  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Reviewed by Andreas Kling.
+
+        Make it possible to test the targetdensity-dpi support
+        https://bugs.webkit.org/show_bug.cgi?id=55142
+
+        Test the viewport meta tag feature targetdensity-dpi by
+        adding extra arguments to dumpConfigurationForViewport
+
+        Add the new arguments to the shared header and all
+        implementation.
+
+        * DumpRenderTree/LayoutTestController.cpp:
+        (dumpConfigurationForViewportCallback):
+        * DumpRenderTree/LayoutTestController.h:
+        * DumpRenderTree/gtk/LayoutTestControllerGtk.cpp:
+        (LayoutTestController::dumpConfigurationForViewport):
+        * DumpRenderTree/mac/LayoutTestControllerMac.mm:
+        (LayoutTestController::dumpConfigurationForViewport):
+        * DumpRenderTree/win/LayoutTestControllerWin.cpp:
+        (LayoutTestController::dumpConfigurationForViewport):
+        * DumpRenderTree/wx/LayoutTestControllerWx.cpp:
+        (LayoutTestController::dumpConfigurationForViewport):
+        * DumpRenderTree/qt/LayoutTestControllerQt.cpp:
+        (LayoutTestController::dumpConfigurationForViewport):
+        * DumpRenderTree/qt/LayoutTestControllerQt.h:
+
 2011-02-26  Sheriff Bot  <webkit.review.bot@gmail.com>
 
         Unreviewed, rolling out r79764.
