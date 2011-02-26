@@ -1,3 +1,72 @@
+2011-02-25  Anders Carlsson  <andersca@apple.com>
+
+        Reviewed by Darin Adler.
+
+        Plug-in process crashes when using GuardMalloc
+        https://bugs.webkit.org/show_bug.cgi?id=55279
+        <rdar://problem/9044618>
+
+        Update m_environmentPointer after copying the environment variables.
+        
+        * UIProcess/Launcher/mac/ProcessLauncherMac.mm:
+        (WebKit::EnvironmentVariables::copyEnvironmentVariables):
+
+2011-02-25  Darin Adler  <darin@apple.com>
+
+        * UIProcess/Launcher/mac/ProcessLauncherMac.mm:
+        (WebKit::ProcessLauncher::launchProcess): Fixed backwards logic from last change.
+
+2011-02-25  Darin Adler  <darin@apple.com>
+
+        Reviewed by Mark Rowe.
+
+        * UIProcess/Launcher/mac/ProcessLauncherMac.mm:
+        (WebKit::ProcessLauncher::launchProcess): Fixed performance problem in production
+        builds by only setting DYLD_FRAMEWORK_PATH in engineering configurations.
+
+2011-02-25  Darin Adler  <darin@apple.com>
+
+        Reviewed by Anders Carlsson.
+
+        <rdar://problem/8036034> WebKit2 should work even if DYLD_FRAMEWORK_PATH is not set
+
+        * UIProcess/Launcher/mac/ProcessLauncherMac.mm:
+        (WebKit::EnvironmentVariables::~EnvironmentVariables): Use fastFree, not delete, on
+        the strings here because they are allocated with fastMalloc, not new.
+        (WebKit::EnvironmentVariables::set): Use const more.
+        (WebKit::EnvironmentVariables::get): Ditto.
+        (WebKit::EnvironmentVariables::appendValue): Ditto.
+        (WebKit::EnvironmentVariables::valueIfVariableHasName): Ditto. Also fix mistake
+        where this would match if the name matched only a prefix of the environment variable's
+        name. We want to match the whole name, so we need to use memcmp, not strncmp.
+        (WebKit::EnvironmentVariables::createStringForVariable): Use const more.
+        (WebKit::ProcessLauncher::launchProcess): Use clearer name, frameworkExecutablePath,
+        for what was called bundlePath before. Append the frameworks path to DYLD_FRAMEWORK_PATH,
+        ensuring we can pick up other frameworks from the same directory in the web process.
+        Use a const_cast instead of a C-style cast.
+
+2011-02-25  Chris Fleizach  <cfleizach@apple.com>
+
+        Reviewed by Anders Carlsson.
+
+        AX: WK2: AXApplication not returning the AXFocusedUIElement within the web area
+        https://bugs.webkit.org/show_bug.cgi?id=55277
+
+        * UIProcess/API/mac/WKView.mm:
+        (-[WKView accessibilityFocusedUIElement]):
+
+2011-02-25  Alexey Proskuryakov  <ap@apple.com>
+
+        Reviewed by Anders Carlsson.
+
+        https://bugs.webkit.org/show_bug.cgi?id=55276
+        WebPage::close() accesses "this" after it is destroyed.
+
+        This was making many tests crash with GuardMalloc.
+
+        * WebProcess/WebPage/WebPage.cpp: (WebKit::WebPage::close): Access "this" before it can be
+        destroyed, not after.
+
 2011-02-25  Balazs Kelemen  <kbalazs@webkit.org>
 
         Unreviewed.
