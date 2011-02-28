@@ -1,3 +1,180 @@
+2011-02-28  Yury Semikhatsky  <yurys@chromium.org>
+
+        Unreviewed. Fix Chromium tests failures due to r79858.
+
+        * inspector/InspectorAgent.cpp:
+        (WebCore::InspectorAgent::inspectedPageDestroyed):
+
+2011-02-28  Vsevolod Vlasov  <vsevik@chromium.org>
+
+        Reviewed by Pavel Feldman.
+
+        XML without style should render as syntax-highlighted source.
+        https://bugs.webkit.org/show_bug.cgi?id=13807
+
+        XML tree view mode implemented. If XML does not have any style
+        information, it is rendered as highlighted source with collapsable
+        elements.
+
+        Tests: fast/css/dumpAsText/xml-stylesheet-pi-not-in-prolog.xml
+               fast/encoding/dumpAsText/utf-16-no-bom.xml
+               http/tests/xmlviewer/dumpAsText/css-stylesheet.xml
+               http/tests/xmlviewer/dumpAsText/frames.html
+               http/tests/xmlviewer/dumpAsText/mathml.xml
+               http/tests/xmlviewer/dumpAsText/svg.xml
+               http/tests/xmlviewer/dumpAsText/wml.xml
+               http/tests/xmlviewer/dumpAsText/xhtml-tag.xml
+               http/tests/xmlviewer/dumpAsText/xlink.xml
+               http/tests/xmlviewer/dumpAsText/xmlviewer-charset-cp1251.xml
+               http/tests/xmlviewer/dumpAsText/xmlviewer-charset-utf8.xml
+               http/tests/xmlviewer/dumpAsText/xmlviewer.xml
+               http/tests/xmlviewer/dumpAsText/xsl-stylesheet.xml
+               http/tests/xmlviewer/dumpAsText/xul.xml
+               svg/hixie/error/dumpAsText/004.xml
+               svg/hixie/error/dumpAsText/005.xml
+
+        * CMakeLists.txt:
+        * DerivedSources.make:
+        * GNUmakefile.am:
+        * WebCore.gyp/WebCore.gyp:
+        * WebCore.gypi:
+        * WebCore.vcproj/WebCore.vcproj:
+        * WebCore.xcodeproj/project.pbxproj:
+        * css/CSSStyleSelector.cpp:
+        (WebCore::CSSStyleSelector::matchUARules):
+        * dom/Document.cpp:
+        (WebCore::Document::Document):
+        (WebCore::Document::createElement):
+        * dom/Document.h:
+        (WebCore::Document::usesViewSourceStyles):
+        (WebCore::Document::setUsesViewSourceStyles):
+        (WebCore::Document::sawElementsInKnownNamespaces):
+        * dom/XMLDocumentParser.h:
+        * dom/XMLDocumentParserLibxml2.cpp:
+        (WebCore::XMLDocumentParser::XMLDocumentParser):
+        (WebCore::XMLDocumentParser::processingInstruction):
+        (WebCore::XMLDocumentParser::initializeParserContext):
+        (WebCore::XMLDocumentParser::doEnd):
+        * dom/XMLDocumentParserQt.cpp:
+        (WebCore::XMLDocumentParser::XMLDocumentParser):
+        (WebCore::XMLDocumentParser::initializeParserContext):
+        (WebCore::XMLDocumentParser::parseProcessingInstruction):
+        * html/HTMLViewSourceDocument.cpp:
+        (WebCore::HTMLViewSourceDocument::HTMLViewSourceDocument):
+        * xml/XMLTreeViewer.cpp: Added.
+        (WebCore::XMLTreeViewer::XMLTreeViewer):
+        (WebCore::XMLTreeViewer::hasNoStyleInformation):
+        (WebCore::XMLTreeViewer::transformDocumentToTreeView):
+        * xml/XMLTreeViewer.h: Added.
+        (WebCore::XMLTreeViewer::~XMLTreeViewer):
+        * xml/XMLViewer.xsl: Added.
+        * xml/XSLStyleSheet.h:
+        (WebCore::XSLStyleSheet::createForXMLTreeViewer):
+
+2011-02-28  Yury Semikhatsky  <yurys@chromium.org>
+
+        Reviewed by Pavel Feldman.
+
+        Web Inspector: debugger agents should have same livetime as InspectorAgent
+        https://bugs.webkit.org/show_bug.cgi?id=55369
+
+        DOM and JS debugger agents are now created in InspectorAgent's constructor and owned
+        by the agent. Debugger state is cleared on frontend disconnect.
+
+        * inspector/Inspector.idl:
+        * inspector/InspectorAgent.cpp:
+        (WebCore::InspectorAgent::InspectorAgent):
+        (WebCore::InspectorAgent::restoreInspectorStateFromCookie):
+        (WebCore::InspectorAgent::setFrontend):
+        (WebCore::InspectorAgent::disconnectFrontend):
+        (WebCore::InspectorAgent::populateScriptObjects):
+        (WebCore::InspectorAgent::didCommitLoad):
+        (WebCore::InspectorAgent::showScriptsPanel):
+        * inspector/InspectorAgent.h:
+        * inspector/InspectorBrowserDebuggerAgent.cpp:
+        (WebCore::InspectorBrowserDebuggerAgent::create):
+        (WebCore::InspectorBrowserDebuggerAgent::InspectorBrowserDebuggerAgent):
+        (WebCore::InspectorBrowserDebuggerAgent::~InspectorBrowserDebuggerAgent):
+        (WebCore::InspectorBrowserDebuggerAgent::debuggerWasEnabled):
+        (WebCore::InspectorBrowserDebuggerAgent::debuggerWasDisabled):
+        (WebCore::InspectorBrowserDebuggerAgent::disable):
+        (WebCore::InspectorBrowserDebuggerAgent::setFrontend):
+        (WebCore::InspectorBrowserDebuggerAgent::clearFrontend):
+        (WebCore::InspectorBrowserDebuggerAgent::setAllBrowserBreakpoints):
+        (WebCore::InspectorBrowserDebuggerAgent::inspectedURLChanged):
+        (WebCore::InspectorBrowserDebuggerAgent::setDOMBreakpoint):
+        (WebCore::InspectorBrowserDebuggerAgent::removeDOMBreakpoint):
+        (WebCore::InspectorBrowserDebuggerAgent::willInsertDOMNode):
+        (WebCore::InspectorBrowserDebuggerAgent::willRemoveDOMNode):
+        (WebCore::InspectorBrowserDebuggerAgent::willModifyDOMAttr):
+        (WebCore::InspectorBrowserDebuggerAgent::descriptionForDOMEvent):
+        (WebCore::InspectorBrowserDebuggerAgent::pauseOnNativeEventIfNeeded):
+        (WebCore::InspectorBrowserDebuggerAgent::willSendXMLHttpRequest):
+        (WebCore::InspectorBrowserDebuggerAgent::clear):
+        * inspector/InspectorBrowserDebuggerAgent.h:
+        * inspector/InspectorController.cpp:
+        (WebCore::InspectorController::debuggerEnabled):
+        (WebCore::InspectorController::showAndEnableDebugger):
+        (WebCore::InspectorController::disableDebugger):
+        * inspector/InspectorDebuggerAgent.cpp:
+        (WebCore::InspectorDebuggerAgent::create):
+        (WebCore::InspectorDebuggerAgent::InspectorDebuggerAgent):
+        (WebCore::InspectorDebuggerAgent::~InspectorDebuggerAgent):
+        (WebCore::InspectorDebuggerAgent::startUserInitiatedDebugging):
+        (WebCore::InspectorDebuggerAgent::enable):
+        (WebCore::InspectorDebuggerAgent::disable):
+        (WebCore::InspectorDebuggerAgent::enabled):
+        (WebCore::InspectorDebuggerAgent::restore):
+        (WebCore::InspectorDebuggerAgent::setFrontend):
+        (WebCore::InspectorDebuggerAgent::clearFrontend):
+        (WebCore::InspectorDebuggerAgent::setJavaScriptBreakpoint):
+        (WebCore::InspectorDebuggerAgent::removeJavaScriptBreakpoint):
+        (WebCore::InspectorDebuggerAgent::evaluateOnCallFrame):
+        (WebCore::InspectorDebuggerAgent::getCompletionsOnCallFrame):
+        (WebCore::InspectorDebuggerAgent::currentCallFrames):
+        (WebCore::InspectorDebuggerAgent::didParseSource):
+        (WebCore::InspectorDebuggerAgent::clear):
+        * inspector/InspectorDebuggerAgent.h:
+        (WebCore::InspectorDebuggerAgent::enable):
+        (WebCore::InspectorDebuggerAgent::disable):
+        (WebCore::InspectorDebuggerAgent::Listener::~Listener):
+        (WebCore::InspectorDebuggerAgent::setListener):
+        * inspector/InspectorInstrumentation.cpp:
+        (WebCore::InspectorInstrumentation::willInsertDOMNodeImpl):
+        (WebCore::InspectorInstrumentation::didInsertDOMNodeImpl):
+        (WebCore::InspectorInstrumentation::willRemoveDOMNodeImpl):
+        (WebCore::InspectorInstrumentation::didRemoveDOMNodeImpl):
+        (WebCore::InspectorInstrumentation::willModifyDOMAttrImpl):
+        (WebCore::InspectorInstrumentation::willSendXMLHttpRequestImpl):
+        (WebCore::InspectorInstrumentation::pauseOnNativeEventIfNeeded):
+        * inspector/front-end/DebuggerModel.js:
+        (WebInspector.DebuggerModel.prototype.enableDebugger):
+        (WebInspector.DebuggerModel.prototype.disableDebugger):
+
+2011-02-28  Renata Hodovan  <reni@webkit.org>
+
+        Reviewed by Andreas Kling.
+
+        FECompositeElement changes doesn't require relayout.
+        https://bugs.webkit.org/show_bug.cgi?id=55367
+
+        When the FECompositeElement receives an update message but the given value remains the same we don't need
+        to relayout the filter.
+
+        No new tests are needed because this modification is covered by the dynamic update tests of FEComposite.
+
+        * platform/graphics/filters/FEComposite.cpp:
+        (WebCore::FEComposite::setOperation):
+        (WebCore::FEComposite::setK1):
+        (WebCore::FEComposite::setK2):
+        (WebCore::FEComposite::setK3):
+        (WebCore::FEComposite::setK4):
+        * platform/graphics/filters/FEComposite.h:
+        * svg/SVGFECompositeElement.cpp:
+        (WebCore::SVGFECompositeElement::setFilterEffectAttribute):
+        (WebCore::SVGFECompositeElement::svgAttributeChanged):
+        * svg/SVGFECompositeElement.h:
+
 2011-02-28  Andreas Kling  <kling@webkit.org>
 
         Reviewed by Kenneth Rohde Christiansen.
