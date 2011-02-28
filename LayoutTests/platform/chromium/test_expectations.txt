@@ -3148,8 +3148,6 @@ BUGWK54322 MAC SNOWLEOPARD : fast/blockflow/japanese-lr-text.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : fast/blockflow/japanese-rl-selection.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : fast/blockflow/japanese-rl-text-with-broken-font.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : fast/blockflow/japanese-rl-text.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : fast/blockflow/japanese-ruby-vertical-lr.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : fast/blockflow/japanese-ruby-vertical-rl.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : fast/blockflow/vertical-align-table-baseline.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : fast/canvas/arc360.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : fast/canvas/canvasDrawingIntoSelf.html = IMAGE
@@ -3166,7 +3164,6 @@ BUGWK54322 MAC SNOWLEOPARD : fast/forms/input-align-image.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : fast/forms/input-appearance-bkcolor.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : fast/forms/input-file-re-render.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : fast/forms/input-type-change.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : fast/forms/placeholder-position.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : fast/forms/preserveFormDuringResidualStyle.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : fast/forms/search-transformed.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : fast/forms/slider-padding.html = IMAGE
@@ -3384,8 +3381,6 @@ BUGJAMESR DEBUG : html5lib/runner.html = PASS TIMEOUT
 BUGWK46500 : fast/table/fixed-with-auto-with-colspan-vertical.html = IMAGE+TEXT
 
 BUGWK54910 : media/video-replaces-poster.html = PASS IMAGE
-
-BUGWK55262 : fast/filesystem/op-get-entry.html = PASS TEXT
 
 BUG_ANTONM : svg/dynamic-updates/SVGFESpecularLightingElement-remove-lightSource.html = IMAGE
 

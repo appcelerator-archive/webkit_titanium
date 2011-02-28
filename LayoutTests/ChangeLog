@@ -1,3 +1,90 @@
+2011-02-28  Adam Klein  <adamk@chromium.org>
+
+        Reviewed by Adam Barth.
+
+        [fileapi] Implement LocalFileSystem.resolveLocalFileSystemURI
+        https://bugs.webkit.org/show_bug.cgi?id=54774
+
+        Tests for resolveLocalFileSystemURI.
+
+        * fast/filesystem/resolve-uri-expected.txt: Added.
+        * fast/filesystem/resolve-uri.html: Added.
+        * fast/filesystem/script-tests/resolve-uri.js: Added.
+
+2011-02-28  Mihai Parparita  <mihaip@chromium.org>
+
+        Unreviewed Chromium rebaseline.
+
+        Fix 3 tests for Snow Leopard by removing out of date chromium-mac
+        baselines (there are already chromium-mac-leopard results).
+
+        Revert rebaseline done by r79881 since the behavior was reverted by
+        r79900.
+
+        * platform/chromium-mac/fast/blockflow/japanese-ruby-vertical-lr-expected.checksum: Removed.
+        * platform/chromium-mac/fast/blockflow/japanese-ruby-vertical-lr-expected.png: Removed.
+        * platform/chromium-mac/fast/blockflow/japanese-ruby-vertical-rl-expected.checksum: Removed.
+        * platform/chromium-mac/fast/blockflow/japanese-ruby-vertical-rl-expected.png: Removed.
+        * platform/chromium-mac/fast/forms/placeholder-position-expected.checksum: Removed.
+        * platform/chromium-mac/fast/forms/placeholder-position-expected.png: Removed.
+        * platform/chromium/test_expectations.txt:
+        * platform/mac/fast/forms/listbox-hit-test-zoomed-expected.checksum:
+        * platform/mac/fast/forms/listbox-hit-test-zoomed-expected.png:
+
+2011-02-28  Jungshik Shin  <jshin@chromium.org>
+
+        Reviewed by Tony Chang
+
+        https://bugs.webkit.org/show_bug.cgi?id=55121
+
+	[chromium] Recently, French Academy changed the sorting
+	rules for French in such a way that accents are not weighted
+	from the end of a word any more. ICU 4.6 / CLDR 1.9
+	incorporated the change. Canadian French hasn't adopted the
+	change, yet.
+
+        Chrome is the only port that uses new rules with ICU 4.6. So, 
+        for now, I'm changing the expectation file for Chrome only.
+
+        * platform/chromium/fast/xsl: Added.
+        * platform/chromium/fast/xsl/sort-locale-expected.txt: Copied from LayoutTests/fast/xsl/sort-locale-expected.txt.
+
+2011-02-28  Chang Shu  <cshu@webkit.org>
+
+        Reviewed by Adele Peterson.
+
+        REGRESSION (r79762): Items in <select multiple> have focus rings, but shouldn't
+        https://bugs.webkit.org/show_bug.cgi?id=55323
+
+        Added test case to make sure no focus ring is drawn on selected items.
+
+        * fast/forms/select-listbox-multiple-no-focusring.html: Added.
+        * platform/mac/fast/forms/select-listbox-multiple-no-focusring-expected.checksum: Added.
+        * platform/mac/fast/forms/select-listbox-multiple-no-focusring-expected.png: Added.
+        * platform/mac/fast/forms/select-listbox-multiple-no-focusring-expected.txt: Added.
+
+2011-02-28  Abhishek Arya  <inferno@chromium.org>
+
+        Reviewed by Anders Carlsson.
+
+        Unskip crashing test fast/frames/iframe-plugin-load-remove-document-crash.html.
+        https://bugs.webkit.org/show_bug.cgi?id=55307
+
+        * platform/gtk/Skipped:
+        * platform/qt/Skipped:
+        * platform/win/Skipped:
+
+2011-02-28  Adam Klein  <adamk@chromium.org>
+
+        Reviewed by James Robinson.
+
+        [chromium] Remove "PASS TEXT" expectation for fast/filesystem/op-get-entry.html
+        https://bugs.webkit.org/show_bug.cgi?id=55262
+
+        Test now passes as Chromium has rolled past r76098.
+
+        * platform/chromium/test_expectations.txt:
+
 2011-02-28  Sergio Villar Senin  <svillar@igalia.com>
 
         Reviewed by Martin Robinson.
