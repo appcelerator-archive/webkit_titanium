@@ -159,6 +159,7 @@ WONTFIX SKIP BUGCR19635 : media/restore-from-page-cache.html = TIMEOUT
 WONTFIX SKIP BUGCR19635 : loader/go-back-to-different-window-size.html = TIMEOUT TEXT
 WONTFIX SKIP BUGCR19635 : fast/loader/crash-copying-backforwardlist.html = TEXT
 WONTFIX SKIP BUGCR19635 : fast/harness/page-cache-crash-on-data-urls.html = TEXT
+WONTFIX SKIP BUGCR19635 : fast/overflow/horizontal-scroll-after-back.html = TIMEOUT
 
 // Tests that rely on cross-process MessagePorts.  No point in running them in
 // test_shell, since we'd have to use a completely different implementation from
@@ -1409,10 +1410,8 @@ BUGCR10441 MAC WIN RELEASE : transitions/transition-end-event-transform.html = F
 BUGCR10458 LINUX : fast/forms/textarea-width.html = FAIL
 
 // New failures from merge
-BUGCR27486 WIN : fast/forms/listbox-hit-test-zoomed.html = FAIL
-BUGCR27486 RELEASE LINUX : fast/forms/listbox-hit-test-zoomed.html = FAIL
-BUGCR27486 LINUX DEBUG : fast/forms/listbox-hit-test-zoomed.html = FAIL
-BUGCR27486 WIN LINUX : fast/forms/slider-zoomed.html = FAIL
+BUGCR27486 WIN LINUX : fast/forms/listbox-hit-test-zoomed.html = IMAGE+TEXT
+BUGCR27486 WIN LINUX : fast/forms/slider-zoomed.html = TEXT
 
 // See WebKit 41948
 // Regressed further at 57820, jamesr investigating
@@ -3317,6 +3316,7 @@ BUGWK54322 MAC SNOWLEOPARD : dom/html/level1/core/hc_textwithnomarkup.html = TIM
 BUGWK54322 MAC SNOWLEOPARD : fast/css/font-face-in-shadow-DOM.html = IMAGE+TEXT PASS
 BUGWK54322 MAC SNOWLEOPARD : fast/history/history-back-within-subframe-hash.html = TIMEOUT PASS
 BUGWK54322 MAC SNOWLEOPARD : http/tests/loading/location-hash-reload-cycle.html = TEXT PASS
+BUGWK54322 MAC SNOWLEOPARD : http/tests/loading/slow-parsing-subframe.html = CRASH PASS
 BUGWK54322 MAC SNOWLEOPARD : http/tests/navigation/image-load-in-unload-handler.html = TEXT PASS
 BUGWK54322 MAC SNOWLEOPARD : http/tests/navigation/ping-cookie.html = TEXT PASS
 BUGWK54322 MAC SNOWLEOPARD : http/tests/navigation/ping-same-origin.html = TEXT PASS

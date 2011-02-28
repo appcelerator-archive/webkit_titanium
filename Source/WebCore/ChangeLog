@@ -1,3 +1,152 @@
+2011-02-28  Sergio Villar Senin  <svillar@igalia.com>
+
+        Reviewed by Martin Robinson.
+
+        [Gtk] Resource size is incorrectly reported to WebCore
+        https://bugs.webkit.org/show_bug.cgi?id=53228
+
+        When calling didReceiveData we are sending an invalid value for
+        lengthReceived. Sometimes we were even passing a boolean value instead of the
+        expected integer. We should pass the size of the received data instead of the
+        total amount of data received.
+
+        * platform/network/ResourceHandleInternal.h:
+        (WebCore::ResourceHandleInternal::ResourceHandleInternal):
+        * platform/network/soup/ResourceHandleSoup.cpp:
+        (WebCore::gotChunkCallback):
+        (WebCore::sendRequestCallback):
+        (WebCore::readCallback):
+
+2011-02-28  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Dan Bernstein.
+
+        Cleanup the include guard form an Objective-C files
+        https://bugs.webkit.org/show_bug.cgi?id=55379
+
+        Normally Objective-C files do not need include guard.
+        r76916 introduced an include guard in EmptyProtocolDefinitions.h.
+        The guard is no longer needed after r76991.
+
+        No new tests as there is no new functionality. 
+
+        * platform/mac/EmptyProtocolDefinitions.h:
+
+2011-02-28  Pavel Podivilov  <podivilov@chromium.org>
+
+        Reviewed by Pavel Feldman.
+
+        Web Inspector: [REGRESSION] no resources in scripts panel because debugger is enabled too early.
+        https://bugs.webkit.org/show_bug.cgi?id=55389
+
+        * inspector/InspectorAgent.cpp:
+        (WebCore::InspectorAgent::populateScriptObjects):
+        * inspector/InspectorDebuggerAgent.cpp:
+        (WebCore::InspectorDebuggerAgent::setFrontend):
+        (WebCore::InspectorDebuggerAgent::enableDebuggerAfterShown):
+        * inspector/InspectorDebuggerAgent.h:
+
+2011-02-28  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r79877.
+        http://trac.webkit.org/changeset/79877
+        https://bugs.webkit.org/show_bug.cgi?id=55388
+
+        Breaks chromium build (Requested by antonm_ on #webkit).
+
+        * WebCore.gypi:
+        * platform/graphics/chromium/ContentLayerChromium.cpp:
+        (WebCore::ContentLayerChromium::updateContentsIfDirty):
+        (WebCore::ContentLayerChromium::resizeUploadBufferForImage):
+        (WebCore::ContentLayerChromium::resizeUploadBuffer):
+        (WebCore::SkBitmapConditionalAutoLockerPixels::SkBitmapConditionalAutoLockerPixels):
+        (WebCore::SkBitmapConditionalAutoLockerPixels::~SkBitmapConditionalAutoLockerPixels):
+        (WebCore::SkBitmapConditionalAutoLockerPixels::lockPixels):
+        (WebCore::ContentLayerChromium::updateTextureIfNeeded):
+        (WebCore::ContentLayerChromium::draw):
+        * platform/graphics/chromium/ContentLayerChromium.h:
+        * platform/graphics/chromium/ImageLayerChromium.cpp:
+        (WebCore::ImageLayerChromium::updateContentsIfDirty):
+        * platform/graphics/chromium/ImageLayerChromium.h:
+        * platform/graphics/chromium/LayerTilerChromium.cpp:
+        (WebCore::LayerTilerChromium::contentRectToTileIndices):
+        (WebCore::LayerTilerChromium::update):
+        * platform/graphics/chromium/LayerTilerChromium.h:
+        * platform/graphics/chromium/PlatformCanvas.cpp: Removed.
+        * platform/graphics/chromium/PlatformCanvas.h: Removed.
+        * platform/graphics/chromium/PlatformImage.cpp: Removed.
+        * platform/graphics/chromium/PlatformImage.h: Removed.
+
+2011-02-28  Pavel Podivilov  <podivilov@chromium.org>
+
+        Reviewed by Pavel Feldman.
+
+        Web Inspector: add live edit test.
+        https://bugs.webkit.org/show_bug.cgi?id=55360
+
+        Test: inspector/debugger/live-edit.html
+
+        * inspector/front-end/SourceFrame.js:
+        (WebInspector.SourceFrame.prototype._doubleClick):
+        (WebInspector.SourceFrame.prototype._didEditLine):
+
+2011-02-28  Pavel Feldman  <pfeldman@chromium.org>
+
+        Not reviewed. Follow up to r79858, removing optimistic assertion that fails on debug bot.
+
+        * inspector/InspectorBrowserDebuggerAgent.cpp:
+        (WebCore::InspectorBrowserDebuggerAgent::inspectedURLChanged):
+
+2011-02-25  Adrienne Walker  <enne@google.com>
+
+        Reviewed by James Robinson.
+
+        [chromium] Abstract "pixels with a graphics context" into its own class
+        https://bugs.webkit.org/show_bug.cgi?id=55259
+
+        This creates new PlatformCanvas/PlatformImage classes which wrap
+        all of the #ifdef Skia/Cg warts from the compositor.  All classes
+        (LayerTilerChromium, ContentLayerChromium, and ImageLayerChromium) are
+        modified to use these abstractions.
+
+        Tests: LayoutTests/compositing
+
+        * WebCore.gypi:
+        * platform/graphics/chromium/ContentLayerChromium.cpp:
+        (WebCore::ContentLayerChromium::updateContentsIfDirty):
+        (WebCore::ContentLayerChromium::resizeUploadBuffer):
+        (WebCore::ContentLayerChromium::updateTextureIfNeeded):
+        (WebCore::ContentLayerChromium::updateTexture):
+        (WebCore::ContentLayerChromium::draw):
+        * platform/graphics/chromium/ContentLayerChromium.h:
+        * platform/graphics/chromium/ImageLayerChromium.cpp:
+        (WebCore::ImageLayerChromium::updateContentsIfDirty):
+        (WebCore::ImageLayerChromium::updateTextureIfNeeded):
+        * platform/graphics/chromium/ImageLayerChromium.h:
+        * platform/graphics/chromium/LayerTilerChromium.cpp:
+        (WebCore::LayerTilerChromium::contentRectToTileIndices):
+        (WebCore::LayerTilerChromium::update):
+        (WebCore::LayerTilerChromium::updateFromPixels):
+        * platform/graphics/chromium/LayerTilerChromium.h:
+        * platform/graphics/chromium/PlatformCanvas.cpp: Added.
+        (WebCore::PlatformCanvas::PlatformCanvas):
+        (WebCore::PlatformCanvas::~PlatformCanvas):
+        (WebCore::PlatformCanvas::resize):
+        (WebCore::PlatformCanvas::AutoLocker::AutoLocker):
+        (WebCore::PlatformCanvas::AutoLocker::~AutoLocker):
+        (WebCore::PlatformCanvas::Painter::Painter):
+        (WebCore::PlatformCanvas::Painter::~Painter):
+        * platform/graphics/chromium/PlatformCanvas.h: Added.
+        (WebCore::PlatformCanvas::AutoLocker::pixels):
+        (WebCore::PlatformCanvas::Painter::context):
+        (WebCore::PlatformCanvas::size):
+        * platform/graphics/chromium/PlatformImage.cpp: Copied from Source/WebCore/platform/graphics/chromium/ImageLayerChromium.cpp.
+        (WebCore::PlatformImage::PlatformImage):
+        (WebCore::PlatformImage::updateFromImage):
+        * platform/graphics/chromium/PlatformImage.h: Added.
+        (WebCore::PlatformImage::pixels):
+        (WebCore::PlatformImage::size):
+
 2011-02-28  Sheriff Bot  <webkit.review.bot@gmail.com>
 
         Unreviewed, rolling out r79784.
