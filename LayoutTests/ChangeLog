@@ -1,3 +1,68 @@
+2011-02-28  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r79784.
+        http://trac.webkit.org/changeset/79784
+        https://bugs.webkit.org/show_bug.cgi?id=55386
+
+        This change causes lots of assertion failures in Debug builds
+        (Requested by aroben on #webkit).
+
+        * transitions/matched-transform-functions.html:
+        * transitions/retargetted-transition.html:
+
+2011-02-28  Pavel Feldman  <pfeldman@chromium.org>
+
+        Not reviewed: follow up to r79861, moved utf-16-no-bom to its new home, fixed flaky frames.html.
+
+        * fast/encoding/dumpAsText/utf-16-no-bom.xml: Renamed from LayoutTests/fast/encoding/utf-16-no-bom.xml.
+        * http/tests/xmlviewer/dumpAsText/frames.html:
+
+2011-02-28  Pavel Podivilov  <podivilov@chromium.org>
+
+        Reviewed by Pavel Feldman.
+
+        Web Inspector: [REGRESSION] source frame is recreated for each inlined script in document.
+        https://bugs.webkit.org/show_bug.cgi?id=55377
+
+        * inspector/debugger/scripts-panel-expected.txt:
+        * inspector/debugger/scripts-panel.html:
+
+2011-02-28  Csaba Osztrogonác  <ossy@webkit.org>
+
+        Unreviewed.
+
+        [Qt] Remove non-existent tests from Skipped list after r79861.
+
+        * platform/qt/Skipped:
+
+2011-02-28  Csaba Osztrogonác  <ossy@webkit.org>
+
+        Unreviewed.
+
+        [Qt] Add Qt specific expected results for passing fast/css tests.
+
+        * platform/qt/Skipped:
+        * platform/qt/fast/css [...] : Added.
+
+
+2011-02-28  Csaba Osztrogonác  <ossy@webkit.org>
+
+        Unreviewed.
+
+        [Qt] Add Qt specific expected results for passing fast/css tests.
+
+        * platform/qt/Skipped:
+        * platform/qt/fast/css [...] : Added.
+
+
+2011-02-28  Adam Roben  <aroben@apple.com>
+
+        Skip a sometimes-crashing test on Windows
+
+        The failure is tracked by <http://webkit.org/b/55375>.
+
+        * platform/win/Skipped: Added http/tests/websocket/tests/reload-crash.html.
+
 2011-02-28  Adam Roben  <aroben@apple.com>
 
         Add a test for the paint rect passed via WM_PAINT to windowless plugins
