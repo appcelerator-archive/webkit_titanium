@@ -1,3 +1,89 @@
+2011-03-01  Philippe Normand  <pnormand@igalia.com>
+
+        Unreviewed GTK build fix after r79978
+
+        * GNUmakefile.am:
+
+2011-03-01  Andras Becsi  <abecsi@webkit.org>
+
+        Unreviewed build fix.
+
+        [Qt] Fix minimal build.
+
+        No new tests needed.
+
+        * WebCore.pri: Is included in WebKit2.pro, so XP_UNIX can remain here.
+
+2011-03-01  anthony taranto  <anthony.taranto@gmail.com>
+
+        Return undefined value from ScriptController::evaluate(), allowing the
+        caller to distinguish between an error and an undefined return value.
+        https://bugs.webkit.org/show_bug.cgi?id=51528
+
+        * bindings/v8/ScriptController.cpp: 
+
+2011-03-01  Roland Steiner  <rolandsteiner@chromium.org>
+
+        Reviewed by Kent Tamura.
+
+        Bug 54853 - Move TextControlInnerElements from WebCore/rendering to WebCore/html/shadow
+        https://bugs.webkit.org/show_bug.cgi?id=54853
+        
+        Moving the files from rendering to html/shadow, with the exception of
+        the class RenderTextControlInnerBlock, which I moved to RenderTextControlSingleLine
+        (this place is not ideal, but only a temporary state during the larger refactoring
+        for <input>).
+
+        No new tests. (refactoring)
+
+        * Android.mk:
+        * CMakeLists.txt:
+        * WebCore.gypi:
+        * WebCore.pro:
+        * WebCore.vcproj/WebCore.vcproj:
+        * WebCore.xcodeproj/project.pbxproj:
+        * html/shadow/TextControlInnerElements.cpp: Copied from Source/WebCore/rendering/TextControlInnerElements.cpp.
+        * html/shadow/TextControlInnerElements.h: Copied from Source/WebCore/rendering/TextControlInnerElements.h.
+        * rendering/RenderTextControlSingleLine.cpp:
+        (WebCore::RenderTextControlInnerBlock::positionForPoint):
+        * rendering/RenderTextControlSingleLine.h:
+        (WebCore::RenderTextControlInnerBlock::RenderTextControlInnerBlock):
+        (WebCore::RenderTextControlInnerBlock::hasLineIfEmpty):
+        * rendering/TextControlInnerElements.cpp: Removed.
+        * rendering/TextControlInnerElements.h: Removed.
+
+2011-03-01  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Reviewed by Tony Chang.
+
+        applyInlineStyleToPushDown and removeInlineStyleFromElement should take EditingStyle
+        https://bugs.webkit.org/show_bug.cgi?id=55338
+
+        Deployed EditingStyle in applyInlineStyleToPushDown and removeInlineStyleFromElement.
+
+        Also added a convenience function EditingStyle::setProperty, which lazily instantiates
+        new CSSMutableStyleDeclaration for m_mutableStyle.
+
+        * editing/ApplyStyleCommand.cpp:
+        (WebCore::ApplyStyleCommand::removeInlineStyleFromElement): Takes EditingStyle*.
+        (WebCore::ApplyStyleCommand::removeImplicitlyStyledElement): Ditto.
+        (WebCore::ApplyStyleCommand::removeCSSStyle): Ditto.
+        (WebCore::ApplyStyleCommand::pushDownInlineStyleAroundNode): Calls the above three functions.
+        (WebCore::ApplyStyleCommand::removeInlineStyle): Calls pushDownInlineStyleAroundNode.
+        * editing/ApplyStyleCommand.h:
+        * editing/EditingStyle.cpp:
+        (WebCore::HTMLElementEquivalent::addToStyle): Takes EditingStyle*; calls EditingStyle::setProperty.
+        (WebCore::HTMLAttributeEquivalent::addToStyle): Ditto.
+        (WebCore::EditingStyle::setProperty): Added.  This member function lazily instantiates
+        new CSSMutableStyleDeclaration for m_mutableStyle.
+        (WebCore::EditingStyle::conflictsWithInlineStyleOfElement): Takes EditingStyle*.
+        (WebCore::EditingStyle::conflictsWithImplicitStyleOfElement): Ditto.
+        (WebCore::EditingStyle::extractConflictingImplicitStyleOfAttributes): Ditto.
+        * editing/EditingStyle.h: Added HTMLElementEquivalent and HTMLAttributeEquivalent as friends.
+        (WebCore::EditingStyle::conflictsWithInlineStyleOfElement): Ditto.
+        * editing/InsertTextCommand.cpp: Removed unnecessary includes.
+        * editing/RemoveCSSPropertyCommand.h: Ditto.
+
 2011-02-28  Pavel Feldman  <pfeldman@chromium.org>
 
         Not reviewed: chromium rebuilds XMLViewer after noop. Fixed gyp file.
