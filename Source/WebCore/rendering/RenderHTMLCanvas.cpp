@@ -30,7 +30,6 @@
 #include "Document.h"
 #include "FrameView.h"
 #include "GraphicsContext.h"
-#include "HitTestResult.h"
 #include "HTMLCanvasElement.h"
 #include "HTMLNames.h"
 #include "PaintInfo.h"
@@ -86,38 +85,6 @@ void RenderHTMLCanvas::canvasSizeChanged()
 
     if (!selfNeedsLayout())
         setNeedsLayout(true);
-}
-
-void RenderHTMLCanvas::recursiveSetNoNeedsLayout(RenderObject* obj)
-{
-    obj->setNeedsLayout(false);
-    for (RenderObject* child = obj->firstChild(); child; child = child->nextSibling())
-        recursiveSetNoNeedsLayout(child);
-}
-
-void RenderHTMLCanvas::layout()
-{
-    recursiveSetNoNeedsLayout(this);
-    setNeedsLayout(true);
-    RenderReplaced::layout();
-}
-
-bool RenderHTMLCanvas::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, int xPos, int yPos, int tx, int ty, HitTestAction action)
-{
-    UNUSED_PARAM(request);
-    tx += x();
-    ty += y();
-
-    // Ignore children (accessible fallback content that might be focusable but not clickable)
-    // but do test our own bounds for a hit.
-    IntRect boundsRect = IntRect(tx, ty, width(), height());
-    if (visibleToHitTesting() && action == HitTestForeground && boundsRect.intersects(result.rectForPoint(xPos, yPos))) {
-        updateHitTestResult(result, IntPoint(xPos - tx, yPos - ty));
-        if (!result.addNodeToRectBasedTestResult(node(), xPos, yPos, boundsRect))
-            return true;
-    }
-
-    return false;
 }
 
 } // namespace WebCore
