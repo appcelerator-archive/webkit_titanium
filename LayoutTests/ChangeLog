@@ -1,5 +1,158 @@
 2011-02-28  Chang Shu  <cshu@webkit.org>
 
+        Reviewed by Ryosuke Niwa.
+
+        Remove the support of Frame::isContentEditable and its dependencies.
+        https://bugs.webkit.org/show_bug.cgi?id=54292
+
+        Updated expected results after the change that syncs the WebKit isEditable
+        and WebCore isContentEditable.
+
+        * platform/mac/editing/selection/designmode-no-caret-expected.txt:
+
+2011-02-28  Kent Tamura  <tkent@chromium.org>
+
+        Reviewed by Darin Adler.
+
+        Number type input cannot be set to empty string if it has an initial value
+        https://bugs.webkit.org/show_bug.cgi?id=53744
+
+        * fast/forms/input-value-sanitization-expected.txt:
+        * fast/forms/script-tests/input-value-sanitization.js: Add some tests.
+
+2011-02-28  Kent Tamura  <tkent@chromium.org>
+
+        Reviewed by Darin Adler.
+
+        Number type input should not handle mouse wheel events if it has no focus.
+        https://bugs.webkit.org/show_bug.cgi?id=53638
+
+        Add a test case.
+
+        * fast/forms/input-number-wheel-expected.txt:
+        * fast/forms/script-tests/input-number-wheel.js:
+
+2011-02-28  Tony Gentilcore  <tonyg@chromium.org>
+
+        Reviewed by Darin Adler.
+
+        Fix race condition in 4 media tests
+        https://bugs.webkit.org/show_bug.cgi?id=55414
+
+        The parser may yield and give events a chance to dispatch between any two tokens. So
+        it is possible that the loadstart event fires immediately after the video tag is
+        inserted into the document but before the subsequent script is parsed. This is very
+        rare in the layout test environment since these small files are loaded from disk.
+
+        This patch eliminates that race condition by allowing waitForEvent to register for
+        events that bubble up to the document from any element. Then the registration can
+        happen before before the element is inserted into the document.
+
+        * media/video-source-media.html:
+        * media/video-source-none-supported.html:
+        * media/video-source-type-params.html:
+        * media/video-source-type.html:
+        * media/video-test.js:
+        (waitForEvent):
+        (waitForEventAndTest):
+
+2011-02-28  Tony Gentilcore  <tonyg@chromium.org>
+
+        Reviewed by Adam Barth.
+
+        Follow HTML5 spec for document.open() a little more closely
+        https://bugs.webkit.org/show_bug.cgi?id=55392
+
+        * fast/parser/double-write-from-closed-iframe-expected.txt: Added.
+        * fast/parser/double-write-from-closed-iframe.html: Added. Prior to this patch, the second write of 'PASS' could fail indeterminately.
+        * fast/parser/script-tests/double-write-from-closed-iframe.js: Added.
+        * fast/regex/script-tests/cross-frame-callable.js: Necessary to close late writes.
+
+2011-02-28  James Robinson  <jamesr@chromium.org>
+
+        Update chromium expectations and baselines.
+
+        * platform/chromium-linux/fast/block/positioning/auto/vertical-lr/001-expected.checksum: Added.
+        * platform/chromium-linux/fast/block/positioning/auto/vertical-lr/001-expected.png: Added.
+        * platform/chromium-linux/fast/block/positioning/auto/vertical-lr/002-expected.checksum: Added.
+        * platform/chromium-linux/fast/block/positioning/auto/vertical-lr/002-expected.png: Added.
+        * platform/chromium-linux/fast/block/positioning/auto/vertical-lr/003-expected.checksum: Added.
+        * platform/chromium-linux/fast/block/positioning/auto/vertical-lr/003-expected.png: Added.
+        * platform/chromium-linux/fast/block/positioning/auto/vertical-lr/004-expected.checksum: Added.
+        * platform/chromium-linux/fast/block/positioning/auto/vertical-lr/004-expected.png: Added.
+        * platform/chromium-linux/fast/block/positioning/auto/vertical-lr/005-expected.checksum: Added.
+        * platform/chromium-linux/fast/block/positioning/auto/vertical-lr/005-expected.png: Added.
+        * platform/chromium-linux/fast/block/positioning/auto/vertical-lr/006-expected.checksum: Added.
+        * platform/chromium-linux/fast/block/positioning/auto/vertical-lr/006-expected.png: Added.
+        * platform/chromium-linux/fast/block/positioning/auto/vertical-lr/007-expected.checksum: Added.
+        * platform/chromium-linux/fast/block/positioning/auto/vertical-lr/007-expected.png: Added.
+        * platform/chromium-linux/fast/block/positioning/auto/vertical-rl/001-expected.checksum: Added.
+        * platform/chromium-linux/fast/block/positioning/auto/vertical-rl/001-expected.png: Added.
+        * platform/chromium-linux/fast/block/positioning/auto/vertical-rl/002-expected.checksum: Added.
+        * platform/chromium-linux/fast/block/positioning/auto/vertical-rl/002-expected.png: Added.
+        * platform/chromium-linux/fast/block/positioning/auto/vertical-rl/003-expected.checksum: Added.
+        * platform/chromium-linux/fast/block/positioning/auto/vertical-rl/003-expected.png: Added.
+        * platform/chromium-linux/fast/block/positioning/auto/vertical-rl/004-expected.checksum: Added.
+        * platform/chromium-linux/fast/block/positioning/auto/vertical-rl/004-expected.png: Added.
+        * platform/chromium-linux/fast/block/positioning/auto/vertical-rl/005-expected.checksum: Added.
+        * platform/chromium-linux/fast/block/positioning/auto/vertical-rl/005-expected.png: Added.
+        * platform/chromium-linux/fast/block/positioning/auto/vertical-rl/006-expected.checksum: Added.
+        * platform/chromium-linux/fast/block/positioning/auto/vertical-rl/006-expected.png: Added.
+        * platform/chromium-linux/fast/block/positioning/auto/vertical-rl/007-expected.checksum: Added.
+        * platform/chromium-linux/fast/block/positioning/auto/vertical-rl/007-expected.png: Added.
+        * platform/chromium-linux/fast/forms/select-listbox-multiple-no-focusring-expected.checksum: Added.
+        * platform/chromium-linux/fast/forms/select-listbox-multiple-no-focusring-expected.png: Added.
+        * platform/chromium-linux/fast/forms/select-listbox-multiple-no-focusring-expected.txt: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-lr/001-expected.checksum: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-lr/001-expected.png: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-lr/001-expected.txt: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-lr/002-expected.checksum: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-lr/002-expected.png: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-lr/002-expected.txt: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-lr/003-expected.checksum: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-lr/003-expected.png: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-lr/003-expected.txt: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-lr/004-expected.checksum: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-lr/004-expected.png: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-lr/004-expected.txt: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-lr/005-expected.checksum: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-lr/005-expected.png: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-lr/005-expected.txt: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-lr/006-expected.checksum: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-lr/006-expected.png: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-lr/006-expected.txt: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-lr/007-expected.checksum: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-lr/007-expected.png: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-lr/007-expected.txt: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-rl/001-expected.checksum: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-rl/001-expected.png: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-rl/001-expected.txt: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-rl/002-expected.checksum: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-rl/002-expected.png: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-rl/002-expected.txt: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-rl/003-expected.checksum: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-rl/003-expected.png: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-rl/003-expected.txt: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-rl/004-expected.checksum: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-rl/004-expected.png: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-rl/004-expected.txt: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-rl/005-expected.checksum: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-rl/005-expected.png: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-rl/005-expected.txt: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-rl/006-expected.checksum: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-rl/006-expected.png: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-rl/006-expected.txt: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-rl/007-expected.checksum: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-rl/007-expected.png: Added.
+        * platform/chromium-win/fast/block/positioning/auto/vertical-rl/007-expected.txt: Added.
+        * platform/chromium-win/fast/forms/select-listbox-multiple-no-focusring-expected.checksum: Added.
+        * platform/chromium-win/fast/forms/select-listbox-multiple-no-focusring-expected.png: Added.
+        * platform/chromium-win/fast/forms/select-listbox-multiple-no-focusring-expected.txt: Added.
+        * platform/chromium/fast/dom/prototype-inheritance-expected.txt:
+        * platform/chromium/test_expectations.txt:
+
+2011-02-28  Chang Shu  <cshu@webkit.org>
+
         Reviewed by Antonio Gomes.
 
         REGRESSION (r79762): Items in <select multiple> have focus rings, but shouldn't

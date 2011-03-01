@@ -1,3 +1,136 @@
+2011-02-28  Chang Shu  <cshu@webkit.org>
+
+        Reviewed by Ryosuke Niwa.
+
+        Remove the support of Frame::isContentEditable and its dependencies.
+        https://bugs.webkit.org/show_bug.cgi?id=54292
+
+        Frame::isContentEditable is currently based on two things: Editor::clientIsEditable and
+        Document::inDesignMode. In fact, it should only rely on Document::inDesignMode. As a result,
+        Editor::clientIsEditable and its client-side implementation can be removed.
+
+        * WebCore.exp.in:
+        * accessibility/AccessibilityRenderObject.cpp:
+        (WebCore::AccessibilityRenderObject::isReadOnly):
+        * editing/Editor.cpp:
+        * editing/Editor.h:
+        * editing/SelectionController.cpp:
+        (WebCore::SelectionController::setSelectionFromNone):
+        * html/HTMLElement.cpp:
+        (WebCore::HTMLElement::isContentEditable):
+        (WebCore::HTMLElement::isContentRichlyEditable):
+        * page/DragController.cpp:
+        (WebCore::DragController::operationForLoad):
+        * page/EditorClient.h:
+        * page/Frame.cpp:
+        * page/Frame.h:
+
+2011-02-28  Kent Tamura  <tkent@chromium.org>
+
+        Reviewed by Darin Adler.
+
+        Number type input cannot be set to empty string if it has an initial value
+        https://bugs.webkit.org/show_bug.cgi?id=53744
+
+        We need to distinguish null strings and empty strings for
+        InputElementData::value. So InputType::sanitizeValue() also needs to
+        take care of it.
+
+        * dom/InputElement.h: Add a comment to InputElementData::value and
+          setValue about null strings.
+        * html/InputType.h: Add a comment to sanitizeValue about null strings.
+        * html/NumberInputType.cpp:
+        (WebCore::NumberInputType::sanitizeValue): Returns a null string if the
+          proposed value is a null string. Returning an empty string if the
+          proposed value is not a number.
+
+2011-02-28  Kent Tamura  <tkent@chromium.org>
+
+        Reviewed by Darin Adler.
+
+        Number type input should not handle mouse wheel events if it has no focus.
+        https://bugs.webkit.org/show_bug.cgi?id=53638
+
+        * html/TextFieldInputType.cpp:
+        (WebCore::TextFieldInputType::handleWheelEventForSpinButton): Check focused().
+
+2011-02-28  Noel Gordon  <noel.gordon@gmail.com>
+        Reviewed by James Robinson.
+
+        [chromium] GradientSkia: use the common Gradient stop sorting methods.
+        https://bugs.webkit.org/show_bug.cgi?id=54625
+
+        Remove a FIXME: call the Gradient.cpp stop storting routines, no need
+        to duplicate that code herein.
+
+        No change in behavior, so no new tests.
+
+        * platform/graphics/skia/GradientSkia.cpp:
+        (WebCore::Gradient::platformGradient):
+
+2011-02-28  Steve Block  <steveblock@google.com>
+
+        Reviewed by Jeremy Orlow.
+
+        JNI code should include <jni.h> on non-OSX platforms.
+        https://bugs.webkit.org/show_bug.cgi?id=55219
+
+        On Mac we need to include <JavaVM/jni.h> as this is a framework
+        include. We include jni.h through JNIUtility.h to minimize the
+        number of ifdefs.
+
+        No new tests, build fix only.
+
+        * WebCore.xcodeproj/project.pbxproj
+        * bridge/jni/JNIUtility.h:
+        * bridge/jni/jni_jsobject.h:
+        * bridge/jni/jsc/JNIBridgeJSC.h:
+        * bridge/jni/jsc/JavaInstanceJSC.h:
+        * bridge/jni/v8/JavaInstanceV8.h:
+
+2011-02-28  Nebojsa Sabovic  <neb@chromium.org>
+
+        Reviewed by James Robinson.
+
+        [chromium] Pepper plugins render upside down
+        https://bugs.webkit.org/show_bug.cgi?id=55101
+
+        No layout tests for pepper plugins (yet).
+
+        * platform/graphics/chromium/PluginLayerChromium.h:
+
+2011-02-28  Tony Gentilcore  <tonyg@chromium.org>
+
+        Reviewed by Adam Barth.
+
+        Follow HTML5 spec for document.open() a little more closely
+        https://bugs.webkit.org/show_bug.cgi?id=55392
+
+        See: 3.5.1.4 at http://www.whatwg.org/specs/web-apps/current-work/#dom-document-open.
+
+        The second return check matches the spec. The first return check (isExecutingScript())
+        was left in place because without it, fast/tokenizer/write-external-script-open.html
+        would fail. It also possible there is a spec bug because FF4 crashes on that test and
+        IE9 prints "FAILURE." The isLoadingMainResource() check was removed because the main
+        resource is always loading while parser->isParsing().
+
+        Test: fast/parser/double-write-from-closed-iframe.html
+
+        * dom/Document.cpp:
+        (WebCore::Document::open):
+
+2011-02-28  Avi Drissman  <avi@google.com>
+
+        Reviewed by James Robinson.
+
+        WebCursorInfo needs to match enums in platform/Cursor.h
+        https://bugs.webkit.org/show_bug.cgi?id=55094
+
+        * platform/chromium/CursorChromium.cpp:
+        (WebCore::grabCursor):
+        (WebCore::grabbingCursor):
+        * platform/chromium/PlatformCursor.h:
+
 2011-02-28  Jia Pu  <jpu@apple.com>
 
         Reviewed by Darin Adler.

@@ -1,3 +1,51 @@
+2011-02-28  Mark Rowe  <mrowe@apple.com>
+
+        Reviewed by Darin Adler.
+
+        <http://webkit.org/b/55430> OwnArrayPtr.h's LOOSE_OWN_ARRAY_PTR results in link errors.
+
+        * wtf/OwnArrayPtr.h:
+        (WTF::::set): Implement OwnArrayPtr::set.
+
+2011-02-28  Martin Zoubek  <martin.zoubek@acision.com> and Alejandro G. Castro  <alex@igalia.com>
+
+        Reviewed by Martin Robinson.
+
+        Multithread support for JSC on UNIX
+        https://bugs.webkit.org/show_bug.cgi?id=26838
+
+        Implement suspendThread() and resumeThread() for systems with
+        pthread.h using thread signal handler.
+
+        * runtime/MachineStackMarker.cpp:
+        (JSC::pthreadSignalHandlerSuspendResume):
+        (JSC::MachineStackMarker::Thread::Thread):
+        (JSC::getCurrentPlatformThread):
+        (JSC::suspendThread):
+        (JSC::resumeThread):
+        (JSC::getPlatformThreadRegisters):
+        (JSC::otherThreadStackPointer):
+        (JSC::freePlatformThreadRegisters):
+        (JSC::MachineStackMarker::markOtherThreadConservatively):
+        * wtf/Platform.h: Added Gtk port to use
+        ENABLE_JSC_MULTIPLE_THREADS.
+
+2011-02-28  Oliver Hunt  <oliver@apple.com>
+
+        Reviewed by Darin Adler.
+
+        Stop using DeprecatedPtr for the global exception slot
+        https://bugs.webkit.org/show_bug.cgi?id=55424
+
+        Create GCRootPtr to signify that the exception slot is
+        a gcroot, and so is exempt from the usual writebarrier
+        restrictions.
+
+        * runtime/JSGlobalData.h:
+        * runtime/WriteBarrier.h:
+        (JSC::GCRootPtr::GCRootPtr):
+        (JSC::GCRootPtr::operator=):
+
 2011-02-28  Adam Barth  <abarth@webkit.org>
 
         Reviewed by Dimitri Glazkov.
