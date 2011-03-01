@@ -424,8 +424,10 @@ static inline void* otherThreadStackPointer(const PlatformThreadRegisters& regs)
 
 static void freePlatformThreadRegisters(PlatformThreadRegisters& regs)
 {
-#if USE(PTHREADS)
+#if USE(PTHREADS) && !OS(WINDOWS) && !OS(DARWIN)
     pthread_attr_destroy(&regs);
+#else
+    UNUSED_PARAM(regs);
 #endif
 }
 
