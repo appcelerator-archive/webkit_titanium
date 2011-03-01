@@ -1,3 +1,264 @@
+2011-03-01  Michael Nordman  <michaeln@google.com>
+
+        Reviewed by Alexey Proskuryakov.
+
+        Alter the relative priorities of network vs fallback namespaces in the appcache.
+        If a resource url is in an appcache's network namespace and fallback namespace, the network
+        namespace wins (with the exception of the special '*' network namespace which does not take
+        priority over the fallback namespace.
+        https://bugs.webkit.org/show_bug.cgi?id=49292
+
+        Test: http/tests/appcache/online-fallback-layering.html
+
+        * loader/appcache/ApplicationCache.cpp:
+        (WebCore::ApplicationCache::isURLInOnlineWhitelist):
+        * loader/appcache/ApplicationCacheHost.cpp:
+        (WebCore::ApplicationCacheHost::shouldLoadResourceFromApplicationCache):
+        (WebCore::ApplicationCacheHost::getApplicationCacheFallbackResource):
+        * loader/appcache/ApplicationCacheStorage.cpp:
+        (WebCore::ApplicationCacheStorage::fallbackCacheGroupForURL):
+
+2011-03-01  Patrick Gansterer  <paroga@webkit.org>
+
+        Reviewed by Adam Roben.
+
+        Add a handler class for Win32 HANDLE
+        https://bugs.webkit.org/show_bug.cgi?id=55334
+
+        This class will call CloseHandle in the destructor for valid handles.
+
+        * platform/win/Win32Handle.h: Added.
+
+2011-03-01  Eric Carlson  <eric.carlson@apple.com>
+
+        Reviewed by Chris Marrin.
+
+        <audio> and <video> should respect private browsing mode
+        https://bugs.webkit.org/show_bug.cgi?id=55287
+        <rdar://problem/9057699>
+
+        No new tests, this is just the plumbing.
+
+        * dom/Document.cpp:
+        (WebCore::Document::privateBrowsingStateDidChange): New.
+        (WebCore::Document::registerForPrivateBrowsingStateChangedCallbacks): Ditto.
+        (WebCore::Document::unregisterForPrivateBrowsingStateChangedCallbacks): Ditto.
+        * dom/Document.h:
+
+        * dom/Element.h:
+        (WebCore::Element::privateBrowsingStateDidChange): New.
+
+        * html/HTMLMediaElement.cpp:
+        (WebCore::HTMLMediaElement::HTMLMediaElement): Register for privacy mode changes.
+        (WebCore::HTMLMediaElement::~HTMLMediaElement): Unregister for privacy mode changes.
+        (WebCore::HTMLMediaElement::loadResource): Tell player current privacy mode.
+        (WebCore::HTMLMediaElement::privateBrowsingStateDidChange):  New, call through to MediaPlayer.
+        * html/HTMLMediaElement.h:
+
+        * page/Page.cpp:
+        (WebCore::Page::privateBrowsingStateChanged): Call document()->privateBrowsingStateDidChange.
+
+        * platform/graphics/MediaPlayer.cpp:
+        (WebCore::MediaPlayer::setPrivateBrowsingMode): New, call through to media engine.
+        * platform/graphics/MediaPlayer.h:
+
+        * platform/graphics/MediaPlayerPrivate.h:
+        (WebCore::MediaPlayerPrivateInterface::setPrivateBrowsingMode):  Declare new interface.
+
+2011-03-01  Jeremy Orlow  <jorlow@chromium.org>
+
+        Reviewed by Steve Block.
+
+        When an IDBTransaction is aborted, all requests that have not yet fired should fire an ABORT_ERR
+        https://bugs.webkit.org/show_bug.cgi?id=54785
+
+        This patch adds in a lot of sanity checks/ASSERTs to make sure we're doing
+        the right thing and continue to do the right thing. It also modifies EventQueue
+        so that we can cancel an event. To do this efficiently, the vector is now a
+        ListHashSet.
+
+        Canelling the event is harder/messier, but the most deterministic thing to do.
+        To the user, the work isn't done until we fire the onsuccess/onerror handler.
+        So the event (which does fire that) needs to be cancelable.
+
+        transaction-abort.html tests this.
+
+        * dom/EventQueue.cpp:
+        (WebCore::EventQueue::enqueueEvent):
+        (WebCore::EventQueue::cancelEvent):
+        (WebCore::EventQueue::pendingEventTimerFired):
+        (WebCore::EventQueue::dispatchEvent):
+        * dom/EventQueue.h:
+        * dom/ExceptionCode.cpp:
+        * storage/IDBCursor.cpp:
+        (WebCore::IDBCursor::update):
+        (WebCore::IDBCursor::deleteFunction):
+        * storage/IDBDatabaseBackendImpl.cpp:
+        (WebCore::IDBDatabaseBackendImpl::close):
+        * storage/IDBDatabaseException.h:
+        * storage/IDBIndex.cpp:
+        (WebCore::IDBIndex::openCursor):
+        (WebCore::IDBIndex::openKeyCursor):
+        (WebCore::IDBIndex::get):
+        (WebCore::IDBIndex::getKey):
+        * storage/IDBObjectStore.cpp:
+        (WebCore::IDBObjectStore::get):
+        (WebCore::IDBObjectStore::add):
+        (WebCore::IDBObjectStore::put):
+        (WebCore::IDBObjectStore::deleteFunction):
+        (WebCore::IDBObjectStore::clear):
+        (WebCore::IDBObjectStore::openCursor):
+        * storage/IDBRequest.cpp:
+        (WebCore::IDBRequest::IDBRequest):
+        (WebCore::IDBRequest::~IDBRequest):
+        (WebCore::IDBRequest::readyState):
+        (WebCore::IDBRequest::markEarlyDeath):
+        (WebCore::IDBRequest::source):
+        (WebCore::IDBRequest::abort):
+        (WebCore::IDBRequest::onSuccess):
+        (WebCore::IDBRequest::dispatchEvent):
+        (WebCore::IDBRequest::enqueueEvent):
+        * storage/IDBRequest.h:
+        * storage/IDBTransaction.cpp:
+        (WebCore::IDBTransaction::registerRequest):
+        (WebCore::IDBTransaction::unregisterRequest):
+        (WebCore::IDBTransaction::onAbort):
+        * storage/IDBTransaction.h:
+
+2011-03-01  Jeremy Orlow  <jorlow@chromium.org>
+
+        Reviewed by Steve Block.
+
+        Only IndexedDB's error event should be cancelable
+        https://bugs.webkit.org/show_bug.cgi?id=55413
+
+        * storage/IDBRequest.cpp:
+        (WebCore::createSuccessEvent):
+        * storage/IDBTransaction.cpp:
+        (WebCore::IDBTransaction::onAbort):
+        (WebCore::IDBTransaction::onComplete):
+
+2011-03-01  Jia Pu  <jpu@apple.com>
+
+        Reviewed by Darin Adler.
+
+        Remove CorrectionIndicator markers sooner.
+        https://bugs.webkit.org/show_bug.cgi?id=54893
+        <rdar://problem/8997524>
+
+        Test: platform/mac/editing/spelling/removing-underline-after-accepting-autocorrection-using-punctuation.html
+
+        This patch changes the autocorrection behavior on Mac OS X. We want to remove CorrectionIndicator
+        marker after any editing command if the command:
+        1. is not a SpellingCorrectionCommand itself.
+        2. is not the command that triggers the autocorrection.
+        This is achieved by adding shouldRetainAutocorrectionIndicator() function to EditCommand. This function returns
+        false for all commands derived from EditCommand, except SpellingCorrectionCommand and TypingCommand. This function
+        always returns true for SpellingCorrectionCommand. For TypingCommand, the return value is determined by member
+        variable m_shouldRetainAutocorrectionIndicator, which can be modified by passing option into the TypingCommand's
+        public functions.
+        
+        To avoid constantly searching marker list, we use variable DocumentMarkerController::m_absentMarkerTypeCache
+        to cache whether there is any marker of a particular type.
+
+        This patch also fixes two minor existing bugs.
+        
+        1. We used to show reversion panel for word with CorrectionIndicator marker. This is incorrect because
+        CorrectionIndicator marker can be removed from corrected words. Since all autocorrected words have Replacement
+        marker unless the whole word is deleted, the correct behavior is to show reversion panel for word with Replacement
+        marker, since all autocorrected words have such marker. However, since we don't want to show the reversion panel
+        if an autocorrected word has been edited, we also check to see if the Replacement marker's description is null.
+        
+        This works as following:
+        When we apply an autocorrection, we add Replacement marker to corrected word, and store original word
+        as the marker's description. If the user edited the corrected word afterward, we set description to null.
+        So when we decide whether to show a reversion panel, we not only check for the existence of Replacement
+        marker, but also check if description is null.
+        
+        2. Fixed an assertion violation in Editor::removeSpellAndCorrectionMarkersFromWordsToBeEdited(), which would
+        occur when deleting the first character in an editable area.
+
+        * dom/DocumentMarker.h: Added m_possiblyExistingMarkerTypes to allow quickly checking whether a marker type is
+           completely in from the document.
+
+        * dom/DocumentMarkerController.cpp: Most of the functions listed here are optimized for early return by checking
+           the return value of possiblyHasMarkers() at beginning.
+        (WebCore::DocumentMarkerController::possiblyHasMarkers):
+        (WebCore::DocumentMarkerController::DocumentMarkerController):
+        (WebCore::DocumentMarkerController::detach):
+        (WebCore::DocumentMarkerController::removeMarkers):
+        (WebCore::DocumentMarkerController::addMarker):
+        (WebCore::DocumentMarkerController::copyMarkers):
+        (WebCore::DocumentMarkerController::markerContainingPoint):
+        (WebCore::DocumentMarkerController::renderedRectsForMarkers):
+        (WebCore::DocumentMarkerController::removeMarkersFromMarkerMapVectorPair):
+        (WebCore::DocumentMarkerController::repaintMarkers):
+        (WebCore::DocumentMarkerController::shiftMarkers):
+        (WebCore::DocumentMarkerController::setMarkersActive):
+        (WebCore::DocumentMarkerController::hasMarkers):
+        (WebCore::DocumentMarkerController::clearDescriptionOnMarkersIntersectingRange):
+        * dom/DocumentMarkerController.h:
+        * editing/EditCommand.cpp:
+        (WebCore::EditCommand::apply):
+        (WebCore::EditCommand::shouldRetainAutocorrectionIndicator):
+        (WebCore::EditCommand::setShouldRetainAutocorrectionIndicator):
+        * editing/EditCommand.h:
+        * editing/Editor.cpp:
+        (WebCore::Editor::respondToChangedSelection):
+        (WebCore::Editor::appliedEditing):
+        (WebCore::Editor::insertTextWithoutSendingTextEvent):
+        (WebCore::Editor::insertLineBreak):
+        (WebCore::Editor::insertParagraphSeparator):
+        (WebCore::Editor::markMisspellingsAfterTypingToWord):
+        (WebCore::Editor::markAllMisspellingsAndBadGrammarInRanges):
+        (WebCore::Editor::removeSpellAndCorrectionMarkersFromWordsToBeEdited):
+        (WebCore::Editor::applyAutocorrectionBeforeTypingIfAppropriate):
+        * editing/Editor.h:
+        * editing/EditorCommand.cpp:
+        (WebCore::executeInsertLineBreak):
+        (WebCore::executeInsertParagraph):
+        (WebCore::executeInsertText):
+        * editing/SpellingCorrectionCommand.cpp:
+        (WebCore::SpellingCorrectionCommand::shouldRetainAutocorrectionIndicator):
+        * editing/SpellingCorrectionCommand.h:
+        * editing/TypingCommand.cpp:
+        (WebCore::TypingCommand::TypingCommand):
+        (WebCore::TypingCommand::deleteSelection):
+        (WebCore::TypingCommand::deleteKeyPressed):
+        (WebCore::TypingCommand::forwardDeleteKeyPressed):
+        (WebCore::TypingCommand::updateSelectionIfDifferentFromCurrentSelection):
+        (WebCore::TypingCommand::insertText):
+        (WebCore::TypingCommand::insertLineBreak):
+        (WebCore::TypingCommand::insertParagraphSeparatorInQuotedContent):
+        (WebCore::TypingCommand::insertParagraphSeparator):
+        * editing/TypingCommand.h:
+        (WebCore::TypingCommand::create):
+        (WebCore::TypingCommand::shouldRetainAutocorrectionIndicator):
+        (WebCore::TypingCommand::setShouldRetainAutocorrectionIndicator):
+        * manual-tests/autocorrection/type-whitespace-to-dismiss-reversion.html:
+
+2011-03-01  Renata Hodovan  <reni@webkit.org>
+
+        Reviewed by Andreas Kling.
+
+        FEDisplacementMapElement changes doesn't require relayout
+        https://bugs.webkit.org/show_bug.cgi?id=55454
+
+        When the FEDisplacementMapElement receives an update message but the given value remains the same we don't need
+        to relayout the filter.
+
+        No new tests are needed because this modification is covered by the dynamic update tests of FEDisplacementMap.
+
+        * platform/graphics/filters/FEDisplacementMap.cpp:
+        (WebCore::FEDisplacementMap::setXChannelSelector):
+        (WebCore::FEDisplacementMap::setYChannelSelector):
+        (WebCore::FEDisplacementMap::setScale):
+        * platform/graphics/filters/FEDisplacementMap.h:
+        * svg/SVGFEDisplacementMapElement.cpp:
+        (WebCore::SVGFEDisplacementMapElement::setFilterEffectAttribute):
+        (WebCore::SVGFEDisplacementMapElement::svgAttributeChanged):
+        * svg/SVGFEDisplacementMapElement.h:
+
 2011-03-01  Dan Bernstein  <mitz@apple.com>
 
         Reviewed by Darin Adler.

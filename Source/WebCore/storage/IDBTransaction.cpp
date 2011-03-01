@@ -103,14 +103,31 @@ void IDBTransaction::abort()
         m_backend->abort();
 }
 
+void IDBTransaction::registerRequest(IDBRequest* request)
+{
+    m_childRequests.add(request);
+}
+
+void IDBTransaction::unregisterRequest(IDBRequest* request)
+{
+    // If we aborted the request, it will already have been removed.
+    m_childRequests.remove(request);
+}
+
 void IDBTransaction::onAbort()
 {
-    enqueueEvent(Event::create(eventNames().abortEvent, true, true));
+    while (!m_childRequests.isEmpty()) {
+        IDBRequest* request = *m_childRequests.begin();
+        m_childRequests.remove(request);
+        request->abort();
+    }
+
+    enqueueEvent(Event::create(eventNames().abortEvent, true, false));
 }
 
 void IDBTransaction::onComplete()
 {
-    enqueueEvent(Event::create(eventNames().completeEvent, false, true));
+    enqueueEvent(Event::create(eventNames().completeEvent, false, false));
 }
 
 bool IDBTransaction::hasPendingActivity() const

@@ -2422,6 +2422,7 @@ BUGWK45652 SKIP : fast/viewport/viewport-96.html = MISSING
 BUGWK45652 SKIP : fast/viewport/viewport-126.html = TEXT
 BUGWK45652 SKIP : fast/viewport/viewport-127.html = TEXT
 BUGWK45652 SKIP : fast/viewport/viewport-128.html = TIMEOUT TEXT
+BUGWK45652 SKIP : fast/viewport/viewport-129.html = MISSING
 
 BUGWK45667 : fast/files/read-file-async.html = CRASH PASS
 BUGWK45667 LINUX : fast/files/read-blob-async.html = CRASH PASS
@@ -3124,14 +3125,7 @@ BUGWK54322 MAC SNOWLEOPARD : css1/text_properties/text_transform.html = IMAGE+TE
 BUGWK54322 MAC SNOWLEOPARD : css2.1/t1508-c527-font-05-b.html = IMAGE+TEXT
 BUGWK54322 MAC SNOWLEOPARD : css2.1/t1508-c527-font-10-c.html = IMAGE+TEXT
 BUGWK54322 MAC SNOWLEOPARD : css2.1/t1605-c545-txttrans-00-b-ag.html = IMAGE+TEXT
-BUGWK54322 MAC SNOWLEOPARD : editing/deleting/delete-ws-fixup-002.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : editing/inserting/typing-around-br-001.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : editing/pasteboard/paste-blockquote-3.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : editing/selection/4402375.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : editing/selection/4932260-3.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : editing/selection/5234383-1.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : editing/selection/5234383-2.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : editing/selection/drag-in-iframe.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : editing/selection/image-before-linebreak.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : editing/selection/replaced-boundaries-1.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : editing/selection/replaced-boundaries-2.html = IMAGE
@@ -3364,8 +3358,6 @@ BUGWK54659 DEBUG : inspector/debugger/debug-inlined-scripts.html = TEXT CRASH TI
 
 BUGWK54794 GPU MAC : compositing/geometry/object-clip-rects-assertion.html = TIMEOUT
 
-BUGCR73510 MAC LEOPARD : fast/text/font-size-zero.html = TEXT
-
 BUGWK54882 WIN : inspector/styles/styles-update-from-js.html = TEXT TIMEOUT
 
 BUGV8_1203 DEBUG : fast/canvas/webgl/gl-get-calls.html = PASS CRASH
@@ -3373,8 +3365,6 @@ BUGV8_1203 DEBUG : fast/canvas/webgl/gl-get-calls.html = PASS CRASH
 BUGWK55117 : fast/js/i18n-bindings-locale.html = TEXT
 
 BUGJAMESR DEBUG : html5lib/runner.html = PASS TIMEOUT
-
-BUGWK46500 : fast/table/fixed-with-auto-with-colspan-vertical.html = IMAGE+TEXT
 
 BUGWK54910 : media/video-replaces-poster.html = PASS IMAGE
 
