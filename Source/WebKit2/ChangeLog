@@ -1,3 +1,38 @@
+2011-03-01  Adam Roben  <aroben@apple.com>
+
+        Convert seconds to milliseconds before calling ::SetTimer
+
+        Fixes <http://webkit.org/b/55417> <rdar://problem/9065287> RunLoop::Timer fires 1000x too
+        early on Windows
+
+        Reviewed by Anders Carlsson.
+
+        * Platform/win/RunLoopWin.cpp:
+        (RunLoop::TimerBase::start): Convert the timeout interval to milliseconds, since that's what
+        ::SetTimer expects.
+
+2011-03-01  Andras Becsi  <abecsi@webkit.org>
+
+        Reviewed by Csaba Osztrogonác.
+
+        [Qt] Clean up the project files and move common options to WebKit.pri.
+
+        * WebKit2.pro: Deduplicate options.
+
+2011-03-01  Juha Savolainen  <juha.savolainen@weego.fi>
+
+        Reviewed by Andreas Kling.
+
+        [Qt] WebKit2 needs to support font size changing and getting default font size
+        https://bugs.webkit.org/show_bug.cgi?id=53671
+
+        Added new enum for font size type and added methods to set and get default font sizes.
+
+        * UIProcess/API/qt/qwkpreferences.cpp:
+        (QWKPreferences::setFontSize): Added.
+        (QWKPreferences::fontSize): Added.
+        * UIProcess/API/qt/qwkpreferences.h:
+
 2011-02-28  Alice Liu  <alice.liu@apple.com>
 
         Reviewed by Adam Roben and Gavin Barraclough.

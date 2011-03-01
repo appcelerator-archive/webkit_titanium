@@ -1,3 +1,41 @@
+2011-03-01  Adam Roben  <aroben@apple.com>
+
+        Fix multiple-definition linker warnings introduced by r79978 on Windows
+
+        * rendering/RenderingAllInOne.cpp: Removed TextControlInnerElements.cpp, as it is now being
+        compiled separately.
+
+2011-03-01  Andras Becsi  <abecsi@webkit.org>
+
+        Reviewed by Csaba Osztrogonác.
+
+        [Qt] Clean up the project files and move common options to WebKit.pri.
+
+        No new tests needed.
+
+        * WebCore.pri: Move common options to WebKit.pri.
+        * WebCore.pro: Ditto.
+
+2011-03-01  Steve Block  <steveblock@google.com>
+
+        Reviewed by Pavel Feldman.
+
+        JNI code in Java bridge is not correctly guarded
+        https://bugs.webkit.org/show_bug.cgi?id=55459
+
+        No new tests, build fix only.
+
+        * bridge/jni/v8/JNIBridgeV8.cpp:
+        * bridge/jni/v8/JNIBridgeV8.h:
+        * bridge/jni/v8/JNIUtilityPrivate.cpp:
+        * bridge/jni/v8/JNIUtilityPrivate.h:
+        * bridge/jni/v8/JavaClassV8.cpp:
+        * bridge/jni/v8/JavaClassV8.h:
+        * bridge/jni/v8/JavaInstanceV8.cpp:
+        * bridge/jni/v8/JavaInstanceV8.h:
+        * bridge/jni/v8/JavaNPObjectV8.cpp:
+        * bridge/jni/v8/JavaNPObjectV8.h:
+
 2011-03-01  Steve Block  <steveblock@google.com>
 
         Reviewed by Jeremy Orlow.
