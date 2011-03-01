@@ -1,3 +1,31 @@
+2011-02-28  Tony Gentilcore  <tonyg@chromium.org>
+
+        Reviewed by Darin Adler.
+
+        Fix a race condition in editing/selection/4975120
+        https://bugs.webkit.org/show_bug.cgi?id=55429
+
+        If the parser yields between the iframe and the script, it would have been
+        possible for step2() to be called before runTest() and the test would hang.
+
+        * editing/selection/4975120.html:
+
+2011-02-28  Benjamin Kalman  <kalman@chromium.org>
+
+        Reviewed by Ryosuke Niwa.
+
+        Make editing/selection/extend-selection-home-end test match other extend-selection with granularity tests
+        https://bugs.webkit.org/show_bug.cgi?id=55422
+
+        The other extend-selection tests which test a granularity just call into resources/extend-selection.js with the
+        granularity they're testing.  The lineboundary test didn't due to RTL bugs in lineboundary, but these have now
+        been fixed.
+
+        * editing/selection/extend-selection-home-end-expected.txt:
+        * editing/selection/extend-selection-home-end.html:
+        * platform/mac/editing/selection/extend-selection-home-end-expected.txt:
+        * platform/win/editing/selection/extend-selection-home-end-expected.txt:
+
 2011-02-28  James Robinson  <jamesr@chromium.org>
 
         Chromium baseline updates.
