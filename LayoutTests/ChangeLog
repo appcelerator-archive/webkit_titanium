@@ -1,3 +1,61 @@
+2011-03-02  Adam Roben  <aroben@apple.com>
+
+        Skip a crashing test on Windows
+
+        <http://webkit.org/b/55069> tracks the failure.
+
+        * platform/win/Skipped: Added fast/text/international/text-combine-parser-test.html.
+
+2011-03-02  Csaba Osztrogonác  <ossy@webkit.org>
+
+        Unreviewed.
+
+        Assertion failure after removing a selection in keydown handler
+        https://bugs.webkit.org/show_bug.cgi?id=51389
+
+        Remove unnecessary Qt specific expected result.
+
+        * platform/qt/editing/style/remove-underline-from-stylesheet-expected.txt: Removed.
+
+2011-03-02  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Unreviewed Chromium rebaselines for r80121; Added the failing expectation for
+        editing/input/setting-input-value-cancel-ime-composition.html due to the bug 55560.
+
+        * platform/chromium/test_expectations.txt:
+        * platform/chromium-linux/editing/pasteboard/smart-paste-003-expected.txt: Updated.
+        * platform/chromium-linux/editing/pasteboard/smart-paste-004-expected.txt: Ditto.
+        * platform/chromium-win/editing/ [...]: Ditto.
+
+2011-03-02  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Unreviewed GTK rebaselines for r80121; Also skip editing/input/setting-input-value-cancel-ime-composition.html
+        because GTK port doesn't implement textInputController.hasMarkedText().
+
+        * platform/gtk/Skipped:
+        * platform/gtk/editing/ [...]: Updated.
+        * platform/gtk/fast/dom/delete-contents-expected.txt: Ditto.
+
+2011-03-02  Csaba Osztrogonác  <ossy@webkit.org>
+
+        Unreviewed.
+
+        Assertion failure after removing a selection in keydown handler
+        https://bugs.webkit.org/show_bug.cgi?id=51389
+
+        Update Qt specific expected results after r80121.
+
+        * platform/qt/Skipped: Add editing/input/setting-input-value-cancel-ime-composition.html because of missing feature.
+        * platform/qt/editing/ [...] : Updated.
+
+2011-03-02  Adam Roben  <aroben@apple.com>
+
+        Skip new test added in r80121 on Windows
+
+        It depends on textInputController, which DRT doesn't have on Windows.
+
+        * platform/win/Skipped: Added editing/input/setting-input-value-cancel-ime-composition.html.
+
 2011-03-01  Ryosuke Niwa  <rniwa@webkit.org>
 
         Reviewed by Darin Adler.
