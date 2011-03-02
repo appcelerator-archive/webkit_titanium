@@ -674,9 +674,6 @@ BUGCR14832 : editing/selection/user-drag-element-and-user-select-none.html = FAI
 BUGCR19665 MAC : platform/mac/editing/input/hangul-enter-confirms-and-sends-keypress.html = FAIL
 BUGCR19665 MAC : platform/mac/editing/input/kotoeri-enter-to-confirm-and-newline.html = FAIL
 
-// New failures from merge 51412:51455.
-BUGCR28916 MAC : editing/pasteboard/paste-xml.xhtml = TEXT TIMEOUT
-
 // Flaky
 BUGCR31803 MAC LINUX : editing/inserting/12882.html = IMAGE PASS
 
@@ -3330,7 +3327,6 @@ BUGV8_1168 : fast/js/mozilla/strict/8.12.5.html = TEXT
 BUGV8_1168 : fast/js/mozilla/strict/8.7.2.html = TEXT
 BUGV8_1168 : fast/js/mozilla/strict/B.1.2.html = TEXT
 BUGV8_1168 : fast/js/mozilla/strict/eval-variable-environment.html = TEXT
-BUGV8_1168 : fast/js/mozilla/strict/function-name-arity.html = TEXT
 BUGV8_1168 : fast/js/mozilla/strict/this-for-function-expression-recursion.html = TEXT
 
 BUGWK54634 SKIP : media/video-controls-in-media-document.html = TIMEOUT

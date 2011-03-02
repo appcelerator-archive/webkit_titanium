@@ -1,3 +1,199 @@
+2011-03-02  John Knottenbelt  <jknotten@chromium.org>
+
+        Reviewed by jknotten@chromium.org.
+
+        Fix build-breakage when GEOLOCATION not enabled.
+        https://bugs.webkit.org/show_bug.cgi?id=55586
+
+        Geolocation::reset needs to be defined if ENABLE(GEOLOCATION)
+        is not true.
+
+        * page/Geolocation.cpp:
+        (WebCore::Geolocation::reset):
+
+2011-03-02  Pavel Feldman  <pfeldman@chromium.org>
+
+        Reviewed by Yury Semikhatsky.
+
+        Web Inspector: remove InjectedScriptHost -> DOMAgent dependency.
+        https://bugs.webkit.org/show_bug.cgi?id=55575
+
+        * bindings/js/JSInjectedScriptHostCustom.cpp:
+        (WebCore::JSInjectedScriptHost::inspectedNode):
+        * bindings/v8/custom/V8InjectedScriptHostCustom.cpp:
+        (WebCore::V8InjectedScriptHost::inspectedNodeCallback):
+        * inspector/ConsoleMessage.cpp:
+        (WebCore::ConsoleMessage::addToFrontend):
+        * inspector/InjectedScript.cpp:
+        (WebCore::InjectedScript::evaluateOn):
+        (WebCore::InjectedScript::wrapObject):
+        (WebCore::InjectedScript::wrapNode):
+        (WebCore::InjectedScript::inspectNode):
+        (WebCore::InjectedScript::nodeAsScriptValue):
+        * inspector/InjectedScript.h:
+        * inspector/InjectedScriptHost.cpp:
+        (WebCore::InjectedScriptHost::addInspectedNode):
+        (WebCore::InjectedScriptHost::clearInspectedNodes):
+        (WebCore::InjectedScriptHost::copyText):
+        (WebCore::InjectedScriptHost::inspectedNode):
+        * inspector/InjectedScriptHost.h:
+        * inspector/InjectedScriptHost.idl:
+        * inspector/InjectedScriptSource.js:
+        * inspector/Inspector.idl:
+        * inspector/InspectorDOMAgent.cpp:
+        (WebCore::InspectorDOMAgent::discardBindings):
+        (WebCore::InspectorDOMAgent::addInspectedNode):
+        (WebCore::InspectorDOMAgent::resolveNode):
+        (WebCore::InspectorDOMAgent::injectedScriptForNode):
+        * inspector/InspectorDOMAgent.h:
+        * inspector/InspectorRuntimeAgent.cpp:
+        (WebCore::InspectorRuntimeAgent::evaluateOn):
+        * inspector/InspectorRuntimeAgent.h:
+        * inspector/front-end/ElementsTreeOutline.js:
+        (WebInspector.ElementsTreeElement.prototype._createTooltipForNode.setTooltip):
+        (WebInspector.ElementsTreeElement.prototype._createTooltipForNode.resolvedNode):
+        (WebInspector.ElementsTreeElement.prototype._createTooltipForNode):
+        * inspector/front-end/PropertiesSidebarPane.js:
+        (WebInspector.PropertiesSidebarPane.prototype.update.nodeResolved):
+        (WebInspector.PropertiesSidebarPane.prototype.update.nodePrototypesReady):
+        (WebInspector.PropertiesSidebarPane.prototype.update.fillSection):
+        (WebInspector.PropertiesSidebarPane.prototype.update):
+        * inspector/front-end/RemoteObject.js:
+        (WebInspector.RemoteObject.resolveNode):
+        (WebInspector.RemoteObject.prototype.pushNodeToFrontend):
+        (WebInspector.RemoteObject.prototype.evaluate):
+
+2011-01-21  John Knottenbelt  <jknotten@chromium.org>
+
+        Reviewed by Dmitry Titov.
+
+        Detach Geolocation from Frame when Page destroyed.
+        https://bugs.webkit.org/show_bug.cgi?id=52877
+
+        On Page destruction, any outstanding Geolocation permission
+        requests should be cancelled, because the Geolocation can only
+        access the client indirectly via m_frame->page().
+
+        Additionally, if the Frame is reparented to another page, the
+        Geolocation should cancel watches, single-shots and requests on
+        the old page.
+
+        Page destruction is signalled by a call to the
+        Frame::pageDestroyed() method. This calls Frame::detachFromPage,
+        where we extend the call chain to Geolocation::detachFromPage()
+        where we call Geolocation::reset() which detaches from the
+        GeolocationController, cancels requests, watches and single shots,
+        and sets the permission state back to Unknown.
+
+        We also now call detachFromPage when the frame reparented in
+        Frame::transferChildFrameToNewDocument.
+
+        Frame::pageDestroyed() is also called by FrameLoader even though
+        the page is not destroyed. We should still cancel permission
+        requests, because the GeolocationClient will become inaccessible
+        to the Geolocation object after this call.
+
+        Since GeolocationController is owned by Page, and all Geolocation
+        objects will now unsubscribe from the GeolocationController on
+        pageDetached(), we no longer need to call stopUpdating() from the
+        GeolocationController's destructor. Instead we can simply assert
+        that there should be no no observers. See related bug
+        https://bugs.webkit.org/show_bug.cgi?id=52216 .
+
+        Introduced new method 'numberOfPendingPermissionRequests' on
+        GeolocationClientMock to count the number of outstanding pending
+        permission requests. This provides a reusable implementation for
+        client-based implementations of the LayoutTestController's
+        numberOfPendingGeolocationPermissionRequests method.
+
+        Tests: fast/dom/Geolocation/iframe-reparent.html
+               fast/dom/Geolocation/page-reload-cancel-permission-requests.html
+
+        * page/DOMWindow.cpp:
+        (WebCore::DOMWindow::resetGeolocationPermissions):
+        * page/DOMWindow.h:
+        * page/Frame.cpp:
+        (WebCore::Frame::detachFromPage):
+        (WebCore::Frame::pageDestroyed):
+        (WebCore::Frame::transferChildFrameToNewDocument):
+        * page/Frame.h:
+        * page/Geolocation.cpp:
+        (WebCore::Geolocation::~Geolocation):
+        (WebCore::Geolocation::page):
+        (WebCore::Geolocation::reset):
+        (WebCore::Geolocation::disconnectFrame):
+        (WebCore::Geolocation::lastPosition):
+        (WebCore::Geolocation::requestPermission):
+        (WebCore::Geolocation::startUpdating):
+        (WebCore::Geolocation::stopUpdating):
+        * page/Geolocation.h:
+        * page/GeolocationController.cpp:
+        (WebCore::GeolocationController::~GeolocationController):
+        * page/Navigator.cpp:
+        (WebCore::Navigator::resetGeolocationPermissions):
+        * page/Navigator.h:
+        * platform/mock/GeolocationClientMock.cpp:
+        (WebCore::GeolocationClientMock::numberOfPendingPermissionRequests):
+        * platform/mock/GeolocationClientMock.h:
+
+2011-03-02  Mikhail Naganov  <mnaganov@chromium.org>
+
+        Reviewed by Pavel Feldman.
+
+        Web Inspector: [Chromium] Landing detailed heap snapshots, part 4.
+        https://bugs.webkit.org/show_bug.cgi?id=55563
+
+        This part adds implementations for data grids used to display
+        different heap snapshots projections. We are almost done.
+
+        * English.lproj/localizedStrings.js:
+        * WebCore.gypi:
+        * bindings/v8/ScriptHeapSnapshot.cpp:
+        (WebCore::ScriptHeapSnapshot::getExactRetainedSize):
+        * bindings/v8/ScriptHeapSnapshot.h:
+        * inspector/Inspector.idl:
+        * inspector/InspectorProfilerAgent.cpp:
+        (WebCore::InspectorProfilerAgent::getExactHeapSnapshotNodeRetainedSize):
+        * inspector/InspectorProfilerAgent.h:
+        * inspector/front-end/DetailedHeapshotGridNodes.js:
+        (WebInspector.HeapSnapshotObjectNode):
+        (WebInspector.HeapSnapshotObjectNode.prototype._createProvider):
+        (WebInspector.HeapSnapshotInstanceNode):
+        (WebInspector.HeapSnapshotInstanceNode.prototype._createProvider):
+        (WebInspector.HeapSnapshotDominatorObjectNode):
+        (WebInspector.HeapSnapshotDominatorObjectNode.prototype._createProvider):
+        (MixInSnapshotNodeFunctions):
+        * inspector/front-end/DetailedHeapshotView.js:
+        (WebInspector.HeapSnapshotContainmentDataGrid):
+        (WebInspector.HeapSnapshotSortableDataGrid):
+        (WebInspector.HeapSnapshotConstructorsDataGrid):
+        (WebInspector.HeapSnapshotDiffDataGrid):
+        (WebInspector.HeapSnapshotDominatorsDataGrid):
+        (WebInspector.HeapSnapshotRetainingPathsList):
+        (WebInspector.DetailedHeapshotView.profileCallback):
+        (WebInspector.DetailedHeapshotView):
+        * inspector/front-end/HeapSnapshot.js:
+        (WebInspector.HeapSnapshotEdge.prototype.get isInvisible):
+        (WebInspector.HeapSnapshotEdge.prototype.toString):
+        (WebInspector.HeapSnapshot.prototype._init):
+        (WebInspector.HeapSnapshot.prototype._buildAggregatesIndexes):
+        (WebInspector.HeapSnapshot.prototype._markInvisibleEdges):
+        (WebInspector.HeapSnapshotPathFinder.prototype._skipEdge):
+        * inspector/front-end/Images/helpButtonGlyph.png: Added.
+        * inspector/front-end/Panel.js:
+        (WebInspector.Panel.prototype.reset):
+        * inspector/front-end/Popover.js:
+        (WebInspector.Popover):
+        (WebInspector.Popover.prototype.show):
+        (WebInspector.Popover.prototype.hide):
+        (WebInspector.Popover.prototype.get visible):
+        * inspector/front-end/ProfilesPanel.js:
+        (WebInspector.ProfilesPanel.prototype._reset):
+        (WebInspector.ProfilesPanel.prototype.getProfile):
+        * inspector/front-end/heapProfiler.css:
+        * inspector/front-end/inspector.js:
+        (WebInspector.resetFocusElement):
+
 2011-03-02  David Kilzer  <ddkilzer@apple.com>
 
         <http://webkit.org/b/55534> Clean up macros in Extensions3DOpenGL.cpp
