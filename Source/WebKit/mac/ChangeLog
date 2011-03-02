@@ -1,3 +1,50 @@
+2011-03-02  Sam Weinig  <sam@webkit.org>
+
+        Reviewed by Anders Carlsson.
+
+        Fix remaining localization issues by piping all localized strings through WebCore's
+        localization bottleneck.
+        <rdar://problem/8728860>
+
+        * DefaultDelegates/WebDefaultContextMenuDelegate.mm:
+        (-[WebDefaultUIDelegate menuItemWithTag:target:representedObject:]):
+        * Misc/WebKitErrors.m:
+        * Misc/WebLocalizableStringsInternal.h: Added.
+        * Misc/WebLocalizableStringsInternal.mm: Added.
+        (WebLocalizedStringInternal):
+        * Panels/WebAuthenticationPanel.m:
+        (-[WebAuthenticationPanel setUpForChallenge:]):
+        * Plugins/Hosted/NetscapePluginHostManager.mm:
+        (WebKit::NetscapePluginHostManager::spawnPluginHost):
+        * WebCoreSupport/WebEditorClient.mm:
+        (undoNameForEditAction):
+        * WebCoreSupport/WebInspectorClient.mm:
+        (WebInspectorFrontendClient::updateWindowTitle):
+        (-[WebInspectorWindowController validateUserInterfaceItem:]):
+        * WebCoreSupport/WebKeyGenerator.m:
+        (-[WebKeyGenerator strengthMenuItemTitles]):
+        (-[WebKeyGenerator signedPublicKeyAndChallengeStringWithStrengthIndex:challenge:pageURL:]):
+        * WebCoreSupport/WebPlatformStrategies.mm:
+        * WebView/WebHTMLView.mm:
+        (-[WebHTMLView validateUserInterfaceItemWithoutDelegate:]):
+        * WebView/WebPDFView.mm:
+        (-[WebPDFView menuForEvent:]):
+
+2011-03-01  Brian Weinstein  <bweinstein@apple.com>
+
+        Reviewed by Adam Roben.
+
+        Part of WebKit2: Need a way to send notifications to client when cookies change
+        https://bugs.webkit.org/show_bug.cgi?id=55427
+        <rdar://problem/9056027>
+        
+        Add stubs for CookiesStrategy on Mac WebKit1.
+
+        * WebCoreSupport/WebPlatformStrategies.h:
+        * WebCoreSupport/WebPlatformStrategies.mm:
+        (WebPlatformStrategies::createCookiesStrategy):
+        (WebPlatformStrategies::notifyCookiesChanged):
+
 2011-03-01  Philippe Normand  <pnormand@igalia.com>
 
         Reviewed by Eric Carlson.

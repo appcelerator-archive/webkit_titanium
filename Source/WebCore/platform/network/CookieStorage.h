@@ -29,6 +29,8 @@
 namespace WebCore {
 
 void setCookieStoragePrivateBrowsingEnabled(bool);
+void startObservingCookieChanges();
+void stopObservingCookieChanges();
 
 }
 
