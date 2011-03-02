@@ -1,3 +1,105 @@
+2011-03-01  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r80079.
+        http://trac.webkit.org/changeset/80079
+        https://bugs.webkit.org/show_bug.cgi?id=55547
+
+        "Broke the Win debug build?" (Requested by dcheng on #webkit).
+
+        * Configurations/FeatureDefines.xcconfig:
+        * GNUmakefile.am:
+        * features.pri:
+
+2011-02-25  Adrienne Walker  <enne@google.com>
+
+        Reviewed by James Robinson.
+
+        [chromium] Abstract "pixels with a graphics context" into its own class
+        https://bugs.webkit.org/show_bug.cgi?id=55259
+
+        This creates new PlatformCanvas/PlatformImage classes which wrap
+        all of the #ifdef Skia/Cg warts from the compositor.  All classes
+        (LayerTilerChromium, ContentLayerChromium, and ImageLayerChromium) are
+        modified to use these abstractions.
+
+        Tests: LayoutTests/compositing
+
+        * WebCore.gypi:
+        * platform/graphics/chromium/ContentLayerChromium.cpp:
+        (WebCore::ContentLayerChromium::updateContentsIfDirty):
+        (WebCore::ContentLayerChromium::resizeUploadBuffer):
+        (WebCore::ContentLayerChromium::updateTextureIfNeeded):
+        (WebCore::ContentLayerChromium::updateTexture):
+        (WebCore::ContentLayerChromium::draw):
+        * platform/graphics/chromium/ContentLayerChromium.h:
+        * platform/graphics/chromium/ImageLayerChromium.cpp:
+        (WebCore::ImageLayerChromium::updateContentsIfDirty):
+        (WebCore::ImageLayerChromium::updateTextureIfNeeded):
+        * platform/graphics/chromium/ImageLayerChromium.h:
+        * platform/graphics/chromium/LayerTilerChromium.cpp:
+        (WebCore::LayerTilerChromium::contentRectToTileIndices):
+        (WebCore::LayerTilerChromium::update):
+        (WebCore::LayerTilerChromium::updateFromPixels):
+        * platform/graphics/chromium/LayerTilerChromium.h:
+        * platform/graphics/chromium/PlatformCanvas.cpp: Added.
+        (WebCore::PlatformCanvas::PlatformCanvas):
+        (WebCore::PlatformCanvas::~PlatformCanvas):
+        (WebCore::PlatformCanvas::resize):
+        (WebCore::PlatformCanvas::AutoLocker::AutoLocker):
+        (WebCore::PlatformCanvas::AutoLocker::~AutoLocker):
+        (WebCore::PlatformCanvas::Painter::Painter):
+        (WebCore::PlatformCanvas::Painter::~Painter):
+        * platform/graphics/chromium/PlatformCanvas.h: Added.
+        (WebCore::PlatformCanvas::AutoLocker::pixels):
+        (WebCore::PlatformCanvas::Painter::context):
+        (WebCore::PlatformCanvas::size):
+        * platform/graphics/chromium/PlatformImage.cpp: Copied from Source/WebCore/platform/graphics/chromium/ImageLayerChromium.cpp.
+        (WebCore::PlatformImage::PlatformImage):
+        (WebCore::PlatformImage::updateFromImage):
+        * platform/graphics/chromium/PlatformImage.h: Added.
+        (WebCore::PlatformImage::pixels):
+        (WebCore::PlatformImage::size):
+
+2011-03-01  Daniel Cheng  <dcheng@chromium.org>
+
+        Reviewed by David Levin.
+
+        Add feature define for data transfer items
+        https://bugs.webkit.org/show_bug.cgi?id=55510
+
+        * Configurations/FeatureDefines.xcconfig:
+        * GNUmakefile.am:
+        * features.pri:
+
+2011-03-01  Joseph Pecoraro  <joepeck@webkit.org>
+
+        Unreviewed. Roll out r80068 and r80073 due to breaking WebKit2 Qt port.
+
+        * dom/ViewportArguments.cpp:
+        (WebCore::computeViewportAttributes):
+        (WebCore::numericPrefix):
+        (WebCore::findSizeValue):
+        (WebCore::setViewportFeature):
+        (WebCore::viewportErrorMessageTemplate):
+        (WebCore::viewportErrorMessageLevel):
+        * dom/ViewportArguments.h:
+
+2011-03-01  Jeremy Orlow  <jorlow@chromium.org>
+
+        Reviewed by James Robinson.
+
+        IDBKeyRange.bound() should not use the optional options object
+        https://bugs.webkit.org/show_bug.cgi?id=55419
+
+        http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Overview.html#range-concept
+
+        Added some code to existing tests to cover these cases.
+
+        * storage/IDBKeyRange.cpp:
+        (WebCore::IDBKeyRange::bound):
+        * storage/IDBKeyRange.h:
+        * storage/IDBKeyRange.idl:
+
 2011-03-01  Dan Bernstein  <mitz@apple.com>
 
         Build fix.

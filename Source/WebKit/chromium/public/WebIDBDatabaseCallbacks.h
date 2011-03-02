@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2011 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,21 +23,21 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-module storage {
+#ifndef WebIDBDatabaseCallbacks_h
+#define WebIDBDatabaseCallbacks_h
 
-    interface [
-        Conditional=INDEXED_DATABASE
-    ] IDBKeyRange {
-        readonly attribute IDBKey lower;
-        readonly attribute IDBKey upper;
-        readonly attribute boolean lowerOpen;
-        readonly attribute boolean upperOpen;
+#include "WebCommon.h"
+#include "WebString.h"
 
-        // FIXME: Make ClassMethod work for JSC as well.
-        [ClassMethod] IDBKeyRange only(in IDBKey value);
-        [ClassMethod] IDBKeyRange lowerBound(in IDBKey bound, in [Optional] boolean open);
-        [ClassMethod] IDBKeyRange upperBound(in IDBKey bound, in [Optional] boolean open);
-        [ClassMethod] IDBKeyRange bound(in IDBKey lower, in IDBKey upper, in [Optional] boolean lowerOpen, in [Optional] boolean upperOpen);
-    };
+namespace WebKit {
 
-}
+class WebIDBDatabaseCallbacks {
+public:
+    virtual ~WebIDBDatabaseCallbacks() { }
+
+    virtual void onVersionChange(const WebString& requestedVersion) { WEBKIT_ASSERT_NOT_REACHED(); }
+};
+
+} // namespace WebKit
+
+#endif // WebIDBDatabaseCallbacks_h

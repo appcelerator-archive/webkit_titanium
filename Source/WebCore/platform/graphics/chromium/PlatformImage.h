@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2011 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,21 +23,31 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-module storage {
+#ifndef PlatformImage_h
+#define PlatformImage_h
 
-    interface [
-        Conditional=INDEXED_DATABASE
-    ] IDBKeyRange {
-        readonly attribute IDBKey lower;
-        readonly attribute IDBKey upper;
-        readonly attribute boolean lowerOpen;
-        readonly attribute boolean upperOpen;
+#include "ImageSource.h"
+#include "IntSize.h"
+#include <stdint.h>
+#include <wtf/Noncopyable.h>
+#include <wtf/OwnArrayPtr.h>
 
-        // FIXME: Make ClassMethod work for JSC as well.
-        [ClassMethod] IDBKeyRange only(in IDBKey value);
-        [ClassMethod] IDBKeyRange lowerBound(in IDBKey bound, in [Optional] boolean open);
-        [ClassMethod] IDBKeyRange upperBound(in IDBKey bound, in [Optional] boolean open);
-        [ClassMethod] IDBKeyRange bound(in IDBKey lower, in IDBKey upper, in [Optional] boolean lowerOpen, in [Optional] boolean upperOpen);
-    };
+namespace WebCore {
 
-}
+class PlatformImage {
+    WTF_MAKE_NONCOPYABLE(PlatformImage);
+public:
+    PlatformImage();
+
+    void updateFromImage(NativeImagePtr);
+    const uint8_t* pixels() const { return m_pixelData ? &m_pixelData[0] : 0; }
+    IntSize size() const { return m_size; }
+
+private:
+    OwnArrayPtr<uint8_t> m_pixelData;
+    IntSize m_size;
+};
+
+} // namespace WebCore
+
+#endif
