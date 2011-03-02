@@ -1,3 +1,69 @@
+2011-03-01  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Reviewed by Darin Adler.
+
+        Assertion failure after removing a selection in keydown handler
+        https://bugs.webkit.org/show_bug.cgi?id=51389
+
+        The bug was caused by textWillBeReplaced's not always updating selection, and
+        shouldRemovePositionAfterAdoptingTextReplacement's not moving the end offset when it's
+        at the end of replaced data.
+
+        Fixed the bug by always updating selection in textWillBeReplaced and fixing the condition
+        to move the offset in shouldRemovePositionAfterAdoptingTextReplacement. Also added a call
+        to setSelection instead of directly modifying m_selection to notify all the clients.
+        Namely, the call to EditorClient::respondToChangedSelection is required for
+        setting-input-value-cancel-ime-composition.html.
+
+        Note that we must update layout before calling setSelection because setSelection calls
+        setFocusedNodeIfNeeded and it requires layout to be up-to-date. Without this call, tests
+        such as fast/forms/input-appearance-maxlength.html hits an assertion in Node::isFocusable.
+
+        Test: editing/input/setting-input-value-cancel-ime-composition.html
+
+        * editing/SelectionController.cpp:
+        (WebCore::shouldRemovePositionAfterAdoptingTextReplacement): When replacing text, the offset
+        of the selection end must be updated even if it was at the end of the replaced text.
+        e.g. removing "world" from "hello world] WebKit" should result in "hello ] WebKit" not
+        "hello  WebK[it". Note we don't move the offset if no text is removed because appending
+        "world" to "hello ]" should result in "hello ]world" not "hello world]".
+        (WebCore::SelectionController::textWillBeReplaced): Calls setSelection to update
+        the selection instead of modifying m_selection directly.
+
+2011-03-02  Andrey Adaikin  <aandrey@google.com>
+
+        Reviewed by Pavel Feldman.
+
+        Web Inspector: highlighted line does not span horizonally in scripts panel while debugging.
+        https://bugs.webkit.org/show_bug.cgi?id=54675
+
+        * inspector/front-end/TextViewer.js:
+        (WebInspector.TextViewer.prototype._syncScroll):
+        (WebInspector.TextEditorChunkedPanel.prototype._buildChunks):
+        (WebInspector.TextEditorChunkedPanel.prototype.makeLineAChunk):
+        (WebInspector.TextEditorGutterPanel):
+        (WebInspector.TextEditorGutterPanel.prototype._expandChunks):
+        (WebInspector.TextEditorGutterPanel.prototype.textChanged):
+        (WebInspector.TextEditorMainPanel):
+        (WebInspector.TextEditorMainPanel.prototype.set readOnly):
+        (WebInspector.TextEditorMainPanel.prototype._getSelection):
+        (WebInspector.TextEditorMainPanel.prototype._selectionToPosition):
+        (WebInspector.TextEditorMainPanel.prototype._handleDOMSubtreeModified):
+        (WebInspector.TextEditorMainPanel.prototype._applyDomUpdates):
+        (WebInspector.TextEditorMainPanel.prototype._updateChunksForRanges):
+        * inspector/front-end/textViewer.css:
+        (.inner-container):
+
+2011-03-02  Oleg Romashin  <romaxa@gmail.com>
+
+        Reviewed by Andreas Kling.
+
+        Fixing inspector compilation with JAVASCRIPT_DEBUGGER disabled
+        https://bugs.webkit.org/show_bug.cgi?id=55477
+
+        * inspector/InspectorAgent.cpp:
+        (WebCore::InspectorAgent::populateScriptObjects):
+
 2011-03-02  Kent Tamura  <tkent@chromium.org>
 
         Unreviewed, a trivial fix for r80096.
