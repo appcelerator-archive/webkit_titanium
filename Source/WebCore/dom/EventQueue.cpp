@@ -47,6 +47,11 @@ private:
     EventQueue* m_eventQueue;    
 };
 
+PassRefPtr<EventQueue> EventQueue::create(ScriptExecutionContext* context)
+{
+    return adoptRef(new EventQueue(context));
+}
+
 EventQueue::EventQueue(ScriptExecutionContext* context)
     : m_pendingEventTimer(adoptPtr(new EventQueueTimer(this, context)))
 {
@@ -98,6 +103,8 @@ void EventQueue::pendingEventTimerFired()
     ASSERT(!m_queuedEvents.contains(0));
     bool wasAdded = m_queuedEvents.add(0).second;
     ASSERT_UNUSED(wasAdded, wasAdded); // It should not have already been in the list.
+
+    RefPtr<EventQueue> protector(this);
 
     while (!m_queuedEvents.isEmpty()) {
         ListHashSet<RefPtr<Event> >::iterator iter = m_queuedEvents.begin();

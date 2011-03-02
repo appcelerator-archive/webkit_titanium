@@ -1,3 +1,333 @@
+2011-03-01  Jeremy Orlow  <jorlow@chromium.org>
+
+       Reviewed by Steve Block.
+
+       When an IDBTransaction is aborted, all requests that have not yet fired should fire an ABORT_ERR
+       https://bugs.webkit.org/show_bug.cgi?id=54785
+
+       This patch adds in a lot of sanity checks/ASSERTs to make sure we're doing
+       the right thing and continue to do the right thing. It also modifies EventQueue
+       so that we can cancel an event. To do this efficiently, the vector is now a
+       ListHashSet.
+
+       Cancelling the event is harder/messier, but the most deterministic thing to do.
+       To the user, the work isn't done until we fire the onsuccess/onerror handler.
+       So the event (which does fire that) needs to be cancelable.
+
+       transaction-abort.html tests this.
+
+       * dom/EventQueue.cpp:
+       (WebCore::EventQueue::enqueueEvent):
+       (WebCore::EventQueue::cancelEvent):
+       (WebCore::EventQueue::pendingEventTimerFired):
+       (WebCore::EventQueue::dispatchEvent):
+       * dom/EventQueue.h:
+       * dom/ExceptionCode.cpp:
+       * storage/IDBCursor.cpp:
+       (WebCore::IDBCursor::update):
+       (WebCore::IDBCursor::deleteFunction):
+       * storage/IDBDatabaseBackendImpl.cpp:
+       (WebCore::IDBDatabaseBackendImpl::close):
+       * storage/IDBDatabaseException.h:
+       * storage/IDBIndex.cpp:
+       (WebCore::IDBIndex::openCursor):
+       (WebCore::IDBIndex::openKeyCursor):
+       (WebCore::IDBIndex::get):
+       (WebCore::IDBIndex::getKey):
+       * storage/IDBObjectStore.cpp:
+       (WebCore::IDBObjectStore::get):
+       (WebCore::IDBObjectStore::add):
+       (WebCore::IDBObjectStore::put):
+       (WebCore::IDBObjectStore::deleteFunction):
+       (WebCore::IDBObjectStore::clear):
+       (WebCore::IDBObjectStore::openCursor):
+       * storage/IDBRequest.cpp:
+       (WebCore::IDBRequest::IDBRequest):
+       (WebCore::IDBRequest::~IDBRequest):
+       (WebCore::IDBRequest::readyState):
+       (WebCore::IDBRequest::markEarlyDeath):
+       (WebCore::IDBRequest::source):
+       (WebCore::IDBRequest::abort):
+       (WebCore::IDBRequest::onSuccess):
+       (WebCore::IDBRequest::dispatchEvent):
+       (WebCore::IDBRequest::enqueueEvent):
+       * storage/IDBRequest.h:
+       * storage/IDBTransaction.cpp:
+       (WebCore::IDBTransaction::registerRequest):
+       (WebCore::IDBTransaction::unregisterRequest):
+       (WebCore::IDBTransaction::onAbort):
+       * storage/IDBTransaction.h:
+
+2011-03-01  Jeremy Orlow  <jorlow@chromium.org>
+
+        Reviewed by Mihai Parparita.
+
+        EventQueue needs to be ref counted
+        https://bugs.webkit.org/show_bug.cgi?id=55512
+
+        EventQueue needs to be ref counted because it's possible for its instance
+        to be deleted while it's dispatching events. This is the reason why
+        https://bugs.webkit.org/show_bug.cgi?id=54785 had to be reverted.
+
+        No change of behavior, so no tests.
+
+        * dom/Document.h:
+        * dom/EventQueue.cpp:
+        (WebCore::EventQueue::create):
+        * dom/EventQueue.h:
+
+2011-03-01  Helder Correia  <helder@sencha.com>
+
+        Reviewed by Simon Fraser.
+
+        No shadow when stroking a path with a gradient
+        https://bugs.webkit.org/show_bug.cgi?id=55436
+
+        This happens in CG and is related to bug 52509, this time to be fixed
+        in GraphicsContext::strokePath(). The gradient needs to be drawn
+        clipped to the stroke on a CGLayer first, then the layer drawn on the
+        GraphicsContext.
+
+        Tests: fast/canvas/canvas-strokePath-gradient-shadow.html
+               svg/css/path-gradient-stroke-shadow.svg
+
+        * platform/graphics/cg/GraphicsContextCG.cpp:
+        (WebCore::GraphicsContext::strokePath):
+
+2011-03-01  David Hyatt  <hyatt@apple.com>
+
+        Reviewed by Dan Bernstein.
+
+        Fix Font::spaceWidth() to be a float instead of an int.
+
+        * platform/graphics/Font.h:
+        (WebCore::Font::spaceWidth):
+
+2011-02-28  Steve Block  <steveblock@google.com>
+
+        Reviewed by Jeremy Orlow.
+
+        Chromium gypi file should include Java bridge files from WebCore/bridge
+        https://bugs.webkit.org/show_bug.cgi?id=55387
+
+        No new tests, no code changes.
+
+        * WebCore.gyp/WebCore.gyp:
+        * WebCore.gypi:
+
+2011-03-01  James Simonsen  <simonjam@chromium.org>
+
+        Reviewed by Tony Gentilcore.
+
+        [Web Timing] Handle the case where no responseEnd time is available.
+        https://bugs.webkit.org/show_bug.cgi?id=55444
+
+        * loader/MainResourceLoader.cpp:
+        (WebCore::MainResourceLoader::MainResourceLoader): Initialize to 0.
+        (WebCore::MainResourceLoader::didFinishLoading): Fall back to current time if no other time is available.
+
+2011-03-01  Patrick Gansterer  <paroga@webkit.org>
+
+        Unreviewed, adding missing change for r80034.
+
+        Add a handler class for Win32 HANDLE
+        https://bugs.webkit.org/show_bug.cgi?id=55334
+
+        * platform/win/Win32Handle.h: Added missing WTF_MAKE_NONCOPYABLE macro.
+
+2011-03-01  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r80037.
+        http://trac.webkit.org/changeset/80037
+        https://bugs.webkit.org/show_bug.cgi?id=55508
+
+        broke compile on SL (Requested by tonyg-cr on #webkit).
+
+        * Android.mk:
+        * CMakeLists.txt:
+        * GNUmakefile.am:
+        * WebCore.gypi:
+        * WebCore.pro:
+        * WebCore.vcproj/WebCore.vcproj:
+        * WebCore.xcodeproj/project.pbxproj:
+        * css/CSSParser.cpp:
+        (WebCore::CSSParser::parseValue):
+        * css/CSSParser.h:
+        * css/CSSStyleSelector.cpp:
+        (WebCore::CSSStyleSelector::applyProperty):
+        * css/html.css:
+        (q:before):
+        (q:after):
+        * rendering/RenderBlockLineLayout.cpp:
+        (WebCore::dirtyLineBoxesForRenderer):
+        * rendering/RenderObject.h:
+        * rendering/RenderObjectChildList.cpp:
+        (WebCore::RenderObjectChildList::removeChildNode):
+        (WebCore::RenderObjectChildList::appendChildNode):
+        (WebCore::RenderObjectChildList::insertChildNode):
+        (WebCore::RenderObjectChildList::updateBeforeAfterContent):
+        * rendering/RenderQuote.cpp: Removed.
+        * rendering/RenderQuote.h: Removed.
+        * rendering/RenderingAllInOne.cpp:
+        * rendering/style/ContentData.cpp:
+        (WebCore::ContentData::dataEquivalent):
+        (WebCore::ContentData::deleteContent):
+        * rendering/style/ContentData.h:
+        * rendering/style/QuotesData.cpp: Removed.
+        * rendering/style/QuotesData.h: Removed.
+        * rendering/style/RenderStyle.cpp:
+        * rendering/style/RenderStyle.h:
+        * rendering/style/RenderStyleConstants.h:
+        * rendering/style/StyleAllInOne.cpp:
+        * rendering/style/StyleRareInheritedData.cpp:
+        (WebCore::StyleRareInheritedData::operator==):
+        * rendering/style/StyleRareInheritedData.h:
+
+2011-03-01  Abhishek Arya  <inferno@chromium.org>
+
+        Reviewed by Dave Hyatt.
+
+        Paint outline for tables.
+        https://bugs.webkit.org/show_bug.cgi?id=55474
+
+        Test: fast/table/table-and-parts-outline.html
+
+        * rendering/RenderTable.cpp:
+        (WebCore::RenderTable::paintObject):
+
+2011-03-01  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r80028.
+        http://trac.webkit.org/changeset/80028
+        https://bugs.webkit.org/show_bug.cgi?id=55502
+
+        'caused crashes; rolling out while investigating' (Requested
+        by jorlow on #webkit).
+
+        * dom/EventQueue.cpp:
+        (WebCore::EventQueue::enqueueEvent):
+        (WebCore::EventQueue::pendingEventTimerFired):
+        (WebCore::EventQueue::dispatchEvent):
+        * dom/EventQueue.h:
+        * dom/ExceptionCode.cpp:
+        * storage/IDBCursor.cpp:
+        (WebCore::IDBCursor::update):
+        (WebCore::IDBCursor::deleteFunction):
+        * storage/IDBDatabaseException.h:
+        * storage/IDBDatabaseException.idl:
+        * storage/IDBIndex.cpp:
+        (WebCore::IDBIndex::openCursor):
+        (WebCore::IDBIndex::openKeyCursor):
+        (WebCore::IDBIndex::get):
+        (WebCore::IDBIndex::getKey):
+        * storage/IDBObjectStore.cpp:
+        (WebCore::IDBObjectStore::get):
+        (WebCore::IDBObjectStore::add):
+        (WebCore::IDBObjectStore::put):
+        (WebCore::IDBObjectStore::deleteFunction):
+        (WebCore::IDBObjectStore::clear):
+        (WebCore::IDBObjectStore::openCursor):
+        * storage/IDBRequest.cpp:
+        (WebCore::IDBRequest::IDBRequest):
+        (WebCore::IDBRequest::~IDBRequest):
+        (WebCore::IDBRequest::readyState):
+        (WebCore::IDBRequest::dispatchEvent):
+        (WebCore::IDBRequest::enqueueEvent):
+        (WebCore::IDBRequest::source):
+        * storage/IDBRequest.h:
+        * storage/IDBTransaction.cpp:
+        (WebCore::IDBTransaction::onAbort):
+        * storage/IDBTransaction.h:
+
+2011-03-01  Carol Szabo  <carol.szabo@nokia.com>
+
+        Reviewed by David Hyatt  <hyatt@apple.com>
+
+        content property doesn't support quotes
+        https://bugs.webkit.org/show_bug.cgi?id=6503
+
+        Added full support for quotes as defined by CSS 2.1.
+
+        Tests: fast/css/content/content-quotes-01.html
+               fast/css/content/content-quotes-02.html
+               fast/css/content/content-quotes-03.html
+               fast/css/content/content-quotes-04.html
+               fast/css/content/content-quotes-05.html
+
+        * Android.mk:
+        * CMakeLists.txt:
+        * GNUmakefile.am:
+        * WebCore.pro:
+        * WebCore.vcproj/WebCore.vcproj:
+        * WebCore.xcodeproj/project.pbxproj:
+        Added RenderQuote.cpp/h and QuotesData.cpp/h to the dependency lists
+        * css/CSSParser.cpp:
+        (WebCore::CSSParser::parseValue):
+        (WebCore::CSSParser::parseQuotes):
+        * css/CSSParser.h:
+        Added needed stylesheet parsing support for quotes,
+        (no-)open-quote and (no-)close-quote
+        * css/CSSStyleSelector.cpp:
+        (WebCore::CSSStyleSelector::applyProperty):
+        Handled setting of the new quotes RenderStyle property and added
+        handling of quotes for the content property.
+        * css/html.css:
+        (q:before):
+        (q:after):
+        replaced the '"' workaround with open/close-quote
+        * rendering/RenderBlockLineLayout.cpp:
+        (WebCore::dirtyLineBoxesForRenderer):
+        Made RenderQuote behave like RenderCounter.
+        Needed to ensure that the Quote text is calculated before layout,
+        just as it is for RenderCounter.
+        * rendering/RenderObject.h:
+        (WebCore::RenderObject::isQuote):
+        * rendering/RenderObjectChildList.cpp:
+        (WebCore::RenderObjectChildList::removeChildNode):
+        (WebCore::RenderObjectChildList::appendChildNode):
+        (WebCore::RenderObjectChildList::insertChildNode):
+        Handled updating of quote depth when renderers are added and removed
+        from the tree.
+        (WebCore::RenderObjectChildList::updateBeforeAfterContent):
+        * rendering/RenderQuote.cpp: Added.
+        (WebCore::adjustDepth):
+        (WebCore::RenderQuote::RenderQuote):
+        (WebCore::RenderQuote::~RenderQuote):
+        (WebCore::RenderQuote::renderName):
+        (WebCore::RenderQuote::placeQuote):
+        (WebCore::RenderQuote::originalText):
+        (WebCore::RenderQuote::computePreferredLogicalWidths):
+        (WebCore::RenderQuote::rendererSubtreeAttached):
+        (WebCore::RenderQuote::rendererRemovedFromTree):
+        (WebCore::RenderQuote::styleDidChange):
+        * rendering/RenderQuote.h: Added.
+        (WebCore::RenderQuote::isQuote):
+        (WebCore::toRenderQuote):
+        * rendering/RenderingAllInOne.cpp:
+        Included RenderQuote.cpp
+        * rendering/style/StyleAllInOne.cpp:
+        Included QuotesData.cpp
+        * rendering/style/ContentData.cpp:
+        (WebCore::ContentData::dataEquivalent):
+        Checked for quotetype identity.
+        (WebCore::ContentData::deleteContent):
+        Accounted for the new QUOTE_TYPE.
+        * rendering/style/ContentData.h:
+        (WebCore::ContentData::isQuote):
+        (WebCore::ContentData::quote):
+        (WebCore::ContentData::setQuote):
+        * rendering/style/RenderStyle.cpp:
+        (WebCore::RenderStyle::setContent):
+        * rendering/style/RenderStyle.h:
+        (WebCore::InheritedFlags::quotes):
+        (WebCore::InheritedFlags::setQuotes):
+        * rendering/style/RenderStyleConstants.h:
+        * rendering/style/StyleRareInheritedData.cpp:
+        (WebCore::StyleRareInheritedData::operator==):
+        Included quotes in equality check.
+        * rendering/style/StyleRareInheritedData.h:
+        Added quotes
+
 2011-03-01  Michael Nordman  <michaeln@google.com>
 
         Reviewed by Alexey Proskuryakov.
