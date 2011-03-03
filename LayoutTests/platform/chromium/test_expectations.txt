@@ -101,6 +101,9 @@ BUGCR69513 DEBUG SLOW : html5lib/webkit-resumer.html = PASS
 
 BUG_DRT WIN LINUX DEBUG SLOW : http/tests/inspector/change-iframe-src.html = PASS
 
+BUGUKAI WIN SLOW : http/tests/cache/subresource-expiration-1.html = PASS
+BUGUKAI WIN SLOW : http/tests/cache/subresource-expiration-2.html = PASS
+
 // -----------------------------------------------------------------
 // SKIPPED TESTS
 // -----------------------------------------------------------------
@@ -3138,21 +3141,6 @@ BUGWK54322 MAC SNOWLEOPARD : fast/inline/inline-box-background-long-image.html =
 BUGWK54322 MAC SNOWLEOPARD : fast/layers/video-layer.html = TEXT
 BUGWK54322 MAC SNOWLEOPARD : fast/media/mq-transform-02.html = IMAGE+TEXT
 BUGWK54322 MAC SNOWLEOPARD : fast/media/mq-transform-03.html = IMAGE+TEXT
-BUGWK54322 MAC SNOWLEOPARD : fast/repaint/japanese-rl-selection-clear.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : fast/repaint/japanese-rl-selection-repaint.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : fast/repaint/line-flow-with-floats-1.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : fast/repaint/line-flow-with-floats-2.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : fast/repaint/line-flow-with-floats-3.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : fast/repaint/line-flow-with-floats-4.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : fast/repaint/line-flow-with-floats-5.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : fast/repaint/line-flow-with-floats-6.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : fast/repaint/line-flow-with-floats-7.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : fast/repaint/line-flow-with-floats-8.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : fast/repaint/line-flow-with-floats-9.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : fast/repaint/line-flow-with-floats-10.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : fast/repaint/repaint-across-writing-mode-boundary.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : fast/repaint/select-option-background-color.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : fast/repaint/slider-thumb-drag-release.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : fast/replaced/width100percent-textarea.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : fast/ruby/base-shorter-than-text.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : fast/speech/input-appearance-numberandspeech.html = IMAGE
@@ -3360,3 +3348,4 @@ BUGWK55560 : editing/input/setting-input-value-cancel-ime-composition.html = TEX
 BUGCR74710 MAC RELEASE : svg/text/font-size-below-point-five.svg = TEXT
 
 BUGCR74766 WIN DEBUG : http/tests/security/javascriptURL/xss-ALLOWED-from-javascript-url-sub-frame-to-javascript-url-sub-frame.html = PASS CRASH
+
