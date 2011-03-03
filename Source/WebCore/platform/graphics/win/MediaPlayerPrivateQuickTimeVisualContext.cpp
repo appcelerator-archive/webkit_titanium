@@ -46,7 +46,9 @@
 #include "TimeRanges.h"
 #include "Timer.h"
 #include <AssertMacros.h>
+#include <CoreGraphics/CGAffineTransform.h>
 #include <CoreGraphics/CGContext.h>
+#include <QuartzCore/CATransform3D.h>
 #include <Wininet.h>
 #include <wtf/CurrentTime.h>
 #include <wtf/HashSet.h>

@@ -38,6 +38,7 @@
 #include "ScaleTransformOperation.h"
 #include "SystemTime.h"
 #include "TranslateTransformOperation.h"
+#include <QuartzCore/CATransform3D.h>
 #include <limits.h>
 #include <wtf/CurrentTime.h>
 #include <wtf/text/StringConcatenate.h>
@@ -1680,8 +1681,8 @@ const TimingFunction* GraphicsLayerCA::timingFunctionForAnimationValue(const Ani
         return animValue->timingFunction();
     if (anim->isTimingFunctionSet())
         return anim->timingFunction().get();
-        
-    return 0;
+    
+    return CubicBezierTimingFunction::defaultTimingFunction();
 }
 
 bool GraphicsLayerCA::setAnimationEndpoints(const KeyframeValueList& valueList, const Animation* anim, PlatformCAAnimation* basicAnim)
