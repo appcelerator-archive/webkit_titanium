@@ -23,31 +23,18 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InjectedBundlePagePolicyClient_h
-#define InjectedBundlePagePolicyClient_h
+#ifndef FullKeyboardAccessWatcher_h
+#define FullKeyboardAccessWatcher_h
 
-#include "APIClient.h"
-#include "APIObject.h"
-#include "WKBundlePage.h"
-#include <wtf/Forward.h>
+#import <Cocoa/Cocoa.h>
 
-namespace WebCore {
-    class ResourceRequest;
+@interface FullKeyboardAccessWatcher : NSObject {
+@private
+    BOOL fullKeyboardAccessEnabled;
 }
 
-namespace WebKit {
++ (BOOL)fullKeyboardAccessEnabled;
 
-class InjectedBundleNavigationAction;
-class WebFrame;
-class WebPage;
+@end;
 
-class InjectedBundlePagePolicyClient : public APIClient<WKBundlePagePolicyClient> {
-public:
-    WKBundlePagePolicyAction decidePolicyForNavigationAction(WebPage*, WebFrame*, InjectedBundleNavigationAction*, const WebCore::ResourceRequest&, RefPtr<APIObject>& userData);
-    WKBundlePagePolicyAction decidePolicyForNewWindowAction(WebPage*, WebFrame*, InjectedBundleNavigationAction*, const WebCore::ResourceRequest&, const String& frameName, RefPtr<APIObject>& userData);
-    WKBundlePagePolicyAction decidePolicyForMIMEType(WebPage*, WebFrame*, const String& MIMEType, const WebCore::ResourceRequest&, RefPtr<APIObject>& userData);
-};
-
-} // namespace WebKit
-
-#endif // InjectedBundlePagePolicyClient_h
+#endif // FullKeyboardAccessWatcher_h

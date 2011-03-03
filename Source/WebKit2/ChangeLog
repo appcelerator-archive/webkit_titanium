@@ -1,3 +1,73 @@
+2011-03-03  Maciej Stachowiak  <mjs@apple.com>
+
+        Reviewed by Brady Eidson.
+
+        WebProcess is calling CFURLCacheRemoveAllCachedResponses when loading, results in origin-load for all resources
+        https://bugs.webkit.org/show_bug.cgi?id=55701
+        <rdar://problem/9074017>
+
+        * Shared/WebProcessCreationParameters.cpp:
+        (WebKit::WebProcessCreationParameters::WebProcessCreationParameters): Initialize cache-clearing
+        flag parameters to false.
+        (WebKit::WebProcessCreationParameters::encode): Serialize them properly.
+        (WebKit::WebProcessCreationParameters::decode): And deserialize.
+
+2011-03-03  Alexey Proskuryakov  <ap@apple.com>
+
+        Reviewed by Darin Adler.
+
+        REGRESSION (WebKit2): Tab keys no longer observe Full Keyboard Access
+        https://bugs.webkit.org/show_bug.cgi?id=55633
+        <rdar://problem/8963023>
+
+        * WebKit2.xcodeproj/project.pbxproj:
+        * WebProcess/mac/FullKeyboardAccessWatcher.h: Added.
+        * WebProcess/mac/FullKeyboardAccessWatcher.mm: Added.
+        (-[FullKeyboardAccessWatcher retrieveKeyboardUIModeFromPreferences:]):
+        (-[FullKeyboardAccessWatcher init]):
+        (+[FullKeyboardAccessWatcher fullKeyboardAccessEnabled]):
+        Get the current state of full keyboard access, listening for change notifications.
+
+        * WebProcess/WebProcess.h:  Added fullKeyboardAccessEnabled().
+
+        * WebProcess/WebProcess.cpp: (WebKit::WebProcess::fullKeyboardAccessEnabled):
+        WebKit1 also doesn't implement this on platforms other than Mac.
+
+        * WebProcess/mac/WebProcessMac.mm: (WebKit::WebProcess::fullKeyboardAccessEnabled):
+        Just ask FullKeyboardAccessWatcher.
+
+        * WebProcess/WebCoreSupport/WebChromeClient.cpp: (WebKit::WebChromeClient::keyboardUIMode):
+        * WebProcess/WebCoreSupport/WebChromeClient.h:
+        Added keyboardUIMode(), removed tabsToLinks().
+
+        * WebProcess/WebPage/WebPage.cpp: (WebKit::WebPage::keyboardUIMode):
+        * WebProcess/WebPage/WebPage.h:
+        Generate keyboard UI mode from tabToLinks preference and current state of FKA.
+
+2011-03-03  Sam Weinig  <sam@webkit.org>
+
+        Reviewed by Anders Carlsson.
+
+        Give the Bundle's policy client the option of deciding the policy
+        https://bugs.webkit.org/show_bug.cgi?id=55699
+
+        * WebProcess/InjectedBundle/API/c/WKBundlePage.h:
+        Add WKBundlePagePolicyAction enum and make it the return value of
+        the WKBundlePagePolicyClient functions.
+
+        * WebProcess/InjectedBundle/InjectedBundlePagePolicyClient.cpp:
+        (WebKit::InjectedBundlePagePolicyClient::decidePolicyForNavigationAction):
+        (WebKit::InjectedBundlePagePolicyClient::decidePolicyForNewWindowAction):
+        (WebKit::InjectedBundlePagePolicyClient::decidePolicyForMIMEType):
+        * WebProcess/InjectedBundle/InjectedBundlePagePolicyClient.h:
+        Pass the return value back to the caller. For unimplemented functions, return WKBundlePagePolicyActionPassThrough.
+
+        * WebProcess/WebCoreSupport/WebFrameLoaderClient.cpp:
+        (WebKit::WebFrameLoaderClient::dispatchDecidePolicyForMIMEType):
+        (WebKit::WebFrameLoaderClient::dispatchDecidePolicyForNewWindowAction):
+        (WebKit::WebFrameLoaderClient::dispatchDecidePolicyForNavigationAction):
+        Call the policy function early if the bundle handles it.
+
 2011-03-02  Brian Weinstein  <bweinstein@apple.com>
 
         Reviewed by Adam Roben.

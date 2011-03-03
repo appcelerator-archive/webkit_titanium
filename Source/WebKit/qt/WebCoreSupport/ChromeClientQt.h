@@ -112,7 +112,7 @@ namespace WebCore {
 
         virtual void setStatusbarText(const String&);
 
-        virtual bool tabsToLinks() const;
+        virtual WebCore::KeyboardUIMode keyboardUIMode();
         virtual IntRect windowResizerRect() const;
 
         virtual void invalidateWindow(const IntRect&, bool);

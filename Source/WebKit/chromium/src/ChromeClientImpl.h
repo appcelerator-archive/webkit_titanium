@@ -101,7 +101,7 @@ public:
         const WTF::String& defaultValue, WTF::String& result);
     virtual void setStatusbarText(const WTF::String& message);
     virtual bool shouldInterruptJavaScript();
-    virtual bool tabsToLinks() const;
+    virtual WebCore::KeyboardUIMode keyboardUIMode();
     virtual WebCore::IntRect windowResizerRect() const;
 #if ENABLE(REGISTER_PROTOCOL_HANDLER)
     virtual void registerProtocolHandler(const String& scheme, const String& baseURL, const String& url, const String& title);
