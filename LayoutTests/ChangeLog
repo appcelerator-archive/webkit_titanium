@@ -1,3 +1,90 @@
+2011-03-02  Mihai Parparita  <mihaip@chromium.org>
+
+        Unreviewed Chromium expectations update.
+        
+        compositing/geometry/object-clip-rects-assertion.html no longer times
+        out on the Mac (was just a bad bot).
+
+        * platform/chromium/test_expectations.txt:
+
+2011-03-02  Mihai Parparita  <mihaip@chromium.org>
+
+        Unreviewed expectations update.
+        
+        Promote expectations for fast/table/table-and-parts-outline.html and
+        svg/css/path-gradient-stroke-shadow.svg from chromium-mac/ to
+        mac-leopard/ so that 1) the test passes on mac-leopard 2) the test
+        on chromium-mac-snowlopard (which will now use the mac/ baselines).
+
+        * platform/mac-leopard/fast/table/table-and-parts-outline-expected.checksum: Renamed from LayoutTests/platform/chromium-mac/fast/table/table-and-parts-outline-expected.checksum.
+        * platform/mac-leopard/fast/table/table-and-parts-outline-expected.png: Renamed from LayoutTests/platform/chromium-mac/fast/table/table-and-parts-outline-expected.png.
+        * platform/mac-leopard/svg/css/path-gradient-stroke-shadow-expected.checksum: Renamed from LayoutTests/platform/chromium-mac/svg/css/path-gradient-stroke-shadow-expected.checksum.
+        * platform/mac-leopard/svg/css/path-gradient-stroke-shadow-expected.png: Renamed from LayoutTests/platform/chromium-mac/svg/css/path-gradient-stroke-shadow-expected.png.
+
+2011-02-28  Jeremy Orlow  <jorlow@chromium.org>
+
+        Reviewed by James Robinson.
+
+        Split IDBCursor.value into IDBCursor.primaryKey and IDBCursor.value
+        https://bugs.webkit.org/show_bug.cgi?id=55443
+
+        * storage/indexeddb/cursor-delete-expected.txt:
+        * storage/indexeddb/cursor-index-delete-expected.txt:
+        * storage/indexeddb/cursor-update-expected.txt:
+        * storage/indexeddb/cursor-update.html:
+        * storage/indexeddb/duplicates-expected.txt:
+        * storage/indexeddb/duplicates.html:
+        * storage/indexeddb/index-basics-expected.txt:
+        * storage/indexeddb/index-basics.html:
+        * storage/indexeddb/index-cursor-expected.txt:
+        * storage/indexeddb/index-cursor.html:
+
+2011-03-02  Martin Robinson  <mrobinson@igalia.com>
+
+        Update GTK+ baselines after r80151.
+
+        * platform/gtk/fast/css-generated-content/005-expected.txt:
+        * platform/gtk/fast/css-generated-content/beforeAfter-interdocument-expected.txt:
+        * platform/gtk/fast/css-generated-content/no-openclose-quote-expected.txt:
+        * platform/gtk/fast/invalid/residual-style-expected.txt:
+
+2011-03-02  Tony Gentilcore  <tonyg@chromium.org>
+
+        Unreviewed expectations update
+
+        [chromium] plugins/embed-attributes-setting.html is crashy
+        https://bugs.webkit.org/show_bug.cgi?id=55616
+
+        * platform/chromium/test_expectations.txt:
+
+2011-03-02  Mihai Parparita  <mihaip@chromium.org>
+
+        Unreviewed Chromium expectations update.
+        
+        Remove chromium-gpu-mac/ text expectations mistakenly added by r80163
+        (tests should pass with mac/ expectations).
+
+        * platform/chromium-gpu-mac/compositing/geometry/clipped-video-controller-expected.txt: Removed.
+        * platform/chromium-gpu-mac/compositing/geometry/video-fixed-scrolling-expected.txt: Removed.
+        * platform/chromium-gpu-mac/compositing/geometry/video-opacity-overlay-expected.txt: Removed.
+        * platform/chromium-gpu-mac/compositing/layers-inside-overflow-scroll-expected.txt: Removed.
+        * platform/chromium-gpu-mac/compositing/overflow/overflow-compositing-descendant-expected.txt: Removed.
+        * platform/chromium-gpu-mac/compositing/overflow/scroll-ancestor-update-expected.txt: Removed.
+        * platform/chromium-gpu-mac/compositing/reflections/load-video-in-reflection-expected.txt: Removed.
+        * platform/chromium-gpu-mac/compositing/self-painting-layers-expected.txt: Removed.
+
+2011-03-02  Tony Gentilcore  <tonyg@chromium.org>
+
+        Unreviewed expectations update
+
+        [chromium] Expectations update
+        https://bugs.webkit.org/show_bug.cgi?id=55615
+
+        * platform/chromium-linux/fast/repaint/control-clip-expected.checksum:
+        * platform/chromium-linux/fast/repaint/control-clip-expected.png:
+        * platform/chromium-win/fast/repaint/control-clip-expected.checksum:
+        * platform/chromium-win/fast/repaint/control-clip-expected.png:
+
 2011-03-02  Tony Gentilcore  <tonyg@chromium.org>
 
         Unreviewed expectations update

@@ -1,3 +1,175 @@
+2011-03-02  Daniel Cheng  <dcheng@chromium.org>
+
+        Revert frame-specific WebClipboard changes
+        https://bugs.webkit.org/show_bug.cgi?id=55617
+
+        This code is no longer needed since we've decided to use the original
+        approach to copy/paste drag/drop handling in ClipboardChromium.
+
+        No new tests because no functionality changes.
+
+        * platform/chromium/ChromiumDataObject.cpp:
+        (WebCore::ChromiumDataObject::createReadable):
+        * platform/chromium/ChromiumDataObject.h:
+        * platform/chromium/ClipboardChromium.cpp:
+        (WebCore::ClipboardChromium::create):
+        * platform/chromium/PlatformBridge.h:
+        * platform/chromium/ReadableDataObject.cpp:
+        (WebCore::ReadableDataObject::create):
+        (WebCore::ReadableDataObject::ReadableDataObject):
+        (WebCore::ReadableDataObject::getData):
+        (WebCore::ReadableDataObject::urlTitle):
+        (WebCore::ReadableDataObject::htmlBaseUrl):
+        (WebCore::ReadableDataObject::filenames):
+        (WebCore::ReadableDataObject::ensureTypeCacheInitialized):
+        * platform/chromium/ReadableDataObject.h:
+
+2011-03-02  Tony Chang  <tony@chromium.org>
+
+        Unreviewed, rolling chromium DEPS to r76362.
+
+        https://bugs.webkit.org/show_bug.cgi?id=55564
+
+        * WebCore.gyp/WebCore.gyp: Switch to libjpeg_turbo to match chromium
+
+2011-03-02  Alexey Proskuryakov  <ap@apple.com>
+
+        Build fix.
+
+        * page/ChromeClient.h: (WebCore::ChromeClient::keyboardUIMode): I didn't mean to commit these
+        changes yet.
+
+2011-03-02  Alexey Proskuryakov  <ap@apple.com>
+
+        Reviewed by John Sullivan.
+
+        Clean up WebCore tabsToLinks code a little
+        https://bugs.webkit.org/show_bug.cgi?id=55606
+
+        No change in behavior, so no tests.
+
+        * html/HTMLFormControlElement.cpp: (WebCore::HTMLFormControlElement::isKeyboardFocusable):
+        This is the only caller of tabsToAllControls(). Renamed this function to tabsToAllFormControls().
+
+        * page/EventHandler.cpp:
+        (WebCore::EventHandler::isKeyboardOptionTab): Moved from platform specific files. This
+        function cannot be file static, because EventHandlerMac.mm uses it.
+        (WebCore::eventInvertsTabsToLinksClientCallResult): Merged implementations from platform
+        specific files. We can just as well have #if here. Renamed for clarity.
+        (WebCore::EventHandler::tabsToLinks): Rewrote in a way that makes it clearer how "invert"
+        works.
+        
+        * page/EventHandler.h: We no longer need invertSenseOfTabsToLinks() here, it's only used
+        in EventHandler.cpp.
+
+        * page/android/EventHandlerAndroid.cpp: (WebCore::EventHandler::tabsToAllFormControls):
+        * page/brew/EventHandlerBrew.cpp: (WebCore::EventHandler::tabsToAllFormControls):
+        * page/chromium/EventHandlerChromium.cpp: (WebCore::EventHandler::tabsToAllFormControls):
+        * page/efl/EventHandlerEfl.cpp: (WebCore::EventHandler::tabsToAllFormControls):
+        * page/gtk/EventHandlerGtk.cpp: (WebCore::EventHandler::tabsToAllFormControls):
+        * page/haiku/EventHandlerHaiku.cpp: (WebCore::EventHandler::tabsToAllFormControls):
+        * page/mac/EventHandlerMac.mm: (WebCore::EventHandler::tabsToAllFormControls):
+        * page/qt/EventHandlerQt.cpp: (WebCore::EventHandler::tabsToAllFormControls):
+        * page/win/EventHandlerWin.cpp: (WebCore::EventHandler::tabsToAllFormControls):
+        * page/wx/EventHandlerWx.cpp: (WebCore::EventHandler::tabsToAllFormControls):
+        Updating all port files.
+
+2011-02-28  Jeremy Orlow  <jorlow@chromium.org>
+
+        Reviewed by James Robinson.
+
+        Split IDBCursor.value into IDBCursor.primaryKey and IDBCursor.value
+        https://bugs.webkit.org/show_bug.cgi?id=55443
+
+        Implement http://www.w3.org/Bugs/Public/show_bug.cgi?id=11948
+
+        The idea is to have an IDBCursor and an IDBCursorWithValue interface which
+        inherits from the former.  index.openKeyCursor will return the former and
+        index/objectStore.openCursor will return the latter.  We'll add a primaryKey
+        attribute to IDBCursor.  It will always be the key of the associated object
+        store entry.  For index.openCursor cursors, the key attribute will be the key
+        of the index.  For objectStore.openCursors, it'll be the same as the
+        primaryKey.  The value will be the value of the objectStore entry.
+
+        * WebCore.gypi:
+        * bindings/scripts/CodeGeneratorV8.pm:
+        * bindings/v8/SerializedScriptValue.cpp:
+        (WebCore::SerializedScriptValue::deserializeAndSetProperty):
+        * bindings/v8/SerializedScriptValue.h:
+        * bindings/v8/custom/V8IDBAnyCustom.cpp:
+        (WebCore::toV8):
+        * storage/IDBAny.cpp:
+        (WebCore::IDBAny::idbCursorWithValue):
+        (WebCore::IDBAny::set):
+        * storage/IDBAny.h:
+        * storage/IDBCursor.cpp:
+        (WebCore::IDBCursor::create):
+        (WebCore::IDBCursor::primaryKey):
+        (WebCore::IDBCursor::value):
+        * storage/IDBCursor.h:
+        * storage/IDBCursor.idl:
+        * storage/IDBCursorBackendImpl.cpp:
+        (WebCore::IDBCursorBackendImpl::IDBCursorBackendImpl):
+        (WebCore::IDBCursorBackendImpl::primaryKey):
+        (WebCore::IDBCursorBackendImpl::value):
+        (WebCore::IDBCursorBackendImpl::update):
+        (WebCore::IDBCursorBackendImpl::currentRowExists):
+        (WebCore::IDBCursorBackendImpl::continueFunctionInternal):
+        (WebCore::IDBCursorBackendImpl::deleteFunction):
+        (WebCore::IDBCursorBackendImpl::loadCurrentRow):
+        * storage/IDBCursorBackendImpl.h:
+        (WebCore::IDBCursorBackendImpl::create):
+        * storage/IDBCursorBackendInterface.h:
+        * storage/IDBCursorWithValue.cpp: Copied from Source/WebCore/storage/IDBCursor.idl.
+        (WebCore::IDBCursorWithValue::create):
+        (WebCore::IDBCursorWithValue::IDBCursorWithValue):
+        (WebCore::IDBCursorWithValue::~IDBCursorWithValue):
+        * storage/IDBCursorWithValue.h: Copied from Source/WebCore/storage/IDBCursorBackendInterface.h.
+        * storage/IDBCursorWithValue.idl: Copied from Source/WebCore/storage/IDBCursor.idl.
+        * storage/IDBIndex.cpp:
+        (WebCore::IDBIndex::openCursor):
+        (WebCore::IDBIndex::openKeyCursor):
+        * storage/IDBIndexBackendImpl.cpp:
+        (WebCore::IDBIndexBackendImpl::openCursorInternal):
+        (WebCore::IDBIndexBackendImpl::openCursor):
+        (WebCore::IDBIndexBackendImpl::openKeyCursor):
+        * storage/IDBIndexBackendImpl.h:
+        * storage/IDBObjectStore.cpp:
+        (WebCore::IDBObjectStore::openCursor):
+        * storage/IDBObjectStoreBackendImpl.cpp:
+        (WebCore::IDBObjectStoreBackendImpl::openCursorInternal):
+        * storage/IDBRequest.cpp:
+        (WebCore::IDBRequest::IDBRequest):
+        (WebCore::IDBRequest::setCursorType):
+        (WebCore::IDBRequest::onSuccess):
+        (WebCore::IDBRequest::dispatchEvent):
+        * storage/IDBRequest.h:
+
+2011-03-02  Aravind Akella  <aravind.akella@nokia.com>
+
+         Reviewed by Csaba Osztrogonác.
+
+         [Qt][WK2] Memory exhausted when building qtwebkit2 on linux
+         https://bugs.webkit.org/show_bug.cgi?id=55484
+
+         Using AllInOne files to avoid memory exhaustion for debug 
+         builds on 32 bit linux machines.
+
+         No new tests. Fixing a build issue.
+
+         * WebCore.pro:
+
+2011-03-02  Daniel Cheng  <dcheng@chromium.org>
+
+        Reviewed by David Levin.
+
+        Add feature define for data transfer items
+        https://bugs.webkit.org/show_bug.cgi?id=55510
+
+        * Configurations/FeatureDefines.xcconfig:
+        * GNUmakefile.am:
+        * features.pri:
+
 2011-03-02  Dimitri Glazkov  <dglazkov@chromium.org>
 
         Update location of media-file.js, which was moved in r79630.
