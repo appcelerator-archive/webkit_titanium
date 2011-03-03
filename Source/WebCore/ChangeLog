@@ -1,3 +1,192 @@
+2011-03-02  Yury Semikhatsky  <yurys@chromium.org>
+
+        Reviewed by Pavel Feldman.
+
+        Web Inspector: inspector protocol should allow different domains to have methods with same name
+        https://bugs.webkit.org/show_bug.cgi?id=55558
+
+        * inspector/CodeGeneratorInspector.pm: each command is now identified by domain + command-name(was command-name only).
+
+2011-03-02  Pavel Podivilov  <podivilov@chromium.org>
+
+        Reviewed by Yury Semikhatsky.
+
+        Web Inspector: make selected call frame debugger presentation model property.
+        https://bugs.webkit.org/show_bug.cgi?id=55582
+
+        * inspector/front-end/CallStackSidebarPane.js:
+        (WebInspector.CallStackSidebarPane):
+        (WebInspector.CallStackSidebarPane.prototype.update):
+        (WebInspector.CallStackSidebarPane.prototype.set selectedCallFrame):
+        (WebInspector.CallStackSidebarPane.prototype._selectedCallFrameIndex):
+        * inspector/front-end/ConsoleView.js:
+        (WebInspector.ConsoleView.prototype.completions):
+        * inspector/front-end/DebuggerPresentationModel.js:
+        (WebInspector.DebuggerPresentationModel.prototype.set selectedCallFrame):
+        (WebInspector.DebuggerPresentationModel.prototype.get selectedCallFrame):
+        * inspector/front-end/ScriptsPanel.js:
+        (WebInspector.ScriptsPanel):
+        (WebInspector.ScriptsPanel.prototype.getCompletionsOnCallFrame):
+        (WebInspector.ScriptsPanel.prototype._debuggerResumed):
+        (WebInspector.ScriptsPanel.prototype._sourceFrameLoaded):
+        (WebInspector.ScriptsPanel.prototype._callFrameSelected):
+
+2011-03-03  Jia Pu  <jpu@apple.com>
+
+        Reviewed by Darin Adler.
+
+        On Mac OS X, spelling suggestion panel stops showing up after change set 80121
+        https://bugs.webkit.org/show_bug.cgi?id=55628
+
+        Removed a call to stopCorrectionPanelTimer() to fix a regression introduced by changeset 80121.
+
+        * editing/Editor.cpp:
+        (WebCore::Editor::appliedEditing):
+        * manual-tests/autocorrection/autocorrection-contraction.html:
+
+2011-03-03  Pavel Podivilov  <podivilov@chromium.org>
+
+        Reviewed by Pavel Feldman.
+
+        Web Inspector: rename "sourceName" to "sourceFileId" in ScriptsPanel.js.
+        https://bugs.webkit.org/show_bug.cgi?id=55569
+
+        sourceFileId better reflects the intention to have unique identifier for each source that is shown in scripts panel.
+
+        * inspector/front-end/DebuggerPresentationModel.js:
+        * inspector/front-end/ScriptsPanel.js:
+
+2011-03-03  Steve Block  <steveblock@google.com>
+
+        Reviewed by David Levin.
+
+        JavaString API should be implementable by both JSC and V8
+        https://bugs.webkit.org/show_bug.cgi?id=55567
+
+        Remove JavaString's UString operator and replace it with a
+        script-engine-independent impl() method, which returns a
+        StringImpl and can be implemented with both JSC and V8.
+
+        No new tests, refactoring only. 
+
+        * bridge/jni/JNIBridge.h:
+        (JSC::Bindings::JavaString::impl):
+        * bridge/jni/jni_jsobject.mm:
+        (JavaJSObject::call):
+        (JavaJSObject::eval):
+        (JavaJSObject::getMember):
+        (JavaJSObject::setMember):
+        (JavaJSObject::removeMember):
+        * bridge/jni/jsc/JNIBridgeJSC.cpp:
+        (JavaField::valueFromInstance):
+        (JavaField::setValueToInstance):
+        * bridge/jni/jsc/JavaClassJSC.cpp:
+        (JavaClass::JavaClass):
+        * bridge/jni/jsc/JavaInstanceJSC.cpp:
+        (JavaInstance::invokeMethod):
+        * bridge/jni/jsc/JavaStringJSC.h:
+        (JSC::Bindings::JavaStringImpl::impl):
+        * bridge/jni/v8/JavaStringV8.h:
+        (JSC::Bindings::JavaStringImpl::impl):
+
+2011-03-03  Benjamin Poulain  <ikipou@gmail.com>
+
+        Reviewed by Adam Roben.
+
+        REGRESSION (r79817): Lots of leaks of FloatingObjects seen on SnowLeopard Intel Leaks bot
+        https://bugs.webkit.org/show_bug.cgi?id=55602
+
+        Delete the FloatingObject referenced by m_floatingObjects when clearing the floats.
+
+        The DeprecatedPtrList was deleting the objects automatically due to its autoDelete behavior. The
+        objects need to be deleted manually with ListHashSet.
+
+        * rendering/RenderBlock.cpp:
+        (WebCore::RenderBlock::clearFloats):
+
+2011-03-03  Hans Wennborg  <hans@chromium.org>
+
+        Reviewed by Jeremy Orlow.
+
+        IndexedDB: Move SQL code, especially for cursors, to IDBBackingStore
+        https://bugs.webkit.org/show_bug.cgi?id=55376
+
+        Move SQL code from IDBKey, IDBKeyRange, IDBIndexBackendImpl,
+        IDBObjectStoreBackendImpl, and especially IDBCursorBackendImpl.
+
+        No new functionality, so no new tests.
+
+        * storage/IDBBackingStore.cpp:
+        (WebCore::lowerCursorWhereFragment):
+        (WebCore::upperCursorWhereFragment):
+        (WebCore::IDBBackingStore::deleteObjectStoreRecord):
+        (WebCore::IDBBackingStore::keyExistsInObjectStore):
+        (WebCore::IDBBackingStore::getObjectViaIndex):
+        (WebCore::keyFromQuery):
+        (WebCore::IDBBackingStore::getPrimaryKeyViaIndex):
+        (WebCore::IDBBackingStore::keyExistsInIndex):
+        (WebCore::CursorImplCommon::CursorImplCommon::continueInternal):
+        (WebCore::CursorImplCommon::ObjectStoreCursorImpl::ObjectStoreCursorImpl):
+        (WebCore::CursorImplCommon::ObjectStoreCursorImpl::objectStoreDataId):
+        (WebCore::CursorImplCommon::ObjectStoreCursorImpl::key):
+        (WebCore::CursorImplCommon::ObjectStoreCursorImpl::value):
+        (WebCore::CursorImplCommon::ObjectStoreCursorImpl::continueFunction):
+        (WebCore::IDBBackingStore::openObjectStoreCursor):
+        (WebCore::ObjectStoreCursorImpl::loadCurrentRow):
+        (WebCore::ObjectStoreCursorImpl::currentRowExists):
+        (WebCore::IndexKeyCursorImpl::IndexKeyCursorImpl):
+        (WebCore::IndexKeyCursorImpl::indexDataId):
+        (WebCore::IndexKeyCursorImpl::key):
+        (WebCore::IndexKeyCursorImpl::primaryKey):
+        (WebCore::IndexKeyCursorImpl::continueFunction):
+        (WebCore::IDBBackingStore::openIndexKeyCursor):
+        (WebCore::IndexKeyCursorImpl::loadCurrentRow):
+        (WebCore::IndexKeyCursorImpl::currentRowExists):
+        (WebCore::IndexCursorImpl::IndexCursorImpl):
+        (WebCore::IndexCursorImpl::indexDataId):
+        (WebCore::IndexCursorImpl::key):
+        (WebCore::IndexCursorImpl::primaryKey):
+        (WebCore::IndexCursorImpl::value):
+        (WebCore::IndexCursorImpl::continueFunction):
+        (WebCore::IDBBackingStore::openIndexCursor):
+        (WebCore::IndexCursorImpl::loadCurrentRow):
+        (WebCore::IndexCursorImpl::currentRowExists):
+        * storage/IDBBackingStore.h:
+        (WebCore::IDBBackingStore::Cursor::~Cursor):
+        * storage/IDBCursorBackendImpl.cpp:
+        (WebCore::IDBCursorBackendImpl::IDBCursorBackendImpl):
+        (WebCore::IDBCursorBackendImpl::key):
+        (WebCore::IDBCursorBackendImpl::value):
+        (WebCore::IDBCursorBackendImpl::update):
+        (WebCore::IDBCursorBackendImpl::continueFunctionInternal):
+        (WebCore::IDBCursorBackendImpl::deleteFunction):
+        * storage/IDBCursorBackendImpl.h:
+        (WebCore::IDBCursorBackendImpl::create):
+        * storage/IDBIndexBackendImpl.cpp:
+        (WebCore::IDBIndexBackendImpl::openCursorInternal):
+        (WebCore::IDBIndexBackendImpl::getInternal):
+        (WebCore::IDBIndexBackendImpl::addingKeyAllowed):
+        * storage/IDBIndexBackendImpl.h:
+        * storage/IDBKey.cpp:
+        (WebCore::IDBKey::isEqual):
+        * storage/IDBKey.h:
+        * storage/IDBKeyRange.cpp:
+        * storage/IDBKeyRange.h:
+        * storage/IDBObjectStoreBackendImpl.cpp:
+        (WebCore::IDBObjectStoreBackendImpl::putInternal):
+        (WebCore::IDBObjectStoreBackendImpl::deleteInternal):
+        (WebCore::IDBObjectStoreBackendImpl::openCursorInternal):
+        * storage/IDBObjectStoreBackendImpl.h:
+
+2011-03-03  Peter Kasting  <pkasting@google.com>
+
+        Reviewed by James Robinson.
+
+        Drop redundant "Windows; " from the Windows-specific User Agent string.
+        https://bugs.webkit.org/show_bug.cgi?id=54567
+
+        * StringsNotToBeLocalized.txt:
+
 2011-03-03  Mario Sanchez Prada  <msanchez@igalia.com>
 
         Reviewed by Martin Robinson.

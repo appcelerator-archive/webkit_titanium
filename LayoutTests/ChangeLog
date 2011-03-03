@@ -1,3 +1,128 @@
+2011-03-03  Yury Semikhatsky  <yurys@chromium.org>
+
+        Reviewed by Pavel Feldman.
+
+        Web Inspector: inspector protocol should allow different domains to have methods with same name
+        https://bugs.webkit.org/show_bug.cgi?id=55558
+
+        * inspector/report-protocol-errors-expected.txt:
+        * inspector/report-protocol-errors.html:
+
+2011-03-03  Kenji Imasaki  <imasaki@chromium.org>
+
+        Reviewed by David Levin.
+
+        [Chromium] Remove non-flaky tests and update bugs/comments in
+        media related layout tests in test expectation
+
+        * platform/chromium/test_expectations.txt:
+
+2011-03-03  Jia Pu  <jpu@apple.com>
+
+        Reviewed by Darin Adler.
+
+        On Mac OS X, spelling suggestion panel stops showing up after change set 80121
+        https://bugs.webkit.org/show_bug.cgi?id=55628
+
+        Rebaselined tests affected by changeset 80121.
+
+        * platform/mac/editing/spelling/autocorrection-contraction-expected.txt:
+        * platform/mac/editing/spelling/autocorrection-delete-expected.txt:
+        * platform/mac/editing/spelling/autocorrection-removing-underline-after-paste-expected.txt:
+        * platform/mac/editing/spelling/autocorrection-removing-underline-expected.txt:
+        * platform/mac/editing/spelling/autocorrection-simple-expected.txt:
+        * platform/mac/editing/spelling/click-autocorrected-word-expected.txt:
+        * platform/mac/editing/spelling/click-autocorrected-word.html:
+        * platform/mac/editing/spelling/delete-autocorrected-word-1-expected.txt:
+        * platform/mac/editing/spelling/delete-into-autocorrected-word-expected.checksum:
+        * platform/mac/editing/spelling/delete-into-autocorrected-word-expected.png:
+        * platform/mac/editing/spelling/delete-into-autocorrected-word-expected.txt:
+        * platform/mac/editing/spelling/delete-into-autocorrected-word.html:
+        * platform/mac/editing/spelling/forward-delete-into-autocorrected-word-expected.checksum:
+        * platform/mac/editing/spelling/forward-delete-into-autocorrected-word-expected.png:
+        * platform/mac/editing/spelling/forward-delete-into-autocorrected-word-expected.txt:
+        * platform/mac/editing/spelling/forward-delete-into-autocorrected-word.html:
+        * platform/mac/editing/spelling/move-cursor-to-autocorrected-word-expected.checksum:
+        * platform/mac/editing/spelling/move-cursor-to-autocorrected-word-expected.png:
+        * platform/mac/editing/spelling/move-cursor-to-autocorrected-word-expected.txt:
+        * platform/mac/editing/spelling/move-cursor-to-autocorrected-word.html:
+        * platform/mac/editing/spelling/move-cursor-to-beginning-of-autocorrected-word-expected.checksum:
+        * platform/mac/editing/spelling/move-cursor-to-beginning-of-autocorrected-word-expected.png:
+        * platform/mac/editing/spelling/move-cursor-to-beginning-of-autocorrected-word-expected.txt:
+        * platform/mac/editing/spelling/move-cursor-to-beginning-of-autocorrected-word.html:
+        * platform/mac/editing/spelling/removing-underline-after-accepting-autocorrection-using-punctuation-expected.txt:
+
+2011-03-03  Pavel Podivilov  <podivilov@chromium.org>
+
+        Reviewed by Pavel Feldman.
+
+        Web Inspector: rename "sourceName" to "sourceFileId" in ScriptsPanel.js.
+        https://bugs.webkit.org/show_bug.cgi?id=55569
+
+        * inspector/debugger/scripts-panel.html:
+
+2011-03-03  Jeremy Moskovich  <jeremy@chromium.org>
+
+        Reviewed by Dimitri Glazkov.
+
+        Convert offsetLeft-offsetTop-borders.html to dumpAsText()
+        https://bugs.webkit.org/show_bug.cgi?id=55612
+
+        This test outputs the values of offsetLeft/offsetTop for portions
+        of the DOM. It appears it would do just as well as a text-based test.
+
+        * fast/block/positioning/offsetLeft-offsetTop-borders-expected.txt: Added.
+        * fast/block/positioning/offsetLeft-offsetTop-borders.html:
+        * platform/chromium-linux/fast/block/positioning/offsetLeft-offsetTop-borders-expected.checksum: Removed.
+        * platform/chromium-linux/fast/block/positioning/offsetLeft-offsetTop-borders-expected.png: Removed.
+        * platform/chromium-win/fast/block/positioning/offsetLeft-offsetTop-borders-expected.checksum: Removed.
+        * platform/chromium-win/fast/block/positioning/offsetLeft-offsetTop-borders-expected.png: Removed.
+        * platform/chromium-win/fast/block/positioning/offsetLeft-offsetTop-borders-expected.txt: Removed.
+        * platform/gtk/fast/block/positioning/offsetLeft-offsetTop-borders-expected.checksum: Removed.
+        * platform/gtk/fast/block/positioning/offsetLeft-offsetTop-borders-expected.png: Removed.
+        * platform/gtk/fast/block/positioning/offsetLeft-offsetTop-borders-expected.txt: Removed.
+        * platform/mac-leopard/fast/block/positioning/offsetLeft-offsetTop-borders-expected.checksum: Removed.
+        * platform/mac-leopard/fast/block/positioning/offsetLeft-offsetTop-borders-expected.png: Removed.
+        * platform/mac/fast/block/positioning/offsetLeft-offsetTop-borders-expected.checksum: Removed.
+        * platform/mac/fast/block/positioning/offsetLeft-offsetTop-borders-expected.png: Removed.
+        * platform/mac/fast/block/positioning/offsetLeft-offsetTop-borders-expected.txt: Removed.
+        * platform/qt/fast/block/positioning/offsetLeft-offsetTop-borders-expected.txt: Removed.
+
+2011-03-03  Peter Kasting  <pkasting@google.com>
+
+        Reviewed by James Robinson.
+
+        Drop redundant "Windows; " from the Windows-specific User Agent string.
+        https://bugs.webkit.org/show_bug.cgi?id=54567
+
+        * http/tests/navigation/useragent-expected.txt:
+        * http/tests/navigation/useragent.php:
+
+2011-03-03  Peter Varga  <pvarga@webkit.org>
+
+        Reviewed by Oliver Hunt.
+
+        Begin Characters Optimization Causes YARR Interpreter Errors
+        https://bugs.webkit.org/show_bug.cgi?id=55479
+
+        The addBeginTerm function is removed because it doesn't correctly handle those
+        cases when an "invalid" term has been
+        collected (e.g. CharacterClass). Move the removed function to the
+        setupAlternativeBeginTerms method's switch-case
+        where the non-allowed cases are correctly handled.
+
+        Reenable the Beginning Character Optimization in the YARR Interpreter again.
+
+        * fast/js/regexp-alternatives-expected.txt: Added.
+        * fast/js/regexp-alternatives.html: Added.
+        * fast/js/script-tests/regexp-alternatives.js: Added.
+
+2011-03-03  Philippe Normand  <pnormand@igalia.com>
+
+        Unreviewed, unskip tests fixed by r80214 on GTK.
+
+        * platform/gtk/Skipped:
+
 2011-03-03  Mario Sanchez Prada  <msanchez@igalia.com>
 
         Reviewed by Martin Robinson.
