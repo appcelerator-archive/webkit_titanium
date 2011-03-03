@@ -1,3 +1,110 @@
+2011-03-02  Jeff Miller  <jeffm@apple.com>
+
+        Reviewed by Darin Adler.
+
+        Rename WebKit::WebPage::validateMenuItem() to validateCommand()
+        https://bugs.webkit.org/show_bug.cgi?id=55636
+        
+        Since this method can validate more than menu items, validateCommand() is a better name.  Also rename various messages and WebKit::WebPageProxy::didValidateMenuItem() to didValidateCommand().
+
+        * UIProcess/API/mac/WKView.mm:
+        (-[WKView validateUserInterfaceItem:]): Call validateCommand() instead of validateMenuItem().
+        * UIProcess/WebPageProxy.cpp:
+        (WebKit::WebPageProxy::validateCommand): Renamed from validateMenuItem().
+        (WebKit::WebPageProxy::didValidateCommand): Renamed from didValidateMenuItem().
+        * UIProcess/WebPageProxy.h:
+        * UIProcess/WebPageProxy.messages.in: Renamed DidValidateMenuItem to DidValidateCommand.
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::validateCommand): Renamed from validateMenuItem().
+        * WebProcess/WebPage/WebPage.h:
+        * WebProcess/WebPage/WebPage.messages.in: Renamed ValidateMenuItem to ValidateCommand.
+
+2011-03-02  Anders Carlsson  <andersca@apple.com>
+
+        Reviewed by Sam Weinig.
+
+        WKPageSetMemoryCacheClientCallsEnabled doesn't persist if web process crashes
+        https://bugs.webkit.org/show_bug.cgi?id=55635
+
+        * Shared/WebPageCreationParameters.cpp:
+        (WebKit::WebPageCreationParameters::encode):
+        (WebKit::WebPageCreationParameters::decode):
+        Encode and decode areMemoryCacheClientCallsEnabled.
+
+        * Shared/WebPageCreationParameters.h:
+        Add areMemoryCacheClientCallsEnabled member variable.
+
+        * UIProcess/WebPageProxy.cpp:
+        (WebKit::WebPageProxy::WebPageProxy):
+        Initialize m_areMemoryCacheClientCallsEnabled.
+
+        (WebKit::WebPageProxy::setMemoryCacheClientCallsEnabled):
+        Update m_areMemoryCacheClientCallsEnabled. Send a message if necessary.
+
+        (WebKit::WebPageProxy::creationParameters):
+        Set areMemoryCacheClientCallsEnabled.
+
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::WebPage):
+        Call WebPage::setMemoryCacheMessagesEnabled.
+
+2011-03-02  Timothy Hatcher  <timothy@apple.com>
+
+        Make the runJavaScriptInMainFrame callback send a WKSerializedScriptValueRef.
+
+        https://webkit.org/b/55623
+
+        Reviewed by Darin Adler.
+
+        * UIProcess/API/C/WKPage.cpp:
+        (WKPageRunJavaScriptInMainFrame): Use ScriptValueCallback.
+        (callRunJavaScriptBlockAndRelease): Use WKSerializedScriptValueRef.
+        * UIProcess/API/C/WKPage.h: Use WKSerializedScriptValueRef.
+        * UIProcess/WebPageProxy.cpp:
+        (WebKit::WebPageProxy::close): Call invalidateCallbackMap for m_scriptValueCallbacks.
+        (WebKit::WebPageProxy::runJavaScriptInMainFrame): Take a ScriptValueCallback.
+        (WebKit::WebPageProxy::scriptValueCallback): Added. Create a WebSerializedScriptValue
+        from the DataReference before calling the callback.
+        (WebKit::WebPageProxy::processDidCrash): Call invalidateCallbackMap for m_scriptValueCallbacks.
+        * UIProcess/WebPageProxy.h: Added ScriptValueCallback and m_scriptValueCallbacks.
+        * UIProcess/WebPageProxy.messages.in: Added ScriptValueCallback.
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::runJavaScriptInMainFrame): Create a DataReference from a WebCore::SerializedScriptValue.
+        And use ScriptValueCallback to send the message back.
+
+2011-03-02  Jessie Berlin  <jberlin@apple.com>
+
+        Reviewed by Adam Roben.
+
+        WebKit2: Use CFNetwork Sessions API.
+        https://bugs.webkit.org/show_bug.cgi?id=55435
+
+        Add the ability to create a Private Browsing Storage Session.
+
+        * Shared/WebProcessCreationParameters.cpp:
+        (WebKit::WebProcessCreationParameters::encode):
+        Encode the UI Process bundle identifier.
+        (WebKit::WebProcessCreationParameters::decode):
+        Decode the UI Process bundle identifier.
+        * Shared/WebProcessCreationParameters.h:
+
+        * UIProcess/mac/WebContextMac.mm:
+        (WebKit::WebContext::platformInitializeWebProcess):
+        Grab the bundle identifier and use it to set the WebProcessCreationParameter.
+        * UIProcess/win/WebContextWin.cpp:
+        (WebKit::WebContext::platformInitializeWebProcess):
+        Ditto.
+
+        * WebProcess/WebCoreSupport/mac/WebSystemInterface.mm:
+        (InitWebCoreSystemInterface):
+        Support using the wkCreatePrivateStorageSession WKSI in WebCore.
+
+        * WebProcess/WebProcess.cpp:
+        (WebKit::WebProcess::initializeWebProcess):
+        Set the base for the Private Browsing Storage Session identifier to be the bundle identifier
+        from the UI Process so that WebKit1 would create a Private Browsing Storage Session with the
+        same identifier as WebKit2.
+
 2011-03-01  Brian Weinstein  <bweinstein@apple.com>
 
         Reviewed by Adam Roben.

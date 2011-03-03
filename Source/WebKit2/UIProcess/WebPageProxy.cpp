@@ -123,6 +123,7 @@ WebPageProxy::WebPageProxy(PageClient* pageClient, WebContext* context, WebPageG
     , m_viewScaleFactor(1)
     , m_drawsBackground(true)
     , m_drawsTransparentBackground(false)
+    , m_areMemoryCacheClientCallsEnabled(true)
     , m_useFixedLayout(false)
     , m_isValid(true)
     , m_isClosed(false)
@@ -311,6 +312,7 @@ void WebPageProxy::close()
     invalidateCallbackMap(m_voidCallbacks);
     invalidateCallbackMap(m_dataCallbacks);
     invalidateCallbackMap(m_stringCallbacks);
+    invalidateCallbackMap(m_scriptValueCallbacks);
     invalidateCallbackMap(m_computedPagesCallbacks);
 
     Vector<WebEditCommandProxy*> editCommandVector;
@@ -608,11 +610,11 @@ void WebPageProxy::setWindowResizerSize(const IntSize& windowResizerSize)
     process()->send(Messages::WebPage::SetWindowResizerSize(windowResizerSize), m_pageID);
 }
 
-void WebPageProxy::validateMenuItem(const String& commandName)
+void WebPageProxy::validateCommand(const String& commandName)
 {
     if (!isValid())
         return;
-    process()->send(Messages::WebPage::ValidateMenuItem(commandName), m_pageID);
+    process()->send(Messages::WebPage::ValidateCommand(commandName), m_pageID);
 }
     
 void WebPageProxy::executeEditCommand(const String& commandName)
@@ -1095,6 +1097,10 @@ void WebPageProxy::viewScaleFactorDidChange(double scaleFactor)
 
 void WebPageProxy::setMemoryCacheClientCallsEnabled(bool memoryCacheClientCallsEnabled)
 {
+    if (m_areMemoryCacheClientCallsEnabled == memoryCacheClientCallsEnabled)
+        return;
+
+    m_areMemoryCacheClientCallsEnabled = memoryCacheClientCallsEnabled;
     process()->send(Messages::WebPage::SetMemoryCacheMessagesEnabled(memoryCacheClientCallsEnabled), m_pageID);
 }
 
@@ -1112,12 +1118,12 @@ void WebPageProxy::countStringMatches(const String& string, FindOptions options,
 {
     process()->send(Messages::WebPage::CountStringMatches(string, options, maxMatchCount), m_pageID);
 }
-    
-void WebPageProxy::runJavaScriptInMainFrame(const String& script, PassRefPtr<StringCallback> prpCallback)
+
+void WebPageProxy::runJavaScriptInMainFrame(const String& script, PassRefPtr<ScriptValueCallback> prpCallback)
 {
-    RefPtr<StringCallback> callback = prpCallback;
+    RefPtr<ScriptValueCallback> callback = prpCallback;
     uint64_t callbackID = callback->callbackID();
-    m_stringCallbacks.set(callbackID, callback.get());
+    m_scriptValueCallbacks.set(callbackID, callback.get());
     process()->send(Messages::WebPage::RunJavaScriptInMainFrame(script, callbackID), m_pageID);
 }
 
@@ -2336,7 +2342,7 @@ void WebPageProxy::setCursor(const WebCore::Cursor& cursor)
     m_pageClient->setCursor(cursor);
 }
 
-void WebPageProxy::didValidateMenuItem(const String& commandName, bool isEnabled, int32_t state)
+void WebPageProxy::didValidateCommand(const String& commandName, bool isEnabled, int32_t state)
 {
     m_pageClient->setEditCommandState(commandName, isEnabled, state);
 }
@@ -2440,6 +2446,21 @@ void WebPageProxy::stringCallback(const String& resultString, uint64_t callbackI
     }
 
     callback->performCallbackWithReturnValue(resultString.impl());
+}
+
+void WebPageProxy::scriptValueCallback(const CoreIPC::DataReference& dataReference, uint64_t callbackID)
+{
+    RefPtr<ScriptValueCallback> callback = m_scriptValueCallbacks.take(callbackID);
+    if (!callback) {
+        // FIXME: Log error or assert.
+        return;
+    }
+
+    Vector<uint8_t> data;
+    data.reserveInitialCapacity(dataReference.size());
+    data.append(dataReference.data(), dataReference.size());
+
+    callback->performCallbackWithReturnValue(WebSerializedScriptValue::adopt(data).get());
 }
 
 void WebPageProxy::computedPagesCallback(const Vector<WebCore::IntRect>& pageRects, double totalScaleFactorForPrinting, uint64_t callbackID)
@@ -2547,6 +2568,7 @@ void WebPageProxy::processDidCrash()
     invalidateCallbackMap(m_voidCallbacks);
     invalidateCallbackMap(m_dataCallbacks);
     invalidateCallbackMap(m_stringCallbacks);
+    invalidateCallbackMap(m_scriptValueCallbacks);
     invalidateCallbackMap(m_computedPagesCallbacks);
 
     Vector<WebEditCommandProxy*> editCommandVector;
@@ -2580,6 +2602,7 @@ WebPageCreationParameters WebPageProxy::creationParameters() const
     parameters.pageGroupData = m_pageGroup->data();
     parameters.drawsBackground = m_drawsBackground;
     parameters.drawsTransparentBackground = m_drawsTransparentBackground;
+    parameters.areMemoryCacheClientCallsEnabled = m_areMemoryCacheClientCallsEnabled;
     parameters.useFixedLayout = m_useFixedLayout;
     parameters.fixedLayoutSize = m_fixedLayoutSize;
     parameters.userAgent = userAgent();

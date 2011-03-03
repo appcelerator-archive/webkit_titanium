@@ -1540,12 +1540,6 @@ BUGCR11613 LINUX : fast/forms/tabbing-input-iframe.html = FAIL
 BUGCR11613 LINUX RELEASE : fast/overflow/scrollRevealButton.html = FAIL
 BUGCR11613 LINUX DEBUG : fast/overflow/scrollRevealButton.html = FAIL
 
-// WebKit merge 42738:45840
-// New tests, need baseline.
-BUGCR16240 WIN DEBUG : http/tests/cache/subresource-expiration.html = TIMEOUT
-BUGCR16240 MAC WIN RELEASE : http/tests/cache/subresource-expiration.html = TIMEOUT
-BUGCR14752 LINUX SLOW : http/tests/cache/subresource-expiration.html = PASS
-
 // New tests with WebKit merge 46288:46363
 BUGCR18116 : fast/dom/constructed-objects-prototypes.html = TEXT
 BUGCR18116 : fast/dom/prototype-inheritance-2.html = TEXT
@@ -3007,6 +3001,7 @@ BUGWK50528 MAC : svg/custom/image-small-width-height.svg = IMAGE
 
 // We only maintain pixel GPU baselines for Snow Leopard
 BUGNONE GPU MAC LEOPARD : compositing = IMAGE PASS
+BUGNONE GPU MAC LEOPARD : platform/chromium/compositing = IMAGE PASS
 
 // The picture does not match the video in the test.
 BUGWK55519 GPU WIN LINUX : compositing/video/video-background-color.html = IMAGE+TEXT
@@ -3369,4 +3364,6 @@ BUGCR74519 : svg/dom/SVGPaint-expected.txt = IMAGE+TEXT
 
 BUGWK55560 : editing/input/setting-input-value-cancel-ime-composition.html = TEXT
 
-BUGCR74710 MAC RELEASE : svg/text/font-size-below-point-five.svg = TEXT 
+BUGCR74710 MAC RELEASE : svg/text/font-size-below-point-five.svg = TEXT
+
+BUGCR74766 WIN DEBUG : http/tests/security/javascriptURL/xss-ALLOWED-from-javascript-url-sub-frame-to-javascript-url-sub-frame.html = PASS CRASH

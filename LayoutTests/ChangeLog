@@ -1,5 +1,78 @@
 2011-03-02  Mihai Parparita  <mihaip@chromium.org>
 
+        Reviewed by Tony Gentilcore.
+
+        Split up http/tests/cache/subresource-expiration.html so it stops timing out
+        https://bugs.webkit.org/show_bug.cgi?id=55639
+        
+        http/tests/cache/subresource-expiration.html does a lot of sequential
+        loads, some with delays in between them. This seems unavoidable, so
+        to make the test less likely to time out (especially on debug bots),
+        the test cases are split across two tests.
+
+        * http/tests/cache/subresource-expiration-1-expected.txt: Added.
+        * http/tests/cache/subresource-expiration-1.html: Added.
+        * http/tests/cache/subresource-expiration-2-expected.txt: Added.
+        * http/tests/cache/subresource-expiration-2.html: Added.
+        * http/tests/cache/subresource-expiration-expected.txt: Removed.
+        * http/tests/cache/subresource-expiration.html: Removed.
+        * platform/chromium/test_expectations.txt:
+        * platform/mac-wk2/Skipped:
+        * platform/mac/test_expectations.txt:
+        * platform/qt-wk2/Skipped:
+        * platform/win/Skipped:
+
+2011-03-02  Tony Gentilcore  <tonyg@chromium.org>
+
+        Unreviewed expectations update
+
+        [chromium] xss-ALLOWED-from-javascript-url-sub-frame-to-javascript-url-sub-frame.html is crashy
+        https://bugs.webkit.org/show_bug.cgi?id=55634
+
+        * platform/chromium/test_expectations.txt:
+
+2011-03-02  Mihai Parparita  <mihaip@chromium.org>
+
+        Unreviewed Chromium expectations update.
+        
+        Mark the other compositing/ directory as expected to fail on Leopard.
+
+        * platform/chromium/test_expectations.txt:
+
+2011-03-02  David Grogan  <dgrogan@chromium.org>
+
+        Reviewed by Jeremy Orlow.
+
+        IndexedDB: fire versionchange events when calling setVersion
+        https://bugs.webkit.org/show_bug.cgi?id=55095
+
+        * storage/indexeddb/set_version_queue-expected.txt:
+        * storage/indexeddb/set_version_queue.html:
+
+2011-03-02  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r80139.
+        http://trac.webkit.org/changeset/80139
+        https://bugs.webkit.org/show_bug.cgi?id=55620
+
+        failing and crashing tests on Snow Leopard bot (Requested by
+        mihaip1 on #webkit).
+
+        * fast/dom/Geolocation/iframe-reparent-expected.txt: Removed.
+        * fast/dom/Geolocation/iframe-reparent.html: Removed.
+        * fast/dom/Geolocation/page-reload-cancel-permission-requests-expected.txt: Removed.
+        * fast/dom/Geolocation/page-reload-cancel-permission-requests.html: Removed.
+        * fast/dom/Geolocation/resources/iframe-reparent-page-iframe.html: Removed.
+        * fast/dom/Geolocation/resources/iframe-reparent-page.html: Removed.
+        * fast/dom/Geolocation/resources/page-reload-cancel-permission-requests-inner.html: Removed.
+        * fast/dom/Geolocation/script-tests/iframe-reparent.js: Removed.
+        * fast/dom/Geolocation/script-tests/page-reload-cancel-permission-requests.js: Removed.
+        * platform/gtk/Skipped:
+        * platform/qt-wk2/Skipped:
+        * platform/qt/Skipped:
+
+2011-03-02  Mihai Parparita  <mihaip@chromium.org>
+
         Unreviewed Chromium expectations update.
         
         compositing/geometry/object-clip-rects-assertion.html no longer times

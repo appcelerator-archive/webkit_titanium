@@ -113,6 +113,7 @@ class WebGestureEvent;
 #endif
 
 typedef GenericCallback<WKStringRef, StringImpl*> StringCallback;
+typedef GenericCallback<WKSerializedScriptValueRef, WebSerializedScriptValue*> ScriptValueCallback;
 
 class WebPageProxy : public APIObject, public WebPopupMenuProxy::Client {
 public:
@@ -199,7 +200,7 @@ public:
     bool isViewVisible() const { return m_isVisible; }
 
     void executeEditCommand(const String& commandName);
-    void validateMenuItem(const String& commandName);
+    void validateCommand(const String& commandName);
 
     const SelectionState& selectionState() const { return m_selectionState; }
     bool canDelete() const { return hasSelectedRange() && isContentEditable(); }
@@ -303,7 +304,7 @@ public:
     void getSelectionOrContentsAsString(PassRefPtr<StringCallback>);
     void getSourceForFrame(WebFrameProxy*, PassRefPtr<StringCallback>);
     void getWebArchiveOfFrame(WebFrameProxy*, PassRefPtr<DataCallback>);
-    void runJavaScriptInMainFrame(const String&, PassRefPtr<StringCallback>);
+    void runJavaScriptInMainFrame(const String&, PassRefPtr<ScriptValueCallback>);
     void forceRepaint(PassRefPtr<VoidCallback>);
 
     float headerHeight(WebFrameProxy*);
@@ -567,13 +568,14 @@ private:
     void takeFocus(bool direction);
     void setToolTip(const String&);
     void setCursor(const WebCore::Cursor&);
-    void didValidateMenuItem(const String& commandName, bool isEnabled, int32_t state);
+    void didValidateCommand(const String& commandName, bool isEnabled, int32_t state);
 
     void didReceiveEvent(uint32_t opaqueType, bool handled);
 
     void voidCallback(uint64_t);
     void dataCallback(const CoreIPC::DataReference&, uint64_t);
     void stringCallback(const String&, uint64_t);
+    void scriptValueCallback(const CoreIPC::DataReference&, uint64_t);
     void computedPagesCallback(const Vector<WebCore::IntRect>&, double totalScaleFactorForPrinting, uint64_t);
 
     void focusedFrameChanged(uint64_t frameID);
@@ -623,6 +625,7 @@ private:
     HashMap<uint64_t, RefPtr<VoidCallback> > m_voidCallbacks;
     HashMap<uint64_t, RefPtr<DataCallback> > m_dataCallbacks;
     HashMap<uint64_t, RefPtr<StringCallback> > m_stringCallbacks;
+    HashMap<uint64_t, RefPtr<ScriptValueCallback> > m_scriptValueCallbacks;
     HashMap<uint64_t, RefPtr<ComputedPagesCallback> > m_computedPagesCallbacks;
 
     HashSet<WebEditCommandProxy*> m_editCommandSet;
@@ -658,6 +661,8 @@ private:
 
     bool m_drawsBackground;
     bool m_drawsTransparentBackground;
+
+    bool m_areMemoryCacheClientCallsEnabled;
 
     bool m_useFixedLayout;
     WebCore::IntSize m_fixedLayoutSize;

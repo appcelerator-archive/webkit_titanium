@@ -1,3 +1,177 @@
+2011-03-02  Timothy Hatcher  <timothy@apple.com>
+
+        Export SerializedScriptValue::create(JSC::ExecState* exec, JSC::JSValue value).
+
+        Reviewed by Darin Adler.
+
+        * WebCore.exp.in: Added __ZN7WebCore21SerializedScriptValue6createEPN3JSC9ExecStateENS1_7JSValueE.
+
+2011-03-02  Daniel Cheng  <dcheng@chromium.org>
+
+        Reviewed by David Levin.
+
+        Manually revert ChromiumDataObject changes.
+        https://bugs.webkit.org/show_bug.cgi?id=55627
+
+        No new tests since no functionality should change.
+
+        * WebCore.gypi:
+        * editing/chromium/EditorChromium.cpp:
+        (WebCore::Editor::newGeneralClipboard):
+        * page/chromium/EventHandlerChromium.cpp:
+        (WebCore::EventHandler::createDraggingClipboard):
+        * platform/chromium/ChromiumDataObject.cpp:
+        (WebCore::ChromiumDataObject::clearData):
+        (WebCore::ChromiumDataObject::clearAll):
+        (WebCore::ChromiumDataObject::clearAllExceptFiles):
+        (WebCore::ChromiumDataObject::hasData):
+        (WebCore::ChromiumDataObject::types):
+        (WebCore::ChromiumDataObject::getData):
+        (WebCore::ChromiumDataObject::setData):
+        (WebCore::ChromiumDataObject::ChromiumDataObject):
+        * platform/chromium/ChromiumDataObject.h:
+        (WebCore::ChromiumDataObject::create):
+        (WebCore::ChromiumDataObject::copy):
+        (WebCore::ChromiumDataObject::urlTitle):
+        (WebCore::ChromiumDataObject::setUrlTitle):
+        (WebCore::ChromiumDataObject::htmlBaseUrl):
+        (WebCore::ChromiumDataObject::setHtmlBaseUrl):
+        (WebCore::ChromiumDataObject::containsFilenames):
+        (WebCore::ChromiumDataObject::filenames):
+        (WebCore::ChromiumDataObject::setFilenames):
+        (WebCore::ChromiumDataObject::fileExtension):
+        (WebCore::ChromiumDataObject::setFileExtension):
+        (WebCore::ChromiumDataObject::fileContentFilename):
+        (WebCore::ChromiumDataObject::setFileContentFilename):
+        (WebCore::ChromiumDataObject::fileContent):
+        (WebCore::ChromiumDataObject::setFileContent):
+        * platform/chromium/ClipboardChromium.cpp:
+        * platform/chromium/ClipboardChromium.h:
+
+2011-03-02  David Grogan  <dgrogan@chromium.org>
+
+        Reviewed by Jeremy Orlow.
+
+        IndexedDB: fire versionchange events when calling setVersion
+        https://bugs.webkit.org/show_bug.cgi?id=55095
+
+        * dom/EventNames.h:
+        * storage/IDBDatabase.cpp:
+        (WebCore::IDBDatabase::setVersion):
+        (WebCore::IDBDatabase::close):
+        (WebCore::IDBDatabase::onVersionChange):
+        (WebCore::IDBDatabase::open):
+        (WebCore::IDBDatabase::enqueueEvent):
+        (WebCore::IDBDatabase::dispatchEvent):
+        * storage/IDBDatabase.h:
+        (WebCore::IDBDatabase::dispatchEvent):
+        * storage/IDBDatabase.idl:
+        * storage/IDBDatabaseBackendImpl.cpp:
+        (WebCore::IDBDatabaseBackendImpl::PendingSetVersionCall::create):
+        (WebCore::IDBDatabaseBackendImpl::PendingSetVersionCall::databaseCallbacks):
+        (WebCore::IDBDatabaseBackendImpl::PendingSetVersionCall::PendingSetVersionCall):
+        (WebCore::IDBDatabaseBackendImpl::IDBDatabaseBackendImpl):
+        (WebCore::IDBDatabaseBackendImpl::setVersion):
+        (WebCore::IDBDatabaseBackendImpl::open):
+        (WebCore::IDBDatabaseBackendImpl::close):
+        * storage/IDBDatabaseBackendImpl.h:
+        * storage/IDBDatabaseBackendInterface.h:
+        * storage/IDBDatabaseCallbacks.h: Copied from Source/WebCore/storage/IDBVersionChangeEvent.cpp.
+        (WebCore::IDBDatabaseCallbacks::~IDBDatabaseCallbacks):
+        * storage/IDBFactoryBackendImpl.cpp:
+        (WebCore::IDBFactoryBackendImpl::open):
+        * storage/IDBRequest.cpp:
+        (WebCore::IDBRequest::onSuccess):
+        * storage/IDBVersionChangeEvent.cpp:
+        (WebCore::IDBVersionChangeEvent::create):
+        (WebCore::IDBVersionChangeEvent::IDBVersionChangeEvent):
+        * storage/IDBVersionChangeEvent.h:
+        * storage/IDBVersionChangeRequest.cpp:
+        (WebCore::IDBVersionChangeRequest::onBlocked):
+
+2011-03-02  Alexey Proskuryakov  <ap@apple.com>
+
+        Fix assertion failures on Gtk bot.
+
+        * page/EventHandler.cpp: (WebCore::EventHandler::tabsToLinks): Removed an overzealous
+        assertion. We can get here with non-Tab key events when spatial navigation is enabled.
+
+2011-03-02  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r80139.
+        http://trac.webkit.org/changeset/80139
+        https://bugs.webkit.org/show_bug.cgi?id=55620
+
+        failing and crashing tests on Snow Leopard bot (Requested by
+        mihaip1 on #webkit).
+
+        * page/DOMWindow.cpp:
+        * page/DOMWindow.h:
+        * page/Frame.cpp:
+        (WebCore::Frame::pageDestroyed):
+        (WebCore::Frame::transferChildFrameToNewDocument):
+        * page/Frame.h:
+        (WebCore::Frame::detachFromPage):
+        * page/Geolocation.cpp:
+        (WebCore::Geolocation::~Geolocation):
+        (WebCore::Geolocation::disconnectFrame):
+        (WebCore::Geolocation::lastPosition):
+        (WebCore::Geolocation::requestPermission):
+        (WebCore::Geolocation::startUpdating):
+        (WebCore::Geolocation::stopUpdating):
+        * page/Geolocation.h:
+        * page/GeolocationController.cpp:
+        (WebCore::GeolocationController::~GeolocationController):
+        * page/Navigator.cpp:
+        * page/Navigator.h:
+        * platform/mock/GeolocationClientMock.cpp:
+        * platform/mock/GeolocationClientMock.h:
+
+2011-03-02  Jessie Berlin  <jberlin@apple.com>
+
+        Reviewed by Adam Roben.
+
+        WebKit2: Use CFNetwork Sessions API.
+        https://bugs.webkit.org/show_bug.cgi?id=55435
+
+        Add the ability to create a Private Browsing Storage Session.
+
+        * WebCore.exp.in:
+        Export the symbol for ResourceHandle::setPrivateBrowsingStorageSessionIdentifierBase.
+
+        * page/Settings.cpp:
+        (WebCore::Settings::setPrivateBrowsingEnabled):
+        Propagate the private browsing state to the ResourceHandle.
+
+        * platform/mac/WebCoreSystemInterface.h:
+        Add the function declaration for wkCreatePrivateStorageSession.
+        * platform/mac/WebCoreSystemInterface.mm:
+
+        * platform/network/ResourceHandle.cpp:
+        (WebCore::privateStorageSession):
+        Since the same Private Browsing Storage Session will need to be accessed throughout the loading
+        code and will need to be used by all web pages and page groups, make it a global static.
+        (WebCore::privateBrowsingStorageSessionIdentifierBase):
+        Ditto, since the identifier is needed to create the Private Browsing Storage Session.
+        (WebCore::ResourceHandle::setPrivateBrowsingEnabled):
+        If enabled, create and store the Private Browsing Storage Session.
+        (WebCore::ResourceHandle::privateBrowsingStorageSession):
+        (WebCore::ResourceHandle::setPrivateBrowsingStorageSessionIdentifierBase):
+        * platform/network/ResourceHandle.h:
+
+        * platform/network/cf/ResourceHandleCFNet.cpp:
+        (WebCore::ResourceHandle::createPrivateBrowsingStorageSession):
+        The call to wkCreatePrivateStorageSession needs to be in a file including the correct
+        version of WKSI.
+        (WebCore::ResourceHandle::privateBrowsingStorageSessionIdentifierDefaultBase):
+        Return the bundle identifier.
+        * platform/network/mac/ResourceHandleMac.mm:
+        (WebCore::ResourceHandle::createPrivateBrowsingStorageSession):
+        The call to wkCreatePrivateStorageSession needs to be in a file importing the correct
+        version of WKSI.
+        (WebCore::ResourceHandle::privateBrowsingStorageSessionIdentifierDefaultBase):
+        Return the bundle identifier.
+
 2011-03-02  Daniel Cheng  <dcheng@chromium.org>
 
         Revert frame-specific WebClipboard changes

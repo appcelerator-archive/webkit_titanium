@@ -1,5 +1,61 @@
 2011-03-02  Daniel Cheng  <dcheng@chromium.org>
 
+        Reviewed by David Levin.
+
+        Manually revert ChromiumDataObject changes.
+        https://bugs.webkit.org/show_bug.cgi?id=55627
+
+        * public/WebView.h:
+        * src/WebDragData.cpp:
+        (WebKit::WebDragData::initialize):
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::dragTargetDragEnter):
+        * src/WebViewImpl.h:
+
+2011-03-02  David Grogan  <dgrogan@chromium.org>
+
+        Reviewed by Jeremy Orlow.
+
+        IndexedDB: fire versionchange events when calling setVersion
+        https://bugs.webkit.org/show_bug.cgi?id=55095
+
+        * WebKit.gyp:
+        * src/IDBDatabaseCallbacksProxy.cpp: Copied from Source/WebCore/storage/IDBVersionChangeEvent.h.
+        (WebCore::IDBDatabaseCallbacksProxy::create):
+        (WebCore::IDBDatabaseCallbacksProxy::IDBDatabaseCallbacksProxy):
+        (WebCore::IDBDatabaseCallbacksProxy::~IDBDatabaseCallbacksProxy):
+        (WebCore::IDBDatabaseCallbacksProxy::onVersionChange):
+        * src/IDBDatabaseCallbacksProxy.h: Copied from Source/WebCore/storage/IDBVersionChangeEvent.h.
+        * src/IDBDatabaseProxy.cpp:
+        (WebCore::IDBDatabaseProxy::setVersion):
+        (WebCore::IDBDatabaseProxy::close):
+        (WebCore::IDBDatabaseProxy::open):
+        * src/IDBDatabaseProxy.h:
+        * src/WebIDBDatabaseCallbacksImpl.cpp: Copied from Source/WebCore/storage/IDBVersionChangeEvent.cpp.
+        (WebCore::WebIDBDatabaseCallbacksImpl::WebIDBDatabaseCallbacksImpl):
+        (WebCore::WebIDBDatabaseCallbacksImpl::~WebIDBDatabaseCallbacksImpl):
+        (WebCore::WebIDBDatabaseCallbacksImpl::onVersionChange):
+        * src/WebIDBDatabaseCallbacksImpl.h: Copied from Source/WebCore/storage/IDBVersionChangeEvent.h.
+        * src/WebIDBDatabaseImpl.cpp:
+        (WebKit::WebIDBDatabaseImpl::setVersion):
+        (WebKit::WebIDBDatabaseImpl::close):
+        (WebKit::WebIDBDatabaseImpl::open):
+        * src/WebIDBDatabaseImpl.h:
+
+2011-03-02  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r80139.
+        http://trac.webkit.org/changeset/80139
+        https://bugs.webkit.org/show_bug.cgi?id=55620
+
+        failing and crashing tests on Snow Leopard bot (Requested by
+        mihaip1 on #webkit).
+
+        * public/WebGeolocationClientMock.h:
+        * src/WebGeolocationClientMock.cpp:
+
+2011-03-02  Daniel Cheng  <dcheng@chromium.org>
+
         Revert frame-specific WebClipboard changes
         https://bugs.webkit.org/show_bug.cgi?id=55617
 
