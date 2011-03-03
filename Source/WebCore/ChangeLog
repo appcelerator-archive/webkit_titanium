@@ -1,3 +1,51 @@
+2011-03-02  Kent Tamura  <tkent@chromium.org>
+
+        Unreviewed, build fix.
+
+        * platform/text/LocalizedNumberICU.cpp:
+        (WebCore::createFormatterForCurrentLocale): Fix a typo.
+
+2011-03-02  Kent Tamura  <tkent@chromium.org>
+
+        Reviewed by Darin Adler.
+
+        Caching number formatter instances in LocalizedNumber* implementations
+        https://bugs.webkit.org/show_bug.cgi?id=55629
+
+        No new tests. This change doesn't change existing behavior, and is
+        covered by existing tests.
+
+        * platform/text/LocalizedNumberICU.cpp:
+        (WebCore::createFormatterForCurrentLocale):
+        (WebCore::numberFormatter): Introduce a function to return a static
+          instance of NumberFormat.
+        (WebCore::parseLocalizedNumber): Use numberFormatter().
+        (WebCore::formatLocalizedNumber): Use numberFormatter().
+        * platform/text/mac/LocalizedNumberMac.mm:
+        (WebCore::createFormatterForCurrentLocale):
+        (WebCore::numberFormatter): Introduce a function to return a static
+          instance of NSNumberFormatter.
+        (WebCore::parseLocalizedNumber): Use numberFormatter().
+        (WebCore::formatLocalizedNumber): Use numberFormatter().
+
+2011-03-02  Levi Weintraub  <leviw@chromium.org>
+
+        Reviewed by Ryosuke Niwa.
+
+        deprecatedEditingOffset should actually return the expected deprecated value for "after" positions
+        https://bugs.webkit.org/show_bug.cgi?id=54986
+
+        Calls to deprecatedEditingOffset needs to return the expected value for new Before/After positions
+        until we can update all the call sites to consider the new position types.
+
+        No tests. This is intended to simplify the transition to new Positions, not to change behavior.
+
+        * dom/Position.cpp:
+        (WebCore::Position::deprecatedEditingOffset):
+        (WebCore::Position::offsetForPositionAfterAnchor): Added to do the right thing while ensuring
+        inline-speed for most calls to deprecatedEditingOffset.
+        * dom/Position.h:
+
 2011-03-02  Timothy Hatcher  <timothy@apple.com>
 
         Export SerializedScriptValue::create(JSC::ExecState* exec, JSC::JSValue value).
