@@ -1,5 +1,52 @@
 2011-03-03  Adam Roben  <aroben@apple.com>
 
+        Work around a bug in KURL's parsing of Windows-style absolute file: URLs
+
+        Fixes <http://webkit.org/b/55674> Many tests fail in WebKit2 mode on Windows due to
+        incorrect parsing of absolute Windows-style file: URLs
+
+        Reviewed by Tim Hatcher.
+
+        * WebKitTestRunner/TestInvocation.cpp:
+        (WTR::createWKURL): Add a "localhost" host to file: URLs we create to work around
+        <http://webkit.org/b/55683>.
+
+2011-03-03  Tony Chang  <tony@chromium.org>
+
+        Reviewed by Dimitri Glazkov.
+
+        [chromium] Run kill-old-processes on the chromium-win bot too
+        https://bugs.webkit.org/show_bug.cgi?id=55630
+
+        * BuildSlaveSupport/build.webkit.org-config/master.cfg:
+        * BuildSlaveSupport/win/kill-old-processes: Add wdiff.exe to the kill list.
+
+2011-03-03  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        Reviewed by Martin Robinson.
+
+        [GTK] DRT needs implementation of EventSender.scheduleAsynchronousClick
+        https://bugs.webkit.org/show_bug.cgi?id=53960
+
+        * DumpRenderTree/gtk/EventSender.cpp:
+        (sendClick):
+        (scheduleAsynchronousClickCallback):
+
+2011-03-03  Adam Roben  <aroben@apple.com>
+
+        Look for Windows-style paths when checking whether a test is an Inspector test
+
+        WTR part of <http://webkit.org/b/55672> <rdar://problem/9080867> All inspector tests time
+        out or crash on Windows 7 Release (WebKit2 Tests)
+
+        Reviewed by Darin Adler.
+
+        * WebKitTestRunner/TestInvocation.cpp:
+        (WTR::shouldOpenWebInspector): Also look for backslashes, since that's what we'll get on
+        Windows.
+
+2011-03-03  Adam Roben  <aroben@apple.com>
+
         Make Windows 7 Release (Tests) a core builder
 
         We can probably make Windows XP Debug (Tests) a core builder, too, but we should probably

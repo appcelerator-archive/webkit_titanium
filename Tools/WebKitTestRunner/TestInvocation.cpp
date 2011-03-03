@@ -58,7 +58,8 @@ static WKURLRef createWKURL(const char* pathOrURL)
     if (!length)
         return 0;
 
-    const char* filePrefix = "file://";
+    // FIXME: Remove the "localhost/" suffix once <http://webkit.org/b/55683> is fixed.
+    const char* filePrefix = "file://localhost/";
     static const size_t prefixLength = strlen(filePrefix);
 #if OS(WINDOWS)
     const char separator = '\\';
@@ -124,7 +125,7 @@ static void sizeWebViewForCurrentTest(const char* pathOrURL)
 
 static bool shouldOpenWebInspector(const char* pathOrURL)
 {
-    return strstr(pathOrURL, "inspector/");
+    return strstr(pathOrURL, "inspector/") || strstr(pathOrURL, "inspector\\");
 }
 
 void TestInvocation::invoke()
