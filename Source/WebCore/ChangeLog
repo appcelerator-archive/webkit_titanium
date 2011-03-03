@@ -1,3 +1,42 @@
+2011-03-03  Mario Sanchez Prada  <msanchez@igalia.com>
+
+        Reviewed by Martin Robinson.
+
+        [GTK] Combo boxes should emit object:selection-changed even when collapsed
+        https://bugs.webkit.org/show_bug.cgi?id=53146
+
+        Emit the selection-changed signals when the menu list value has changed
+
+        Test: platform/gtk/accessibility/combo-box-collapsed-selection-changed.html
+
+        * accessibility/gtk/AXObjectCacheAtk.cpp:
+        (WebCore::getListObject): New, return the right list object for
+        menu lists and list boxes.
+        (WebCore::notifyChildrenSelectionChange): Support menu lists.
+        (WebCore::AXObjectCache::postPlatformNotification): Call function
+        notifyChildrenSelectionChange for AXMenuListValueChanged.
+
+2011-03-03  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Reviewed by Tony Chang.
+
+        applyInlineStyleToPushDown and removeInlineStyleFromElement should take EditingStyle
+        https://bugs.webkit.org/show_bug.cgi?id=55338
+
+        Include wtf/Forward.h instead of wtf/text/String.h
+
+        * editing/EditingStyle.h:
+
+2011-03-03  Csaba Osztrogonác  <ossy@webkit.org>
+
+        Unreviewed trivial fix after r80169.
+
+        [Qt][WK2] Memory exhausted when building qtwebkit2 on linux
+        https://bugs.webkit.org/show_bug.cgi?id=55484
+
+        * WebCore.pro: Typo fix. We have to use linux-g++* instead of linux-g++.
+
+
 2011-03-02  MORITA Hajime  <morrita@google.com>
 
         Reviewed by Kent Tamura.
