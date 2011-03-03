@@ -1,5 +1,23 @@
 2011-03-02  Mihai Parparita  <mihaip@chromium.org>
 
+        Unreviewed Chromium expectations update
+
+        Clean up svg/ expectations (there were some non-test files with
+        expectations, as well as a couple of tests that have never failed).
+
+        * platform/chromium/test_expectations.txt:
+
+2011-03-02  Yury Semikhatsky  <yurys@chromium.org>
+
+        Reviewed by Pavel Feldman.
+
+        Web Inspector: break down InspectorFrontend into domain-specific classes
+        https://bugs.webkit.org/show_bug.cgi?id=55584
+
+        * inspector/elements/elements-panel-search.html:
+
+2011-03-02  Mihai Parparita  <mihaip@chromium.org>
+
         Reviewed by Tony Gentilcore.
 
         Split up http/tests/cache/subresource-expiration.html so it stops timing out
