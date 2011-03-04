@@ -1,3 +1,30 @@
+2011-03-04  Ilya Tikhonovsky  <loislo@chromium.org>
+
+        Reviewed by Yury Semikhatsky.
+
+        Web Inspector: Remove unnecessary domain and success flags from the response messages.
+        https://bugs.webkit.org/show_bug.cgi?id=55768
+
+        We have domain property in the response messages but it is not used because we dispatch
+        the responses on the callback associated with seq.
+
+        If we have property 'errors' in the response then success eq false and true in the other case.
+
+        * inspector/protocol/runtime-agent-expected.txt:
+        * inspector/report-protocol-errors-expected.txt:
+
+2011-03-04  Csaba Osztrogonác  <ossy@webkit.org>
+
+        Unreviewed.
+
+        [Qt] Two http auth tests fail with Qt 4.7.2
+        https://bugs.webkit.org/show_bug.cgi?id=55767
+
+        Add failing tests to the Skipped list to make buildbot happy.
+
+        * platform/qt/Skipped: Add http/tests/appcache/auth.html and http/tests/xmlhttprequest/basic-auth.html.
+
+
 2011-03-03  Ilya Tikhonovsky  <loislo@chromium.org>
 
         Reviewed by Yury Semikhatsky.
