@@ -1,3 +1,78 @@
+2011-03-03  Brent Fulgham  <bfulgham@webkit.org>
+
+        Build fix. Need win/cURL DownloadBundle stub.
+
+        * platform/network/curl/DownloadBundle.h: Added.
+
+2011-03-03  Geoffrey Garen  <ggaren@apple.com>
+
+        Rolled out 80277 and 80280 because they caused event handler layout test
+        failures.
+
+        * WebCore.xcodeproj/project.pbxproj:
+        * bindings/js/JSDOMGlobalObject.cpp:
+        * bindings/js/JSDOMGlobalObject.h:
+        * bindings/js/JSDOMWindowBase.cpp:
+        * bindings/js/JSDOMWindowBase.h:
+        * bindings/js/JSDOMWindowCustom.h:
+        * bindings/js/JSWorkerContextBase.cpp:
+
+2011-03-03  Brady Eidson  <beidson@apple.com>
+
+        Reviewed by Darin Adler.
+
+        https://bugs.webkit.org/show_bug.cgi?id=55721
+        Global IconDatabase should be returned by reference, not as a pointer
+
+        * history/HistoryItem.cpp:
+        (WebCore::HistoryItem::HistoryItem):
+        (WebCore::HistoryItem::~HistoryItem):
+        (WebCore::HistoryItem::reset):
+        (WebCore::HistoryItem::icon):
+        (WebCore::HistoryItem::setURLString):
+
+        * loader/FrameLoader.cpp:
+        (WebCore::FrameLoader::startIconLoader):
+        (WebCore::FrameLoader::commitIconURLToIconDatabase):
+
+        * loader/archive/cf/LegacyWebArchive.cpp:
+        (WebCore::LegacyWebArchive::create):
+
+        * loader/icon/IconDatabase.cpp:
+        (WebCore::iconDatabase):
+        * loader/icon/IconDatabase.h:
+        * loader/icon/IconDatabaseNone.cpp:
+        (WebCore::iconDatabase):
+        * loader/icon/wince/IconDatabaseWinCE.cpp:
+        (WebCore::iconDatabase):
+
+        * loader/icon/IconLoader.cpp:
+        (WebCore::IconLoader::finishLoading):
+
+2011-03-03  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Reviewed by Martin Robinson.
+
+        Stop instantiating legacy editing positions in FocusController::advanceFocusInDocumentOrder
+        https://bugs.webkit.org/show_bug.cgi?id=52742
+
+        Use firstPositionInOrBeforeNode to instantiate appropriate position.
+
+        * page/FocusController.cpp:
+        (WebCore::FocusController::advanceFocusInDocumentOrder):
+
+2011-03-03  Andy Estes  <aestes@apple.com>
+
+        Reviewed by Darin Adler.
+
+        When displaying the missing plug-in sheet, pass the 'pluginspage'
+        attribute to the UI process.
+        https://bugs.webkit.org/show_bug.cgi?id=55553
+
+        * WebCore.exp.in: Export __ZN7WebCore9HTMLNames15pluginspageAttrE.
+        * html/HTMLAttributeNames.in: Add 'pluginspage' as a known content
+        attribute.
+
 2011-03-03  Jessie Berlin  <jberlin@apple.com>
 
         Reviewed by Adam Roben.

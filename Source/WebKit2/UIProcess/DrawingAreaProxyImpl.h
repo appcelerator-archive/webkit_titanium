@@ -29,6 +29,7 @@
 #include "BackingStore.h"
 #include "DrawingAreaProxy.h"
 #include "LayerTreeContext.h"
+#include "RunLoop.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 
@@ -62,14 +63,18 @@ private:
 
     void incorporateUpdate(const UpdateInfo&);
 
-    void backingStoreStateDidChange();
-    void sendUpdateBackingStoreState();
+    enum RespondImmediatelyOrNot { DoNotRespondImmediately, RespondImmediately };
+    void backingStoreStateDidChange(RespondImmediatelyOrNot);
+    void sendUpdateBackingStoreState(RespondImmediatelyOrNot);
     void waitForAndDispatchDidUpdateBackingStoreState();
 
     void enterAcceleratedCompositingMode(const LayerTreeContext&);
     void exitAcceleratedCompositingMode();
 
     bool isInAcceleratedCompositingMode() const { return !m_layerTreeContext.isEmpty(); }
+
+    void discardBackingStoreSoon();
+    void discardBackingStore();
 
     // The state ID corresponding to our current backing store. Updated whenever we allocate
     // a new backing store. Any messages received that correspond to an earlier state are ignored,
@@ -88,6 +93,8 @@ private:
     bool m_isWaitingForDidUpdateBackingStoreState;
 
     OwnPtr<BackingStore> m_backingStore;
+
+    RunLoop::Timer<DrawingAreaProxyImpl> m_discardBackingStoreTimer;
 };
 
 } // namespace WebKit

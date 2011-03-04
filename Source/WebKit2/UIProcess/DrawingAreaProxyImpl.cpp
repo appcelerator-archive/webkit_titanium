@@ -52,6 +52,7 @@ DrawingAreaProxyImpl::DrawingAreaProxyImpl(WebPageProxy* webPageProxy)
     , m_currentBackingStoreStateID(0)
     , m_nextBackingStoreStateID(0)
     , m_isWaitingForDidUpdateBackingStoreState(false)
+    , m_discardBackingStoreTimer(RunLoop::current(), this, &DrawingAreaProxyImpl::discardBackingStore)
 {
 }
 
@@ -66,23 +67,35 @@ void DrawingAreaProxyImpl::paint(BackingStore::PlatformGraphicsContext context, 
 {
     unpaintedRegion = rect;
 
-    if (!m_backingStore)
+    if (isInAcceleratedCompositingMode())
         return;
 
-    ASSERT(!isInAcceleratedCompositingMode());
+    ASSERT(m_currentBackingStoreStateID <= m_nextBackingStoreStateID);
+    if (m_currentBackingStoreStateID < m_nextBackingStoreStateID) {
+        // Tell the web process to do a full backing store update now, in case we previously told
+        // it about our next state but didn't request an immediate update.
+        sendUpdateBackingStoreState(RespondImmediately);
 
-    if (m_isWaitingForDidUpdateBackingStoreState) {
-        // Wait for a DidUpdateBackingStoreState message that contains the new bits before we paint
-        // what's currently in the backing store.
-        waitForAndDispatchDidUpdateBackingStoreState();
+        if (m_isWaitingForDidUpdateBackingStoreState) {
+            // Wait for a DidUpdateBackingStoreState message that contains the new bits before we paint
+            // what's currently in the backing store.
+            waitForAndDispatchDidUpdateBackingStoreState();
+        }
 
-        // Dispatching DidUpdateBackingStoreState could destroy our backing store or change the compositing mode.
+        // Dispatching DidUpdateBackingStoreState (either beneath sendUpdateBackingStoreState or
+        // beneath waitForAndDispatchDidUpdateBackingStoreState) could destroy our backing store or
+        // change the compositing mode.
         if (!m_backingStore || isInAcceleratedCompositingMode())
             return;
+    } else {
+        ASSERT(!m_isWaitingForDidUpdateBackingStoreState);
+        ASSERT(m_backingStore);
     }
 
     m_backingStore->paint(context, rect);
     unpaintedRegion.subtract(IntRect(IntPoint(), m_backingStore->size()));
+
+    discardBackingStoreSoon();
 }
 
 void DrawingAreaProxyImpl::didReceiveMessage(CoreIPC::Connection*, CoreIPC::MessageID, CoreIPC::ArgumentDecoder*)
@@ -103,7 +116,7 @@ bool DrawingAreaProxyImpl::paint(const WebCore::IntRect&, PlatformDrawingContext
 
 void DrawingAreaProxyImpl::sizeDidChange()
 {
-    backingStoreStateDidChange();
+    backingStoreStateDidChange(RespondImmediately);
 }
 
 void DrawingAreaProxyImpl::visibilityDidChange()
@@ -140,11 +153,10 @@ void DrawingAreaProxyImpl::didUpdateBackingStoreState(uint64_t backingStoreState
     ASSERT_ARG(backingStoreStateID, backingStoreStateID > m_currentBackingStoreStateID);
     m_currentBackingStoreStateID = backingStoreStateID;
 
-    ASSERT(m_isWaitingForDidUpdateBackingStoreState);
     m_isWaitingForDidUpdateBackingStoreState = false;
 
     if (m_nextBackingStoreStateID != m_currentBackingStoreStateID)
-        sendUpdateBackingStoreState();
+        sendUpdateBackingStoreState(RespondImmediately);
 
     if (layerTreeContext != m_layerTreeContext) {
         if (!m_layerTreeContext.isEmpty()) {
@@ -163,6 +175,8 @@ void DrawingAreaProxyImpl::didUpdateBackingStoreState(uint64_t backingStoreState
         return;
     }
 
+    // FIXME: We could just reuse our existing backing store if it's the same size as
+    // updateInfo.viewSize.
     m_backingStore = nullptr;
     incorporateUpdate(updateInfo);
 }
@@ -214,13 +228,13 @@ void DrawingAreaProxyImpl::incorporateUpdate(const UpdateInfo& updateInfo)
         m_webPageProxy->displayView();
 }
 
-void DrawingAreaProxyImpl::backingStoreStateDidChange()
+void DrawingAreaProxyImpl::backingStoreStateDidChange(RespondImmediatelyOrNot respondImmediatelyOrNot)
 {
     ++m_nextBackingStoreStateID;
-    sendUpdateBackingStoreState();
+    sendUpdateBackingStoreState(respondImmediatelyOrNot);
 }
 
-void DrawingAreaProxyImpl::sendUpdateBackingStoreState()
+void DrawingAreaProxyImpl::sendUpdateBackingStoreState(RespondImmediatelyOrNot respondImmediatelyOrNot)
 {
     ASSERT(m_currentBackingStoreStateID < m_nextBackingStoreStateID);
 
@@ -230,11 +244,11 @@ void DrawingAreaProxyImpl::sendUpdateBackingStoreState()
     if (m_isWaitingForDidUpdateBackingStoreState)
         return;
 
-    m_isWaitingForDidUpdateBackingStoreState = true;
-    m_webPageProxy->process()->send(Messages::DrawingArea::UpdateBackingStoreState(m_nextBackingStoreStateID, m_size, m_scrollOffset), m_webPageProxy->pageID());
+    m_isWaitingForDidUpdateBackingStoreState = respondImmediatelyOrNot == RespondImmediately;
+    m_webPageProxy->process()->send(Messages::DrawingArea::UpdateBackingStoreState(m_nextBackingStoreStateID, respondImmediatelyOrNot == RespondImmediately, m_size, m_scrollOffset), m_webPageProxy->pageID());
     m_scrollOffset = IntSize();
 
-    if (!m_layerTreeContext.isEmpty()) {
+    if (m_isWaitingForDidUpdateBackingStoreState && !m_layerTreeContext.isEmpty()) {
         // Wait for the DidUpdateBackingStoreState message. Normally we don this in DrawingAreaProxyImpl::paint, but that
         // function is never called when in accelerated compositing mode.
         waitForAndDispatchDidUpdateBackingStoreState();
@@ -275,6 +289,21 @@ void DrawingAreaProxyImpl::exitAcceleratedCompositingMode()
 
     m_layerTreeContext = LayerTreeContext();    
     m_webPageProxy->exitAcceleratedCompositingMode();
+}
+
+void DrawingAreaProxyImpl::discardBackingStoreSoon()
+{
+    // We'll wait this many seconds after the last paint before throwing away our backing store to save memory.
+    // FIXME: It would be smarter to make this delay based on how expensive painting is. See <http://webkit.org/b/55733>.
+    static const double discardBackingStoreDelay = 5;
+
+    m_discardBackingStoreTimer.startOneShot(discardBackingStoreDelay);
+}
+
+void DrawingAreaProxyImpl::discardBackingStore()
+{
+    m_backingStore = nullptr;
+    backingStoreStateDidChange(DoNotRespondImmediately);
 }
 
 } // namespace WebKit
