@@ -1,3 +1,151 @@
+2011-03-04  Steve Block  <steveblock@google.com>
+
+        Reviewed by Jeremy Orlow.
+
+        V8 version of JavaString should obtain string from JNI in UTF-16 encoding
+        https://bugs.webkit.org/show_bug.cgi?id=55566
+
+        We obtain the string from JNI in UTF-16 encoding and convert
+        to UTF-8 using our own routines as required. This matches the
+        behaviour of the JSC version of JavaString.
+
+        No new tests, no change in behaviour.
+
+        * bridge/jni/v8/JavaStringV8.h:
+        (JSC::Bindings::JavaStringImpl::init):
+        (JSC::Bindings::JavaStringImpl::utf8):
+        (JSC::Bindings::JavaStringImpl::impl):
+
+2011-03-03  Pavel Feldman  <pfeldman@chromium.org>
+
+        Reviewed by Yury Semikhatsky.
+
+        Web Inspector: do not push document into front-end, make it request one.
+        https://bugs.webkit.org/show_bug.cgi?id=55664
+
+        * inspector/Inspector.idl:
+        * inspector/InspectorAgent.cpp:
+        (WebCore::InspectorAgent::InspectorAgent):
+        * inspector/InspectorAgent.h:
+        * inspector/InspectorBrowserDebuggerAgent.cpp:
+        (WebCore::InspectorBrowserDebuggerAgent::descriptionForDOMEvent):
+        * inspector/InspectorDOMAgent.cpp:
+        (WebCore::InspectorDOMAgent::InspectorDOMAgent):
+        (WebCore::InspectorDOMAgent::clearFrontend):
+        (WebCore::InspectorDOMAgent::setDocument):
+        (WebCore::InspectorDOMAgent::getDocument):
+        (WebCore::InspectorDOMAgent::pushNodePathToFrontend):
+        (WebCore::InspectorDOMAgent::boundNodeId):
+        (WebCore::InspectorDOMAgent::resolveNode):
+        (WebCore::InspectorDOMAgent::mainFrameDOMContentLoaded):
+        * inspector/InspectorDOMAgent.h:
+        (WebCore::InspectorDOMAgent::create):
+        * inspector/front-end/BreakpointManager.js:
+        (WebInspector.BreakpointManager.prototype.restoreDOMBreakpoints):
+        (WebInspector.DOMBreakpointView.prototype.populateStatusMessageElement.decorateNode):
+        (WebInspector.DOMBreakpointView.prototype.populateStatusMessageElement):
+        * inspector/front-end/DOMAgent.js:
+        (WebInspector.DOMDocument):
+        (WebInspector.DOMAgent):
+        (WebInspector.DOMAgent.prototype.requestDocument):
+        (WebInspector.DOMAgent.prototype.pushNodeToFrontend):
+        (WebInspector.DOMAgent.prototype.pushNodeByPathToFrontend):
+        (WebInspector.DOMAgent.prototype._attributesUpdated):
+        (WebInspector.DOMAgent.prototype._characterDataModified):
+        (WebInspector.DOMAgent.prototype._documentUpdated):
+        (WebInspector.DOMAgent.prototype._setDocument):
+        (WebInspector.DOMAgent.prototype._setDetachedRoot):
+        (WebInspector.DOMAgent.prototype._setChildNodes):
+        (WebInspector.DOMAgent.prototype._childNodeInserted):
+        (WebInspector.DOMAgent.prototype._childNodeRemoved):
+        (WebInspector.DOMDispatcher.prototype.documentUpdated):
+        * inspector/front-end/ElementsPanel.js:
+        (WebInspector.ElementsPanel.prototype.show):
+        (WebInspector.ElementsPanel.prototype.setDocument):
+        * inspector/front-end/MetricsSidebarPane.js:
+        * inspector/front-end/RemoteObject.js:
+        (WebInspector.RemoteObject.prototype.pushNodeToFrontend):
+
+2011-03-04  Andrey Kosyakov  <caseq@chromium.org>
+
+        Reviewed by Pavel Feldman.
+
+        Web Inspector: summary bar may overlap content of the network item view
+        https://bugs.webkit.org/show_bug.cgi?id=55656
+
+        - drop custom summary bar placement logic, do it with CSS instead.
+
+        * inspector/front-end/NetworkPanel.js:
+        (WebInspector.NetworkPanel.prototype.resize):
+        (WebInspector.NetworkPanel.prototype._createSummaryBar):
+        (WebInspector.NetworkPanel.prototype._updateSummaryBar):
+        (WebInspector.NetworkPanel.prototype._updateFilter):
+        (WebInspector.NetworkPanel.prototype.show):
+        (WebInspector.NetworkPanel.prototype.refresh):
+        (WebInspector.NetworkPanel.prototype._reset):
+        (WebInspector.NetworkPanel.prototype._setLargerResources):
+        (WebInspector.NetworkPanel.prototype._updateOffscreenRows):
+        * inspector/front-end/networkPanel.css:
+        (.network-sidebar .data-grid td):
+        (.network-sidebar tr.filler td):
+        (.network-summary-bar):
+        (.network-sidebar .data-grid .network-summary-bar td):
+        (.network-summary-bar img):
+
+2011-03-04  James Su <suzhe@chromium.org>
+
+        Reviewed by Dimitri Glazkov.
+
+        [Chromium] keycode is always 0 when using non-Latin keyboard layout.
+        https://bugs.webkit.org/show_bug.cgi?id=54939
+
+        Add KeyEventCocoa.{h,mm}, so that we can reuse them in chromium.
+
+        No intended functionality change.
+
+        * WebCore.gyp/WebCore.gyp:
+        * WebCore.gypi:
+
+2011-03-04  Patrick Gansterer  <paroga@webkit.org>
+
+        Unreviewed EFL build fix for r80324.
+
+        * platform/efl/RenderThemeEfl.cpp:
+        (WebCore::RenderThemeEfl::paintThemePart):
+
+2011-03-04  Patrick Gansterer  <paroga@webkit.org>
+
+        Unreviewed EFL build fix for r80324.
+
+        * platform/efl/RenderThemeEfl.cpp:
+        (WebCore::RenderThemeEfl::paintThemePart):
+
+2011-03-03  Yury Semikhatsky  <yurys@chromium.org>
+
+        Reviewed by Pavel Feldman.
+
+        Web Inspector: AppCache agent should have same lifetime as InspectorAgent
+        https://bugs.webkit.org/show_bug.cgi?id=55673
+
+        * inspector/InspectorAgent.cpp:
+        (WebCore::InspectorAgent::InspectorAgent):
+        (WebCore::InspectorAgent::setFrontend):
+        (WebCore::InspectorAgent::disconnectFrontend):
+        (WebCore::InspectorAgent::createFrontendLifetimeAgents):
+        (WebCore::InspectorAgent::releaseFrontendLifetimeAgents):
+        (WebCore::InspectorAgent::didCommitLoad):
+        * inspector/InspectorApplicationCacheAgent.cpp:
+        (WebCore::InspectorApplicationCacheAgent::InspectorApplicationCacheAgent):
+        (WebCore::InspectorApplicationCacheAgent::setFrontend):
+        (WebCore::InspectorApplicationCacheAgent::clearFrontend):
+        * inspector/InspectorApplicationCacheAgent.h:
+        * inspector/InspectorInstrumentation.cpp:
+        (WebCore::InspectorInstrumentation::networkStateChangedImpl):
+        (WebCore::InspectorInstrumentation::updateApplicationCacheStatusImpl):
+        * inspector/InstrumentingAgents.h:
+        (WebCore::InstrumentingAgents::inspectorApplicationCacheAgent):
+        (WebCore::InstrumentingAgents::setInspectorApplicationCacheAgent):
+
 2011-03-03  Brian Weinstein  <bweinstein@apple.com>
 
         Reviewed by Adam Roben.
