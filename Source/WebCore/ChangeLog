@@ -1,3 +1,127 @@
+2011-03-04  Yury Semikhatsky  <yurys@chromium.org>
+
+        Reviewed by Pavel Feldman.
+
+        Web Inspector: move dispatching of didCommitLoad to agents into InspectorInstrumentation
+        https://bugs.webkit.org/show_bug.cgi?id=55770
+
+        * inspector/InspectorAgent.cpp:
+        (WebCore::InspectorAgent::InspectorAgent):
+        (WebCore::InspectorAgent::didCommitLoad):
+        * inspector/InspectorCSSAgent.cpp:
+        (WebCore::InspectorCSSAgent::InspectorCSSAgent):
+        (WebCore::InspectorCSSAgent::~InspectorCSSAgent):
+        * inspector/InspectorCSSAgent.h:
+        * inspector/InspectorDatabaseAgent.cpp:
+        (WebCore::InspectorDatabaseAgent::~InspectorDatabaseAgent):
+        * inspector/InspectorInstrumentation.cpp:
+        (WebCore::InspectorInstrumentation::didCommitLoadImpl):
+        * inspector/InspectorInstrumentation.h:
+        (WebCore::InspectorInstrumentation::didCommitLoad):
+        * inspector/InspectorProfilerAgent.cpp:
+        (WebCore::InspectorProfilerAgent::create):
+        (WebCore::InspectorProfilerAgent::InspectorProfilerAgent):
+        (WebCore::InspectorProfilerAgent::~InspectorProfilerAgent):
+        (WebCore::InspectorProfilerAgent::addProfileFinishedMessageToConsole):
+        (WebCore::InspectorProfilerAgent::addStartProfilingMessageToConsole):
+        (WebCore::InspectorProfilerAgent::startUserInitiatedProfiling):
+        (WebCore::InspectorProfilerAgent::stopUserInitiatedProfiling):
+        * inspector/InspectorProfilerAgent.h:
+        * inspector/InstrumentingAgents.h:
+        (WebCore::InstrumentingAgents::InstrumentingAgents):
+        (WebCore::InstrumentingAgents::inspectorCSSAgent):
+        (WebCore::InstrumentingAgents::setInspectorCSSAgent):
+        (WebCore::InstrumentingAgents::inspectorDOMStorageAgent):
+        (WebCore::InstrumentingAgents::setInspectorDOMStorageAgent):
+        (WebCore::InstrumentingAgents::inspectorDatabaseAgent):
+        (WebCore::InstrumentingAgents::setInspectorDatabaseAgent):
+        (WebCore::InstrumentingAgents::inspectorApplicationCacheAgent):
+        (WebCore::InstrumentingAgents::setInspectorApplicationCacheAgent):
+        (WebCore::InstrumentingAgents::inspectorDebuggerAgent):
+        (WebCore::InstrumentingAgents::setInspectorDebuggerAgent):
+        (WebCore::InstrumentingAgents::inspectorBrowserDebuggerAgent):
+        (WebCore::InstrumentingAgents::setInspectorBrowserDebuggerAgent):
+        (WebCore::InstrumentingAgents::inspectorProfilerAgent):
+        (WebCore::InstrumentingAgents::setInspectorProfilerAgent):
+
+2011-03-04  Ilya Tikhonovsky  <loislo@chromium.org>
+
+        Reviewed by Yury Semikhatsky.
+
+        Web Inspector: rename RuntimeAgent's function from releaseWrapperObjectGroup to releaseObjectGroup.
+        https://bugs.webkit.org/show_bug.cgi?id=55773
+
+        * inspector/CodeGeneratorInspector.pm:
+        * inspector/InjectedScript.cpp:
+        (WebCore::InjectedScript::releaseObjectGroup):
+        * inspector/InjectedScript.h:
+        * inspector/InjectedScriptHost.cpp:
+        (WebCore::InjectedScriptHost::releaseObjectGroup):
+        * inspector/InjectedScriptHost.h:
+        * inspector/InjectedScriptSource.js:
+        (.):
+        * inspector/Inspector.idl:
+        * inspector/InspectorConsoleAgent.cpp:
+        (WebCore::InspectorConsoleAgent::clearConsoleMessages):
+        * inspector/InspectorRuntimeAgent.cpp:
+        (WebCore::InspectorRuntimeAgent::releaseObjectGroup):
+        * inspector/InspectorRuntimeAgent.h:
+        * inspector/front-end/ConsoleView.js:
+        (WebInspector.ConsoleView.prototype.completions.evaluatedProperties):
+        (WebInspector.ConsoleView.prototype.completions):
+        * inspector/front-end/PropertiesSidebarPane.js:
+        * inspector/front-end/SourceFrame.js:
+        (WebInspector.SourceFrame.prototype._hidePopup):
+        * inspector/front-end/WatchExpressionsSidebarPane.js:
+        (WebInspector.WatchExpressionsSection.prototype.update):
+
+2011-03-02  Andrey Adaikin  <aandrey@google.com>
+
+        Reviewed by Pavel Feldman.
+
+        Web Inspector: Gutter height should be 100% when few lines are displayed
+        https://bugs.webkit.org/show_bug.cgi?id=55574
+
+        * inspector/front-end/SourceFrame.js:
+        (WebInspector.SourceFrame.prototype._startEditing):
+        * inspector/front-end/TextViewer.js:
+        (WebInspector.TextViewer.prototype._syncScroll):
+        (WebInspector.TextEditorGutterPanel.prototype._expandChunks):
+        (WebInspector.TextEditorGutterPanel.prototype.textChanged):
+        (WebInspector.TextEditorGutterPanel.prototype.syncClientHeight):
+        * inspector/front-end/textViewer.css:
+        (.text-editor-lines):
+        (.text-editor-contents .inner-container):
+        (.webkit-line-number):
+
+2011-03-04  Andrey Adaikin  <aandrey@google.com>
+
+        Reviewed by Pavel Feldman.
+
+        Web Inspector: [Text editor] Do bisect to find visible chunks
+        https://bugs.webkit.org/show_bug.cgi?id=55685
+
+        * inspector/front-end/TextViewer.js:
+        (WebInspector.TextEditorChunkedPanel.prototype._chunkNumberForLine):
+        (WebInspector.TextEditorChunkedPanel.prototype._findVisibleChunks):
+        (WebInspector.TextEditorChunkedPanel.prototype._repaintAll):
+        (WebInspector.TextEditorGutterChunk.prototype.get offsetTop):
+        (WebInspector.TextEditorMainPanel.prototype._updateHighlightsForRange):
+        (WebInspector.TextEditorMainChunk.prototype.get offsetTop):
+
+2011-03-04  Andrey Adaikin  <aandrey@google.com>
+
+        Reviewed by Pavel Feldman.
+
+        Web Inspector: [Text editor] DOMNodeRemoved events are missing
+        https://bugs.webkit.org/show_bug.cgi?id=55769
+
+        * inspector/front-end/TextViewer.js:
+        (WebInspector.TextEditorMainPanel):
+        (WebInspector.TextEditorMainPanel.prototype._handleDOMUpdates):
+        (WebInspector.TextEditorMainChunk):
+        (WebInspector.TextEditorMainChunk.prototype._createRow):
+
 2011-03-04  Ilya Tikhonovsky  <loislo@chromium.org>
 
         Reviewed by Yury Semikhatsky.

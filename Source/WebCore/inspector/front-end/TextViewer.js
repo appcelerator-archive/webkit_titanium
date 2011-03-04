@@ -201,13 +201,8 @@ WebInspector.TextViewer.prototype = {
         setTimeout(function() {
             var mainElement = this._mainPanel.element;
             var gutterElement = this._gutterPanel.element;
-
             // Handle horizontal scroll bar at the bottom of the main panel.
-            if (gutterElement.offsetHeight > mainElement.clientHeight)
-                this._gutterPanel._container.style.setProperty("padding-bottom", (gutterElement.offsetHeight - mainElement.clientHeight) + "px");
-            else
-                this._gutterPanel._container.style.removeProperty("padding-bottom");
-
+            this._gutterPanel.syncClientHeight(mainElement.clientHeight);
             gutterElement.scrollTop = mainElement.scrollTop;
         }.bind(this), 0);
     },
@@ -387,22 +382,33 @@ WebInspector.TextEditorChunkedPanel.prototype = {
 
     _chunkNumberForLine: function(lineNumber)
     {
-        // Bisect.
-        var from = 0;
-        var to = this._textChunks.length - 1;
-        while (from < to) {
-            var mid = Math.floor((from + to + 1) / 2);
-            if (this._textChunks[mid].startLine <= lineNumber)
-                from = mid;
-            else
-                to = mid - 1;
+        function compareLineNumbers(value, chunk)
+        {
+            return value < chunk.startLine ? -1 : 1;
         }
-        return from;
+        var insertBefore = insertionIndexForObjectInListSortedByFunction(lineNumber, this._textChunks, compareLineNumbers);
+        return insertBefore - 1;
     },
 
     chunkForLine: function(lineNumber)
     {
         return this._textChunks[this._chunkNumberForLine(lineNumber)];
+    },
+
+    _findVisibleChunks: function(visibleFrom, visibleTo)
+    {
+        function compareOffsetTops(value, chunk)
+        {
+            return value < chunk.offsetTop ? -1 : 1;
+        }
+        var insertBefore = insertionIndexForObjectInListSortedByFunction(visibleFrom, this._textChunks, compareOffsetTops);
+
+        var from = insertBefore - 1;
+        for (var to = from + 1; to < this._textChunks.length; ++to) {
+            if (this._textChunks[to].offsetTop >= visibleTo)
+                break;
+        }
+        return { start: from, end: to };
     },
 
     _repaintAll: function()
@@ -418,25 +424,10 @@ WebInspector.TextEditorChunkedPanel.prototype = {
         var visibleFrom = this.element.scrollTop;
         var visibleTo = this.element.scrollTop + this.element.clientHeight;
 
-        var offset = 0;
-        var fromIndex = -1;
-        var toIndex = 0;
-        for (var i = 0; i < this._textChunks.length; ++i) {
-            var chunk = this._textChunks[i];
-            var chunkHeight = chunk.height;
-            if (offset + chunkHeight > visibleFrom && offset < visibleTo) {
-                if (fromIndex === -1)
-                    fromIndex = i;
-                toIndex = i + 1;
-            } else {
-                if (offset >= visibleTo)
-                    break;
-            }
-            offset += chunkHeight;
+        if (visibleTo) {
+            var result = this._findVisibleChunks(visibleFrom, visibleTo);
+            this._expandChunks(result.start, result.end);
         }
-
-        if (toIndex)
-            this._expandChunks(fromIndex, toIndex);
     },
 
     _totalHeight: function(firstElement, lastElement)
@@ -497,7 +488,6 @@ WebInspector.TextEditorGutterPanel.prototype = {
     {
         for (var i = 0; i < this._textChunks.length; ++i)
             this._textChunks[i].expanded = (fromIndex <= i && i < toIndex);
-        this.element.style.setProperty("width", this._container.offsetWidth + "px");
     },
 
     textChanged: function(oldRange, newRange)
@@ -541,6 +531,14 @@ WebInspector.TextEditorGutterPanel.prototype = {
                 chunk = this._textChunks[++chunkNumber];
             }
         }
+    },
+
+    syncClientHeight: function(clientHeight)
+    {
+        if (this.element.offsetHeight > clientHeight)
+            this._container.style.setProperty("padding-bottom", (this.element.offsetHeight - clientHeight) + "px");
+        else
+            this._container.style.removeProperty("padding-bottom");
     }
 }
 
@@ -652,6 +650,11 @@ WebInspector.TextEditorGutterChunk.prototype = {
         return this._textViewer._totalHeight(this._expandedLineRows[0], this._expandedLineRows[this._expandedLineRows.length - 1]);
     },
 
+    get offsetTop()
+    {
+        return this._expandedLineRows ? this._expandedLineRows[0].offsetTop : this.element.offsetTop;
+    },
+
     _createRow: function(lineNumber)
     {
         var lineRow = this._textViewer._cachedRows.pop() || document.createElement("div");
@@ -677,6 +680,7 @@ WebInspector.TextEditorMainPanel = function(textModel, url, syncScrollListener, 
 
     this.element = document.createElement("div");
     this.element.className = "text-editor-contents";
+    this.element.tabIndex = 0;
 
     this._container = document.createElement("div");
     this._container.className = "inner-container";
@@ -689,13 +693,14 @@ WebInspector.TextEditorMainPanel = function(textModel, url, syncScrollListener, 
     if (!Preferences.sourceEditorEnabled)
         this._container.addEventListener("keydown", this._handleKeyDown.bind(this), false);
 
-    var handleDOMUpdates = this._handleDOMUpdates.bind(this);
-    this._container.addEventListener("DOMCharacterDataModified", handleDOMUpdates, false);
-    this._container.addEventListener("DOMNodeInserted", handleDOMUpdates, false);
-    this._container.addEventListener("DOMNodeRemoved", handleDOMUpdates, false);
-    // For some reasons, in a few corner cases the events above are not able to catch the editings.
-    // To workaround that we also listen to a more general event as a backup.
-    this._container.addEventListener("DOMSubtreeModified", this._handleDOMSubtreeModified.bind(this), false);
+    // In WebKit the DOMNodeRemoved event is fired AFTER the node is removed, thus it should be
+    // attached to all DOM nodes that we want to track. Instead, we attach the DOMNodeRemoved
+    // listeners only on the line rows, and use DOMSubtreeModified to track node removals inside
+    // the line rows. For more info see: https://bugs.webkit.org/show_bug.cgi?id=55666
+    this._handleDOMUpdatesCallback = this._handleDOMUpdates.bind(this);
+    this._container.addEventListener("DOMCharacterDataModified", this._handleDOMUpdatesCallback, false);
+    this._container.addEventListener("DOMNodeInserted", this._handleDOMUpdatesCallback, false);
+    this._container.addEventListener("DOMSubtreeModified", this._handleDOMUpdatesCallback, false);
 
     this.freeCachedElements();
     this._buildChunks();
@@ -1127,71 +1132,21 @@ WebInspector.TextEditorMainPanel.prototype = {
         if (!lineRow)
             return;
 
-        if (lineRow.decorationsElement && lineRow.decorationsElement.isAncestor(target)) {
-            if (this._syncDecorationsForLineListener) {
-                // Wait until this event is processed and only then sync the sizes. This is necessary in
-                // case of the DOMNodeRemoved event, because it is dispatched before the removal takes place.
-                setTimeout(function() {
-                    this._syncDecorationsForLineListener(lineRow.lineNumber);
-                }.bind(this), 0);
-            }
+        if (lineRow.decorationsElement && (lineRow.decorationsElement === target || lineRow.decorationsElement.isAncestor(target))) {
+            if (this._syncDecorationsForLineListener)
+                this._syncDecorationsForLineListener(lineRow.lineNumber);
             return;
         }
 
         if (this._readOnly)
             return;
 
-        if (target === lineRow && (e.type === "DOMNodeInserted" || e.type === "DOMNodeRemoved")) {
-            // The "lineNumber" (if any) is no longer valid for a line being removed or inserted.
-            delete lineRow.lineNumber;
-        }
-
-        var startLine = 0;
-        for (var row = lineRow; row; row = row.previousSibling) {
-            if (typeof row.lineNumber === "number") {
-                startLine = row.lineNumber;
-                break;
-            }
-        }
-
-        var endLine = this._textModel.linesCount;
-        for (var row = lineRow.nextSibling; row; row = row.nextSibling) {
-            if (typeof row.lineNumber === "number") {
-                endLine = row.lineNumber;
-                break;
-            }
-        }
-
-        this._markDirtyLines(startLine, endLine);
-    },
-
-    _handleDOMSubtreeModified: function(e)
-    {
-        if (this._domUpdateCoalescingLevel || this._readOnly || e.target !== this._container)
-            return;
-
-        // Proceed only when other events failed to catch the DOM updates, otherwise it is not necessary.
-        if (this._dirtyLines)
-            return;
-
-        var selection = this._getSelection();
-        if (!selection)
-            return;
-
-        var startLine = Math.min(selection.startLine, selection.endLine);
-        var endLine = Math.max(selection.startLine, selection.endLine) + 1;
-        endLine = Math.min(this._textModel.linesCount, endLine);
-
-        this._markDirtyLines(startLine, endLine);
-    },
-
-    _markDirtyLines: function(startLine, endLine)
-    {
+        var lineNumber = lineRow.lineNumber;
         if (this._dirtyLines) {
-            this._dirtyLines.start = Math.min(this._dirtyLines.start, startLine);
-            this._dirtyLines.end = Math.max(this._dirtyLines.end, endLine);
+            this._dirtyLines.start = Math.min(this._dirtyLines.start, lineNumber);
+            this._dirtyLines.end = Math.max(this._dirtyLines.end, lineNumber + 1);
         } else {
-            this._dirtyLines = { start: startLine, end: endLine };
+            this._dirtyLines = { start: lineNumber, end: lineNumber + 1 };
             setTimeout(this._applyDomUpdates.bind(this), 0);
             // Remove marked ranges, if any.
             this.markAndRevealRange(null);
@@ -1389,17 +1344,9 @@ WebInspector.TextEditorMainPanel.prototype = {
         var visibleFrom = this.element.scrollTop;
         var visibleTo = this.element.scrollTop + this.element.clientHeight;
 
-        var offset = 0;
-        var lastVisibleLine = 0;
-        for (var i = 0; i < this._textChunks.length; ++i) {
-            var chunk = this._textChunks[i];
-            var chunkHeight = chunk.height;
-            if (offset + chunkHeight > visibleFrom && offset < visibleTo)
-                lastVisibleLine = chunk.startLine + chunk.linesCount;
-            else if (offset >= visibleTo)
-                break;
-            offset += chunkHeight;
-        }
+        var result = this._findVisibleChunks(visibleFrom, visibleTo);
+        var chunk = this._textChunks[result.end - 1];
+        var lastVisibleLine = chunk.startLine + chunk.linesCount;
 
         lastVisibleLine = Math.max(lastVisibleLine, range.endLine);
 
@@ -1449,6 +1396,7 @@ WebInspector.TextEditorMainChunk = function(textViewer, startLine, endLine)
     this.element = document.createElement("div");
     this.element.lineNumber = startLine;
     this.element.className = "webkit-line-content";
+    this.element.addEventListener("DOMNodeRemoved", this._textViewer._handleDOMUpdatesCallback, false);
 
     this._startLine = startLine;
     endLine = Math.min(this._textModel.linesCount, endLine);
@@ -1574,11 +1522,17 @@ WebInspector.TextEditorMainChunk.prototype = {
         return this._textViewer._totalHeight(this._expandedLineRows[0], this._expandedLineRows[this._expandedLineRows.length - 1]);
     },
 
+    get offsetTop()
+    {
+        return this._expandedLineRows ? this._expandedLineRows[0].offsetTop : this.element.offsetTop;
+    },
+
     _createRow: function(lineNumber)
     {
         var lineRow = this._textViewer._cachedRows.pop() || document.createElement("div");
         lineRow.lineNumber = lineNumber;
         lineRow.className = "webkit-line-content";
+        lineRow.addEventListener("DOMNodeRemoved", this._textViewer._handleDOMUpdatesCallback, false);
         lineRow.textContent = this._textModel.line(lineNumber);
         if (!lineRow.textContent)
             lineRow.appendChild(document.createElement("br"));
