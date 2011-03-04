@@ -1,3 +1,175 @@
+2011-03-03  Brian Weinstein  <bweinstein@apple.com>
+
+        Reviewed by Adam Roben.
+
+        Cleanup from https://bugs.webkit.org/show_bug.cgi?id=55427.
+        
+        Call WebCore::startObservingCookieChanges and WebCore::stopObservingCookieChanges
+        on all platforms, and stub the functions on platforms that don't implement them.
+        
+        Add startObservingCookieChanges and stopObservingCookieChanges to TemporaryLinkStubs
+        for platforms that don't implement them.
+
+        * platform/android/TemporaryLinkStubs.cpp:
+        * platform/brew/TemporaryLinkStubs.cpp:
+        * platform/chromium/TemporaryLinkStubs.cpp:
+        * platform/efl/TemporaryLinkStubs.cpp:
+        * platform/gtk/TemporaryLinkStubs.cpp:
+        * platform/haiku/TemporaryLinkStubs.cpp:
+        * platform/qt/TemporaryLinkStubsQt.cpp:
+        * platform/win/TemporaryLinkStubs.cpp:
+
+2011-03-03  Eric Seidel  <eric@webkit.org>
+
+        Reviewed by Dimitri Glazkov.
+
+        Refactor createRendererIfNeeded to avoid premature nextRenderer calculation
+        https://bugs.webkit.org/show_bug.cgi?id=55720
+
+        There are two thing going on here:
+        1. Delaying nextRenderer calculation until we actually use it,
+           previously we would always compute nextRenderer (expensive!)
+           even if no renderer insertion was to occur.
+        2. Fix fullscreen elements to be inserted into the right place
+           in the rendering tree.  Previously they would always be the last
+           child in their parent's list, even if that wasn't the right place.
+
+        I don't know of any way to trigger the fullscreen bug,
+        but I tested this with peacekeeper and saw no performance change.
+
+        Peacekeeper's domJQueryBasics is now possibly as much as 2% faster
+        but I don't really trust the stability of peacekeeper to begin with.
+
+        This paves the way for further improvement in our nextRenderer calculation.
+
+        * dom/Node.cpp:
+        (WebCore::Node::attach):
+        (WebCore::Node::previousRenderer):
+        (WebCore::Node::nextRenderer):
+        (WebCore::Node::createRendererAndStyle):
+        (WebCore::wrapWithRenderFullScreen):
+        (WebCore::Node::createRendererIfNeeded):
+        * dom/Node.h:
+
+2011-03-03  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Reviewed by Darin Adler.
+
+        Remove LOOSE_PASS_OWN_ARRAY_PTR from PassOwnArrayPtr.h
+        https://bugs.webkit.org/show_bug.cgi?id=55554
+
+        * platform/Length.cpp:
+        (WebCore::newLengthArray): Pass nullptr instead of 0.
+
+2011-03-03  Nat Duca  <nduca@chromium.org>
+
+        Reviewed by James Robinson.
+
+        [chromium] Create a LayerChromium layerTreeAsText. Add HUD to
+        LayerRendererChromium that draws compositor FPS and, optionally,
+        the layer tree.
+        https://bugs.webkit.org/show_bug.cgi?id=54710
+
+        * WebCore.gypi:
+        * platform/graphics/chromium/Canvas2DLayerChromium.h:
+        (WebCore::Canvas2DLayerChromium::drawsContent):
+        * platform/graphics/chromium/CanvasLayerChromium.h:
+        (WebCore::CanvasLayerChromium::layerTypeAsString):
+        * platform/graphics/chromium/ContentLayerChromium.cpp:
+        (WebCore::writeIndent):
+        (WebCore::ContentLayerChromium::dumpLayerProperties):
+        * platform/graphics/chromium/ContentLayerChromium.h:
+        (WebCore::ContentLayerChromium::drawsContent):
+        (WebCore::ContentLayerChromium::layerTypeAsString):
+        * platform/graphics/chromium/GraphicsLayerChromium.cpp:
+        (WebCore::GraphicsLayerChromium::setName):
+        (WebCore::GraphicsLayerChromium::updateNames):
+        (WebCore::GraphicsLayerChromium::updateLayerPreserves3D):
+        (WebCore::GraphicsLayerChromium::setupContentsLayer):
+        * platform/graphics/chromium/GraphicsLayerChromium.h:
+        * platform/graphics/chromium/ImageLayerChromium.h:
+        (WebCore::ImageLayerChromium::drawsContent):
+        (WebCore::ImageLayerChromium::layerTypeAsString):
+        * platform/graphics/chromium/LayerChromium.cpp:
+        (WebCore::LayerChromium::LayerChromium):
+        (WebCore::LayerChromium::setName):
+        (WebCore::LayerChromium::layerTreeAsText):
+        (WebCore::writeIndent):
+        (WebCore::LayerChromium::dumpLayer):
+        (WebCore::LayerChromium::dumpLayerProperties):
+        * platform/graphics/chromium/LayerChromium.h:
+        (WebCore::LayerChromium::name):
+        (WebCore::LayerChromium::drawsContent):
+        (WebCore::LayerChromium::debugID):
+        (WebCore::LayerChromium::layerTypeAsString):
+        * platform/graphics/chromium/LayerRendererChromium.cpp:
+        (WebCore::LayerRendererChromium::LayerRendererChromium):
+        (WebCore::LayerRendererChromium::~LayerRendererChromium):
+        (WebCore::LayerRendererChromium::drawLayers):
+        (WebCore::LayerRendererChromium::present):
+        (WebCore::LayerRendererChromium::layerTreeAsText):
+        (WebCore::LayerRendererChromium::dumpRenderSurfaces):
+        * platform/graphics/chromium/LayerRendererChromium.h:
+        (WebCore::LayerRendererChromium::getHeadsUpDisplay):
+        (WebCore::LayerRendererChromium::rootVisibleRect):
+        * platform/graphics/chromium/PluginLayerChromium.h:
+        (WebCore::PluginLayerChromium::drawsContent):
+        (WebCore::PluginLayerChromium::layerTypeAsString):
+        * platform/graphics/chromium/RenderSurfaceChromium.cpp:
+        (WebCore::RenderSurfaceChromium::name):
+        (WebCore::writeIndent):
+        (WebCore::RenderSurfaceChromium::dumpSurface):
+        * platform/graphics/chromium/RenderSurfaceChromium.h:
+        * platform/graphics/chromium/VideoLayerChromium.h:
+        (WebCore::VideoLayerChromium::drawsContent):
+        (WebCore::VideoLayerChromium::layerTypeAsString):
+        * platform/graphics/chromium/WebGLLayerChromium.h:
+        (WebCore::WebGLLayerChromium::drawsContent):
+        (WebCore::WebGLLayerChromium::layerTypeAsString):
+        * platform/graphics/chromium/cc/CCHeadsUpDisplay.cpp: Added.
+        (WebCore::CCHeadsUpDisplay::CCHeadsUpDisplay):
+        (WebCore::CCHeadsUpDisplay::~CCHeadsUpDisplay):
+        (WebCore::CCHeadsUpDisplay::draw):
+        (WebCore::CCHeadsUpDisplay::drawHudContents):
+        (WebCore::CCHeadsUpDisplay::onPresent):
+        * platform/graphics/chromium/cc/CCHeadsUpDisplay.h: Added.
+        (WebCore::CCHeadsUpDisplay::setShowFPSCounter):
+        (WebCore::CCHeadsUpDisplay::showFPSCounter):
+        (WebCore::CCHeadsUpDisplay::setShowPlatformLayerTree):
+        (WebCore::CCHeadsUpDisplay::showPlatformLayerTree):
+        (WebCore::CCHeadsUpDisplay::enabled):
+        * platform/graphics/chromium/cc/CCLayerImpl.cpp:
+        (WebCore::CCLayerImpl::CCLayerImpl):
+        (WebCore::writeIndent):
+        (WebCore::CCLayerImpl::dumpLayerProperties):
+        * platform/graphics/chromium/cc/CCLayerImpl.h:
+        (WebCore::CCLayerImpl::debugID):
+        (WebCore::CCLayerImpl::setName):
+        (WebCore::CCLayerImpl::name):
+
+2011-03-02  Ojan Vafai  <ojan@chromium.org>
+
+        Reviewed by Darin Adler.
+
+        crash in adoptNode with mutation events
+        https://bugs.webkit.org/show_bug.cgi?id=50046
+
+        If the DOM is modified during the removeChild call in adoptNode,
+        then the setDocument call that follows can leave the DOM in an
+        inconsistent state.
+
+        * dom/Document.cpp:
+        (WebCore::Document::adoptNode):
+
+2011-03-03  Dimitri Glazkov  <dglazkov@chromium.org>
+
+        Reviewed by Darin Adler.
+
+        Add audio tag tests to the media controls manual test suite.
+        https://bugs.webkit.org/show_bug.cgi?id=55722
+
+        * manual-tests/media-controls.html: Added 4 audio tests.
+
 2011-03-03  Gyuyoung Kim  <gyuyoung.kim@samsung.com>
 
         Reviewed by Eric Seidel.
