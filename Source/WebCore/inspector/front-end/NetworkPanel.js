@@ -732,6 +732,7 @@ WebInspector.NetworkPanel.prototype = {
         this._viewsContainerElement.removeChildren();
         this._viewsContainerElement.appendChild(this._closeButtonElement);
         this._updateSummaryBar();
+        WebInspector.extensionServer.resetResources();
     },
 
     get resources()
@@ -972,7 +973,7 @@ WebInspector.NetworkPanel.prototype = {
     _contextMenu: function(event)
     {
         // createBlobURL is enabled conditionally, do not expose resource export if it's not available.
-        if (typeof window.webkitURL.createObjectURL !== "function" || !Preferences.resourceExportEnabled)
+        if ((window.webkitURL && typeof window.webkitURL.createObjectURL !== "function") || !Preferences.resourceExportEnabled)
             return;
 
         var contextMenu = new WebInspector.ContextMenu();

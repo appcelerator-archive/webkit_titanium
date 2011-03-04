@@ -1,3 +1,168 @@
+2011-03-04  Patrick Gansterer  <paroga@webkit.org>
+
+        Reviewed by Nikolas Zimmermann.
+
+        Move shared code into SVGStyledTransformableElement::svgAttributeChanged
+        https://bugs.webkit.org/show_bug.cgi?id=55771
+
+        All sub classes of SVGStyledTransformableElement request a relayout
+        the same way. So move that code into the common base class.
+
+        * svg/SVGCircleElement.cpp:
+        (WebCore::SVGCircleElement::svgAttributeChanged):
+        * svg/SVGEllipseElement.cpp:
+        (WebCore::SVGEllipseElement::svgAttributeChanged):
+        * svg/SVGForeignObjectElement.cpp:
+        (WebCore::SVGForeignObjectElement::svgAttributeChanged):
+        * svg/SVGGElement.cpp:
+        (WebCore::SVGGElement::svgAttributeChanged):
+        * svg/SVGImageElement.cpp:
+        (WebCore::SVGImageElement::svgAttributeChanged):
+        * svg/SVGLineElement.cpp:
+        (WebCore::SVGLineElement::svgAttributeChanged):
+        * svg/SVGPathElement.cpp:
+        (WebCore::SVGPathElement::svgAttributeChanged):
+        * svg/SVGPolyElement.cpp:
+        (WebCore::SVGPolyElement::svgAttributeChanged):
+        * svg/SVGRectElement.cpp:
+        (WebCore::SVGRectElement::svgAttributeChanged):
+        * svg/SVGStyledTransformableElement.cpp:
+        (WebCore::SVGStyledTransformableElement::svgAttributeChanged):
+        * svg/SVGStyledTransformableElement.h:
+        * svg/SVGUseElement.cpp:
+        (WebCore::SVGUseElement::svgAttributeChanged):
+
+2011-03-03  John Abd-El-Malek  <jam@chromium.org>
+
+        Reviewed by Dimitri Glazkov.
+
+        [chromium] Get rid of IsContentFiltered flags since they&apos;re not used anymore
+        https://bugs.webkit.org/show_bug.cgi?id=55748
+
+        * platform/network/chromium/ResourceResponse.cpp:
+        (WebCore::ResourceResponse::doPlatformCopyData):
+        (WebCore::ResourceResponse::doPlatformAdopt):
+        * platform/network/chromium/ResourceResponse.h:
+        (WebCore::ResourceResponse::ResourceResponse):
+
+2011-03-03  Timothy Hatcher  <timothy@apple.com>
+
+        Export SerializedScriptValue::create(JSC::ExecState* exec, JSC::JSValue value).
+
+        Reviewed by Darin Adler.
+
+        * WebCore.exp.in: Added __ZN7WebCore21SerializedScriptValue6createEPN3JSC9ExecStateENS1_7JSValueE.
+
+2011-03-04  Pavel Podivilov  <podivilov@chromium.org>
+
+        Reviewed by Yury Semikhatsky.
+
+        Web Inspector: extract all code that depends on source mapping from SourceFrame.
+        https://bugs.webkit.org/show_bug.cgi?id=55464
+
+        Extract all dependencies on DebuggerModel and ScriptsPanel to a delegate class
+        to encapsulate source mapping aspects from SourceFrame.
+
+        * inspector/front-end/ResourceView.js:
+        (WebInspector.ResourceView.createResourceView):
+        (WebInspector.SourceFrameDelegateForResourcesPanel):
+        (WebInspector.SourceFrameDelegateForResourcesPanel.prototype.requestContent):
+        * inspector/front-end/ScriptsPanel.js:
+        (WebInspector.ScriptsPanel.prototype._createSourceFrame):
+        (WebInspector.SourceFrameDelegateForScriptsPanel):
+        * inspector/front-end/SourceFrame.js:
+        (WebInspector.SourceFrame):
+        (WebInspector.SourceFrame.prototype.show):
+        (WebInspector.SourceFrame.prototype._createTextViewer):
+        (WebInspector.SourceFrame.prototype._contextMenu.addConditionalBreakpoint.didEditBreakpointCondition):
+        (WebInspector.SourceFrame.prototype._contextMenu.addConditionalBreakpoint):
+        (WebInspector.SourceFrame.prototype._contextMenu.else.editBreakpointCondition.didEditBreakpointCondition):
+        (WebInspector.SourceFrame.prototype._contextMenu.else.editBreakpointCondition):
+        (WebInspector.SourceFrame.prototype._contextMenu.else.setBreakpointEnabled):
+        (WebInspector.SourceFrame.prototype._contextMenu):
+        (WebInspector.SourceFrame.prototype._mouseDown):
+        (WebInspector.SourceFrame.prototype._mouseMove):
+        (WebInspector.SourceFrame.prototype._hidePopup):
+        (WebInspector.SourceFrame.prototype._mouseHover):
+        (WebInspector.SourceFrame.prototype._showPopup.showObjectPopup):
+        (WebInspector.SourceFrame.prototype._showPopup):
+        (WebInspector.SourceFrame.prototype._doubleClick):
+        (WebInspector.SourceFrame.prototype._didEditLine):
+        (WebInspector.SourceFrameDelegate):
+        (WebInspector.SourceFrameDelegate.prototype.requestContent):
+        (WebInspector.SourceFrameDelegate.prototype.debuggingSupported):
+        (WebInspector.SourceFrameDelegate.prototype.setBreakpoint):
+        (WebInspector.SourceFrameDelegate.prototype.removeBreakpoint):
+        (WebInspector.SourceFrameDelegate.prototype.updateBreakpoint):
+        (WebInspector.SourceFrameDelegate.prototype.findBreakpoint):
+        (WebInspector.SourceFrameDelegate.prototype.continueToLine):
+        (WebInspector.SourceFrameDelegate.prototype.canEditScriptSource):
+        (WebInspector.SourceFrameDelegate.prototype.editScriptSource):
+        (WebInspector.SourceFrameDelegate.prototype.debuggerPaused):
+        (WebInspector.SourceFrameDelegate.prototype.evaluate):
+        (WebInspector.SourceFrameDelegate.prototype.releaseEvaluationResult):
+
+2011-03-04  Andrey Kosyakov  <caseq@chromium.org>
+
+        Reviewed by Pavel Feldman.
+
+        Web Inspector: [Extensions API] maintain own, unique & persistent identifiers for resources.
+        https://bugs.webkit.org/show_bug.cgi?id=55686
+
+        - Use internal ids for resources in extension server.
+        - Log errors in inspector tests.
+
+        * inspector/front-end/ExtensionServer.js:
+        (WebInspector.ExtensionServer):
+        (WebInspector.ExtensionServer.prototype.resetResources):
+        (WebInspector.ExtensionServer.prototype._notifyResourceFinished):
+        (WebInspector.ExtensionServer.prototype._onRevealAndSelectResource):
+        (WebInspector.ExtensionServer.prototype._onGetHAR):
+        (WebInspector.ExtensionServer.prototype._onGetResourceContent):
+        (WebInspector.ExtensionServer.prototype._resourceId):
+        (WebInspector.ExtensionServer.prototype._resourceById):
+        * inspector/front-end/HAREntry.js:
+        (WebInspector.HARLog):
+        (WebInspector.HARLog.prototype._convertResource):
+        * inspector/front-end/NetworkPanel.js:
+        (WebInspector.NetworkPanel.prototype._reset):
+
+2011-03-04  Andrey Kosyakov  <caseq@chromium.org>
+
+        Reviewed by Pavel Feldman.
+
+        Web Inspector: exceptions when building context menu in network panel
+        https://bugs.webkit.org/show_bug.cgi?id=55678
+
+        * inspector/front-end/DataGrid.js:
+        (WebInspector.DataGrid.prototype.dataGridNodeFromNode):
+        (WebInspector.DataGrid.prototype.dataGridNodeFromPoint):
+        * inspector/front-end/NetworkPanel.js:
+        (WebInspector.NetworkPanel.prototype._contextMenu):
+
+2011-03-04  Ilya Sherman  <isherman@chromium.org>
+
+        Reviewed by James Robinson.
+
+        Override paintScrollCorner() for FramelessScrollView to forego any custom scrollbar corner rendering.
+        This was previously done in ScrollbarThemeChromium, but we also need this on the Mac when the ScrollView
+        is a FramelessScrollView -- which is mostly just for Autofill.
+        In service of http://crbug.com/73772 (crash)
+        https://bugs.webkit.org/show_bug.cgi?id=55557
+
+        No tests added because this fix is Chromium-specific and the code is currently untestable from within WebKit.
+        In particular, DRT crashes when trying to render a FramelessScrollView.
+
+        * platform/ScrollbarTheme.h:
+        (WebCore::ScrollbarTheme::paintScrollCorner): Body moved to static function defaultPaintScrollCorner().
+        (WebCore::ScrollbarTheme::defaultPaintScrollCorner): Added.
+        * platform/chromium/FramelessScrollView.cpp:
+        (WebCore::FramelessScrollView::paintContents):
+        (WebCore::FramelessScrollView::paintScrollCorner): Fix implementation moved to here from ScrollbarThemeChromium
+        * platform/chromium/FramelessScrollView.h:
+        * platform/chromium/ScrollbarThemeChromium.cpp:
+        * platform/chromium/ScrollbarThemeChromium.h:
+
 2011-03-04  Yury Semikhatsky  <yurys@chromium.org>
 
         Reviewed by Pavel Feldman.
