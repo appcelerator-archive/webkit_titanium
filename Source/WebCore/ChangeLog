@@ -1,3 +1,108 @@
+2011-03-03  Jessie Berlin  <jberlin@apple.com>
+
+        Reviewed by Adam Roben.
+
+        WebKit2: Use CFNetwork Sessions API.
+        https://bugs.webkit.org/show_bug.cgi?id=55435
+
+        Set the Private Browsing Storage Session on requests when Private Browsing is enabled.
+
+        * WebCore.exp.in:
+        Support using WKCopyRequestWithStorageSession in WebCore.
+        * platform/mac/WebCoreSystemInterface.h:
+        Ditto.
+        * platform/mac/WebCoreSystemInterface.mm:
+        Ditto.
+
+        * platform/network/cf/ResourceHandleCFNet.cpp:
+        (WebCore::makeFinalRequest):
+        If Private Browsing is enabled, set the Private Browsing Storage Session on the request.
+        (WebCore::ResourceHandle::willSendRequest):
+        Ditto.
+        * platform/network/mac/ResourceHandleMac.mm:
+        (WebCore::ResourceHandle::createNSURLConnection):
+        Ditto.
+        (WebCore::ResourceHandle::willSendRequest):
+        Ditto.
+
+        * platform/network/cf/ResourceRequest.h:
+        * platform/network/cf/ResourceRequestCFNet.cpp:
+        (WebCore::ResourceRequest::setStorageSession):
+        Call through to WKSI.
+        * platform/network/mac/ResourceRequestMac.mm:
+        (WebCore::ResourceRequest::setStorageSession):
+        Ditto.
+
+2011-03-03  Chris Marrin  <cmarrin@apple.com>
+
+        Reviewed by Simon Fraser.
+
+        REGRESSION: Accelerated transitions are jumpy
+        https://bugs.webkit.org/show_bug.cgi?id=55022
+
+        Changed the way default TimingFunction is stored according to Adam Roben's
+        suggestion.
+
+        * platform/animation/TimingFunction.h:
+        (WebCore::CubicBezierTimingFunction::defaultTimingFunction):
+
+2011-03-03  Dan Bernstein  <mitz@apple.com>
+
+        Reviewed by Sam Weinig.
+
+        Rename -webkit-hyphenate-locale to -webkit-locale
+        https://bugs.webkit.org/show_bug.cgi?id=55709
+
+        * css/CSSComputedStyleDeclaration.cpp:
+        (WebCore::CSSComputedStyleDeclaration::getPropertyCSSValue):
+        * css/CSSParser.cpp:
+        (WebCore::CSSParser::parseValue):
+        (WebCore::cssPropertyID):
+        * css/CSSPropertyNames.in:
+        * css/CSSStyleSelector.cpp:
+        (WebCore::CSSStyleSelector::applyProperty):
+        * rendering/RenderBlockLineLayout.cpp:
+        (WebCore::RenderBlock::findNextLineBreak):
+        * rendering/style/RenderStyle.cpp:
+        (WebCore::RenderStyle::diff):
+        * rendering/style/RenderStyle.h:
+        (WebCore::InheritedFlags::locale):
+        (WebCore::InheritedFlags::setLocale):
+        (WebCore::InheritedFlags::initialLocale):
+        * rendering/style/StyleRareInheritedData.cpp:
+        (WebCore::StyleRareInheritedData::StyleRareInheritedData):
+        (WebCore::StyleRareInheritedData::operator==):
+        * rendering/style/StyleRareInheritedData.h:
+
+2011-03-03  Kevin Ollivier  <kevino@theolliviers.com>
+
+        [wx] Build fixes. Use Font::textMetrics to get ascent value, and add missing include.
+
+        * platform/wx/DragDataWx.cpp:
+        * platform/wx/wxcode/win/non-kerned-drawing.cpp:
+        (WebCore::drawTextWithSpacing):
+
+2011-03-03  Oliver Hunt  <oliver@apple.com>
+
+        Reviewed by Geoffrey Garen.
+
+        JSVariableObject needs to use WriteBarrier for symboltable property storage
+        https://bugs.webkit.org/show_bug.cgi?id=55698
+
+        Update to pass JSGlobalData for the symbol table write used
+        to set the document property.
+
+        * bindings/js/JSDOMWindowBase.cpp:
+        (WebCore::JSDOMWindowBase::updateDocument):
+
+2011-03-03  Alexey Proskuryakov  <ap@apple.com>
+
+        More build fixing. Move WebCoreKeyboardUIMode.h to a cross-platform location.
+
+        * WebCore.xcodeproj/project.pbxproj:
+        * page/WebCoreKeyboardUIMode.h: Copied from WebCore/page/mac/WebCoreKeyboardUIMode.h.
+        * page/mac/WebCoreKeyboardUIMode.h: Removed.
+
 2011-03-03  Alexey Proskuryakov  <ap@apple.com>
 
         Build fix. Should include WebCoreKeyboardUIMode.h on all platforms now.
