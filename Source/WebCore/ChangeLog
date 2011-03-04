@@ -1,3 +1,28 @@
+2011-03-04  Cosmin Truta  <ctruta@chromium.org>
+
+        Reviewed by Adam Barth.
+
+        Clarify comment about potential memory leak in SVGImage
+        https://bugs.webkit.org/show_bug.cgi?id=55362
+
+        No functionality change. No new tests.
+
+        * svg/graphics/SVGImage.cpp:
+        (WebCore::SVGImage::dataChanged):
+
+2011-03-04  Jessie Berlin  <jberlin@apple.com>
+
+        Reviewed by Maciej Stachowiak.
+
+        WebKit2: Use CFNetwork Sessions API.
+        https://bugs.webkit.org/show_bug.cgi?id=55435.
+
+        When Private Browsing is enabled, get the cached url response from the cache associated with
+        the Private Browsing Storage Session.
+
+        * WebCore.exp.in:
+        Export the symbol for ResourceHandle::privateBrowsingStorageSession.
+
 2011-03-04  Steve Block  <steveblock@google.com>
 
         Reviewed by Jeremy Orlow.
