@@ -1,3 +1,51 @@
+2011-03-03  Adam Barth  <abarth@webkit.org>
+
+        Reviewed by Dimitri Glazkov.
+
+        Add jsc to JavaScriptCore GYP build
+        https://bugs.webkit.org/show_bug.cgi?id=55711
+
+        * JavaScriptCore.gypi:
+            - Move jsc.cpp into jsc_files because it's really part of the jsc
+              target.
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+            - Remove extraneous files from the normal jsc build.  I probably
+              added these by mistake at some point.
+        * gyp/JavaScriptCore.gyp:
+            - Add the jsc target to the GYP file.
+
+2011-03-03  Adam Barth  <abarth@webkit.org>
+
+        Reviewed by Dimitri Glazkov.
+
+        Add testapi to JavaScriptCore GYP build
+        https://bugs.webkit.org/show_bug.cgi?id=55707
+
+        The new testapi target is slightly incomplete.  There's a resource
+        copying step that we don't quite have yet.
+
+        This patch also cleans up some of the configuration issues in
+        JavaScriptCore.xcodeproj.  It seems kind of wordy to repeat these for
+        each target.  I suspect there's a more compact way of defining the
+        configurations, but this removes the "Default" configuration, which is
+        progress.
+
+        * JavaScriptCore.gypi:
+        * gyp/JavaScriptCore.gyp:
+
+2011-03-03  Adam Barth  <abarth@webkit.org>
+
+        Reviewed by Eric Seidel.
+
+        Teach JavaScriptCore GYP build about private headers
+        https://bugs.webkit.org/show_bug.cgi?id=55532
+
+        This patch distinguishes between public and private framework headers
+        so that public headers are copied into the Headers directory and
+        private headers are copied into the PrivateHeaders directory.
+
+        * gyp/JavaScriptCore.gyp:
+
 2011-03-03  Geoffrey Garen  <ggaren@apple.com>
 
         Rolled out 80277 and 80280 because they caused event handler layout test

@@ -43,13 +43,14 @@
         '<@(javascriptcore_privateheader_files)',
         '$(SDKROOT)/System/Library/Frameworks/CoreFoundation.framework',
         '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
-        'libedit.dylib',
         'libicucore.dylib',
         'libobjc.dylib',
       ],
       'mac_framework_headers': [
         '<@(javascriptcore_publicheader_files)',
-        '<@(javascriptcore_privateheader_files)', # FIXME: These should be private headers.
+      ],
+      'mac_framework_private_headers': [
+        '<@(javascriptcore_privateheader_files)',
       ],
       'xcode_config_file': '<(DEPTH)/JavaScriptCore/Configurations/JavaScriptCore.xcconfig',
       'sources/': [
@@ -77,7 +78,7 @@
       ],
       'configurations': {
         'Debug': {},
-        'Relase': {},
+        'Release': {},
         'Production': {},
       },
       'default_configuration': 'Debug',
@@ -149,6 +150,12 @@
           'sh', 'generate-derived-sources.sh',
         ],
       }],
+      'configurations': {
+        'Debug': {},
+        'Release': {},
+        'Production': {},
+      },
+      'default_configuration': 'Debug',
     },
     {
       'target_name': 'Update Version',
@@ -161,6 +168,12 @@
            'sh', '<(DEPTH)/gyp/update-info-plist.sh', '<(DEPTH)/JavaScriptCore/Info.plist'
           ]
       }],
+      'configurations': {
+        'Debug': {},
+        'Release': {},
+        'Production': {},
+      },
+      'default_configuration': 'Debug',
     },
     {
       'target_name': 'minidom',
@@ -174,9 +187,71 @@
       ],
       'sources': [
         '<@(minidom_files)',
-        '<(PRODUCT_DIR)/JavaScriptCore.framework',
         '$(SDKROOT)/System/Library/Frameworks/CoreFoundation.framework',
       ],
+      'configurations': {
+        'Debug': {},
+        'Release': {},
+        'Production': {},
+      },
+      'default_configuration': 'Debug',
+      'conditions': [
+        ['OS=="mac"', {
+          'xcode_settings': {
+            'USE_HEADERMAP': 'NO',
+          }
+        }],
+      ],
+    },
+    {
+      'target_name': 'testapi',
+      'type': 'executable',
+      'dependencies': [
+        'JavaScriptCore',
+      ],
+      # FIXME: We should use a header map instead of listing these explicitly.
+      'include_dirs': [
+        '<@(javascriptcore_include_dirs)',
+      ],
+      'sources': [
+        '<@(testapi_files)',
+        '$(SDKROOT)/System/Library/Frameworks/CoreFoundation.framework',
+      ],
+      'configurations': {
+        'Debug': {},
+        'Release': {},
+        'Production': {},
+      },
+      'default_configuration': 'Debug',
+      'conditions': [
+        ['OS=="mac"', {
+          'xcode_settings': {
+            'USE_HEADERMAP': 'NO',
+          }
+        }],
+      ],
+    },
+    {
+      'target_name': 'jsc',
+      'type': 'executable',
+      'dependencies': [
+        'JavaScriptCore',
+      ],
+      # FIXME: We should use a header map instead of listing these explicitly.
+      'include_dirs': [
+        '<@(javascriptcore_include_dirs)',
+      ],
+      'sources': [
+        '<@(jsc_files)',
+        '$(SDKROOT)/System/Library/Frameworks/CoreFoundation.framework',
+        'libedit.dylib',
+      ],
+      'configurations': {
+        'Debug': {},
+        'Release': {},
+        'Production': {},
+      },
+      'default_configuration': 'Debug',
       'conditions': [
         ['OS=="mac"', {
           'xcode_settings': {

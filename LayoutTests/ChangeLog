@@ -1,3 +1,48 @@
+2011-03-03  Andy Estes  <aestes@apple.com>
+
+        Reviewed by Adam Barth.
+
+        Assertion failure in toElement(WebCore::Node*)
+        https://bugs.webkit.org/show_bug.cgi?id=55697
+
+        * fast/parser/fragment-foreign-content-expected.txt: Added.
+        * fast/parser/fragment-foreign-content.html: Added.
+
+2011-03-03  Mahesh Kulkarni  <mahesh.kulkarni@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [QT] Implement mock client-based geolocation for layout testing
+        https://bugs.webkit.org/show_bug.cgi?id=54334
+
+        Re-enable geolocation layout testing for qt port. Also enable a long pending
+        failure with geolocation as it works with client-based geolocation. 
+        Skipped one last case related to multiple window which needs some code cleanup in qt DRT.
+
+        * platform/qt/Skipped:
+
+2011-03-03  Fumitoshi Ukai  <ukai@chromium.org>
+
+        Unreviewed, update chromium test expectations.
+
+        Update GPU media/media-document-audio-repaint.html
+        http://test-results.appspot.com/dashboards/flakiness_dashboard.html#group=%40ToT%20GPU%20Mesa%20-%20chromium.org&tests=media%2Fmedia-document-audio-repaint.html
+
+        * platform/chromium/test_expectations.txt:
+
+2011-03-03  Jeremy Moskovich  <jeremy@chromium.org>
+
+        Reviewed by Dimitri Glazkov.
+
+        Annotate bidi tests which we intentionally fail.
+        https://bugs.webkit.org/show_bug.cgi?id=48522
+
+        Add a readme file in fast/text/international detailing
+        a bunch of tests that we intentionally fail.  This
+        mimics a similar file in fast/block/positioning/.
+
+        * fast/text/international/readme.txt: Added.
+
 2011-03-03  David Levin  <levin@chromium.org>
 
         Reviewed by Darin Adler.
