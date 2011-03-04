@@ -1,3 +1,22 @@
+2011-03-04  Mihai Parparita  <mihaip@chromium.org>
+
+        Unreviewed Chromium expectations update.
+        
+        Add one expected failure for Snow Leopard, make other failure lines
+        more specific (since the tests pass on SL) and remove some flaky test
+        entries for tests that are no longer flaky.
+
+        * platform/chromium/test_expectations.txt:
+
+2011-03-04  Tony Gentilcore  <tonyg@chromium.org>
+
+        Unreviewed expectations update.
+
+        [chromium] Rebaseline to match r80351
+        https://bugs.webkit.org/show_bug.cgi?id=55783
+
+        * platform/chromium/inspector/timeline/timeline-network-resource-expected.txt:
+
 2011-03-04  Jessie Berlin  <jberlin@apple.com>
 
         [Windows 7 WebKit2 Release Tests] fast/frames/iframe-plugin-load-remove-document-crash.html
