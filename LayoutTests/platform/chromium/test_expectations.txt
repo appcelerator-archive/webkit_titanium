@@ -3105,15 +3105,6 @@ BUGWK54322 MAC SNOWLEOPARD : fast/backgrounds/svg-as-background-6.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : fast/block/margin-collapse/103.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : fast/block/positioning/auto/vertical-lr/007.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : fast/block/positioning/auto/vertical-rl/007.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : fast/blockflow/Kusa-Makura-background-canvas.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : fast/blockflow/border-vertical-lr.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : fast/blockflow/english-lr-text.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : fast/blockflow/japanese-lr-selection.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : fast/blockflow/japanese-lr-text.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : fast/blockflow/japanese-rl-selection.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : fast/blockflow/japanese-rl-text-with-broken-font.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : fast/blockflow/japanese-rl-text.html = IMAGE
-BUGWK54322 MAC SNOWLEOPARD : fast/blockflow/vertical-align-table-baseline.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : fast/canvas/arc360.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : fast/canvas/canvasDrawingIntoSelf.html = IMAGE
 BUGWK54322 MAC SNOWLEOPARD : fast/canvas/drawImage.html = IMAGE
@@ -3266,6 +3257,7 @@ BUGV8_1168 : fast/js/mozilla/strict/8.7.2.html = TEXT
 BUGV8_1168 : fast/js/mozilla/strict/B.1.2.html = TEXT
 BUGV8_1168 : fast/js/mozilla/strict/eval-variable-environment.html = TEXT
 BUGV8_1168 : fast/js/mozilla/strict/this-for-function-expression-recursion.html = TEXT
+BUGV8_1228 : fast/js/preventExtensions.html = TEXT
 
 BUGWK54634 : media/video-controls-in-media-document.html = IMAGE+TEXT
 

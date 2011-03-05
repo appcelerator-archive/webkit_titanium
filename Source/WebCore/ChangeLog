@@ -1,3 +1,177 @@
+2011-03-04  Adrienne Walker  <enne@google.com>
+
+        Reviewed by James Robinson.
+
+        [chromium] Fix texture stride issues on large content and image layers.
+        https://bugs.webkit.org/show_bug.cgi?id=55679
+
+        This was an error caused during the refactoring in r80081.
+
+        Tests: LayoutTests/compositing/tiling/huge-layer-img.html
+
+        * platform/graphics/chromium/ContentLayerChromium.cpp:
+        (WebCore::ContentLayerChromium::updateTexture):
+        * platform/graphics/chromium/ImageLayerChromium.cpp:
+        (WebCore::ImageLayerChromium::updateTextureIfNeeded):
+
+2011-03-04  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r80379.
+        http://trac.webkit.org/changeset/80379
+        https://bugs.webkit.org/show_bug.cgi?id=55799
+
+        "Breaks leopard compile (implicit conversion)" (Requested by
+        tonyg-cr on #webkit).
+
+        * css/CSSStyleSelector.cpp:
+        (WebCore::convertToLength):
+        (WebCore::CSSStyleSelector::applyProperty):
+        (WebCore::CSSStyleSelector::createTransformOperations):
+        * platform/Length.h:
+        (WebCore::Length::Length):
+        (WebCore::Length::operator==):
+        (WebCore::Length::operator!=):
+        (WebCore::Length::rawValue):
+        (WebCore::Length::type):
+        (WebCore::Length::quirk):
+        (WebCore::Length::setValue):
+        (WebCore::Length::setRawValue):
+        (WebCore::Length::calcFloatValue):
+        (WebCore::Length::isZero):
+        (WebCore::Length::blend):
+        * rendering/AutoTableLayout.cpp:
+        (WebCore::AutoTableLayout::recalcColumn):
+        (WebCore::AutoTableLayout::calcEffectiveLogicalWidth):
+        * rendering/FixedTableLayout.cpp:
+        (WebCore::FixedTableLayout::calcWidthArray):
+
+2011-03-04  Jessie Berlin  <jberlin@apple.com>
+
+        Reviewed by Darin Adler.
+
+        WebKit2: Use CFNetwork Sessions API.
+        https://bugs.webkit.org/show_bug.cgi?id=55435.
+
+        Add in the CFURLSTORAGESESSIONS guards that I incorrectly left out because the code was
+        contained within guards that made USE(CFURLSTORAGESESSIONS) always be true.
+
+        * platform/network/cf/ResourceHandleCFNet.cpp:
+        (WebCore::makeFinalRequest):
+        (WebCore::ResourceHandle::willSendRequest):
+        * platform/network/cf/ResourceRequestCFNet.cpp:
+        * platform/network/mac/ResourceHandleMac.mm:
+        (WebCore::ResourceHandle::createNSURLConnection):
+        (WebCore::ResourceHandle::willSendRequest):
+        * platform/network/mac/ResourceRequestMac.mm:
+
+2011-03-04  Yuqiang Xian  <yuqiang.xian@intel.com>
+
+        Reviewed by Darin Adler.
+
+        improve layout performance by reducing the traversal time of the floating objects
+        https://bugs.webkit.org/show_bug.cgi?id=55440
+
+        We observered large overhead on traversing the floating objects list
+        in logicalLeftOffsetForLine() and logicalRightOffsetForLine() especially
+        when the list becomes enormous, for example in the default 30x30 maze test
+        from http://ie.microsoft.com/testdrive/Performance/MazeSolver/Default.html
+        there're >3700 floating objects. When placing a new floating object the
+        entire list (from begin to end) is traversed for multiple times.
+        There's a low hanging fruit to reduce the chances to do the traversal
+        which is especially applicable in logicalLeftOffsetForLine and logicalRightOffsetForLine.
+        As the two routines either cares about FloatLeft objects or FloatRight objects only,
+        if we know there's no corresponding type floating objects in the list
+        we can avoid the traversal actually. One thing we could do is to record
+        the number of FloatLeft objects and the number of FloatRight objects and
+        add a check before doing the traversal. This can reduce the time by 45%
+        to resolve the 30x30 Maze measured on N470 Netbook MeeGo using latest
+        Chromium browser 11 (from 503s to 269s).
+
+        No new tests, relying on existing layout tests.
+
+        * rendering/RenderBlock.cpp:
+        (WebCore::RenderBlock::~RenderBlock):
+        (WebCore::RenderBlock::addOverflowFromFloats):
+        (WebCore::RenderBlock::repaintOverhangingFloats):
+        (WebCore::RenderBlock::paintFloats):
+        (WebCore::RenderBlock::selectionGaps):
+        (WebCore::RenderBlock::insertFloatingObject):
+        (WebCore::RenderBlock::removeFloatingObject):
+        (WebCore::RenderBlock::removeFloatingObjectsBelow):
+        (WebCore::RenderBlock::positionNewFloats):
+        (WebCore::RenderBlock::positionNewFloatOnLine):
+        (WebCore::RenderBlock::logicalLeftOffsetForLine):
+        (WebCore::RenderBlock::logicalRightOffsetForLine):
+        (WebCore::RenderBlock::nextFloatLogicalBottomBelow):
+        (WebCore::RenderBlock::lowestFloatLogicalBottom):
+        (WebCore::RenderBlock::clearFloats):
+        (WebCore::RenderBlock::addOverhangingFloats):
+        (WebCore::RenderBlock::addIntrudingFloats):
+        (WebCore::RenderBlock::containsFloat):
+        (WebCore::RenderBlock::hitTestFloats):
+        (WebCore::RenderBlock::adjustForBorderFit):
+        (WebCore::RenderBlock::FloatingObjects::clear):
+        (WebCore::RenderBlock::FloatingObjects::increaseObjectsCount):
+        (WebCore::RenderBlock::FloatingObjects::decreaseObjectsCount):
+        * rendering/RenderBlock.h:
+        (WebCore::RenderBlock::containsFloats):
+        (WebCore::RenderBlock::FloatingObjects::FloatingObjects):
+        (WebCore::RenderBlock::FloatingObjects::hasLeftObjects):
+        (WebCore::RenderBlock::FloatingObjects::hasRightObjects):
+        (WebCore::RenderBlock::FloatingObjects::set):
+        * rendering/RenderBlockLineLayout.cpp:
+        (WebCore::RenderBlock::layoutInlineChildren):
+        (WebCore::RenderBlock::matchedEndLine):
+
+2011-03-04  Rik Cabanier  <cabanier@gmail.com>
+
+        Reviewed by David Hyatt.
+
+        Fix that allows fixed length values to be floating point
+        https://bugs.webkit.org/show_bug.cgi?id=52699
+
+        * WebCore.xcodeproj/project.pbxproj:
+        * css/CSSStyleSelector.cpp:
+        (WebCore::convertToLength):
+        (WebCore::convertToIntLength):
+        (WebCore::convertToFloatLength):
+        (WebCore::CSSStyleSelector::applyProperty):
+        (WebCore::CSSStyleSelector::createTransformOperations):
+        * platform/Length.h:
+        (WebCore::Length::Length):
+        (WebCore::Length::operator==):
+        (WebCore::Length::operator!=):
+        (WebCore::Length::rawValue):
+        (WebCore::Length::type):
+        (WebCore::Length::quirk):
+        (WebCore::Length::setValue):
+        (WebCore::Length::calcFloatValue):
+        (WebCore::Length::isZero):
+        (WebCore::Length::blend):
+        (WebCore::Length::getIntValue):
+        (WebCore::Length::getFloatValue):
+        * rendering/AutoTableLayout.cpp:
+        (WebCore::AutoTableLayout::recalcColumn):
+        (WebCore::AutoTableLayout::calcEffectiveLogicalWidth):
+        * rendering/FixedTableLayout.cpp:
+        (WebCore::FixedTableLayout::calcWidthArray):
+
+2011-03-04  Steve Falkenburg  <sfalken@apple.com>
+
+        Reviewed by Jon Honeycutt.
+
+        Adopt VersionStamper tool for Windows WebKit DLLs
+        https://bugs.webkit.org/show_bug.cgi?id=55784
+        
+        We now use a tool to stamp the version number onto the Apple WebKit DLLs
+        during the post-build step.
+
+        * WebCore.vcproj/QTMovieWin.rc: Removed.
+        * WebCore.vcproj/QTMovieWin.vcproj:
+        * WebCore.vcproj/QTMovieWinPostBuild.cmd: Stamp version with VersionStamper.
+        * WebCore.vcproj/QTMovieWinPreBuild.cmd: Don't run auto-version.sh. We don't use autoversion.h in this project.
+        * WebCore.vcproj/WebCoreMediaQT.vsprops: Remove unnecessary include paths for resource files.
+
 2011-03-04  Cosmin Truta  <ctruta@chromium.org>
 
         Reviewed by Adam Barth.
