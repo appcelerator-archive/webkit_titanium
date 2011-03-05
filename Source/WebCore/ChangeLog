@@ -2,6 +2,44 @@
 
         Reviewed by Dimitri Glazkov.
 
+        Add Derived Sources to WebCore GYP build
+        https://bugs.webkit.org/show_bug.cgi?id=55813
+
+        Adding the derived source action to the GYP file required tweaking
+        DerivedSources.make.  I'm not sure how DerivedSources.make worked
+        before beause these paths were incorrectly based.
+
+        * DerivedSources.make:
+        * gyp/generate-derived-sources.sh: Added.
+        * gyp/WebCore.gyp:
+
+2011-03-04  Pavel Feldman  <pfeldman@chromium.org>
+
+        Reviewed by Yury Semikhatsky.
+
+        Web Inspector: fix layout tests flakiness.
+        https://bugs.webkit.org/show_bug.cgi?id=55816
+
+        - Order of issuing of evaluateForTestInFrontend was not guaranteed on the backend side (InspectorAgent side)
+        - Order of dispatching using timeouts was guaranteed via queueing. Source of all kinds of pains on SnowLeopard Release (inspector.js)
+
+        * inspector/CodeGeneratorInspector.pm:
+        * inspector/InspectorAgent.cpp:
+        (WebCore::InspectorAgent::InspectorAgent):
+        (WebCore::InspectorAgent::disconnectFrontend):
+        (WebCore::InspectorAgent::populateScriptObjects):
+        (WebCore::InspectorAgent::evaluateForTestInFrontend):
+        (WebCore::InspectorAgent::issueEvaluateForTestCommands):
+        * inspector/InspectorAgent.h:
+        * inspector/front-end/TimelinePanel.js:
+        (WebInspector.TimelinePanel.FormattedRecord):
+        * inspector/front-end/inspector.js:
+        (WebInspector.dispatch):
+
+2011-03-05  Adam Barth  <abarth@webkit.org>
+
+        Reviewed by Dimitri Glazkov.
+
         WebCore GYP build should generate fewer than 10,000 compile errors per file
         https://bugs.webkit.org/show_bug.cgi?id=55810
 

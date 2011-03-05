@@ -1,3 +1,68 @@
+2011-03-05  Ilya Tikhonovsky  <loislo@chromium.org>
+
+        Reviewed by Yury Semikhatsky.
+
+        Web Inspector: introduce protocol test for ConsoleAgent.
+        https://bugs.webkit.org/show_bug.cgi?id=55819
+
+        * http/tests/inspector/protocol-test.js:
+        (initialize_ProtocolTest.InspectorTest._dumpEvent):
+        (initialize_ProtocolTest.InspectorTest._dumpCallArguments):
+        (initialize_ProtocolTest):
+        (initialize_ProtocolTest.):
+        * inspector/protocol/console-agent-expected.txt: Added.
+        * inspector/protocol/console-agent.html: Added.
+        * inspector/protocol/runtime-agent.html:
+
+2011-03-05  Andrey Kosyakov  <caseq@chromium.org>
+
+        Reviewed by Pavel Feldman.
+
+        Web Inspector: install onerror handler in inspector tests
+        https://bugs.webkit.org/show_bug.cgi?id=55690
+
+        * http/tests/inspector/inspector-test.js:
+        (initialize_InspectorTest.onError):
+        * http/tests/inspector/resources/extension-main.js:
+        (onError):
+
+2011-03-04  Pavel Feldman  <pfeldman@chromium.org>
+
+        Reviewed by Yury Semikhatsky.
+
+        Web Inspector: fix layout tests flakiness.
+        https://bugs.webkit.org/show_bug.cgi?id=55816
+
+        - Timeline now uses instrumentation calls, not UI representation while collecting events for tests
+        - No reloads in debugger tests that don't need them
+        - Forcing layout in timeline via calculating offsetHeight
+
+        * http/tests/inspector/inspector-test.js:
+        * inspector/console/console-uncaught-exception-expected.txt:
+        * inspector/console/console-uncaught-exception.html:
+        * inspector/debugger/debugger-autocontinue-on-syntax-error-expected.txt:
+        * inspector/debugger/debugger-autocontinue-on-syntax-error.html:
+        * inspector/debugger/resources/syntax-error.html: Added.
+        * inspector/debugger/resources/syntax-error.js: Removed.
+        * inspector/elements/elements-panel-limited-children-expected.txt:
+        * inspector/extensions/extensions-events-expected.txt:
+        * inspector/styles/styles-update-from-js-expected.txt:
+        * inspector/styles/styles-update-from-js.html:
+        * inspector/timeline/timeline-layout.html:
+        * inspector/timeline/timeline-network-resource-expected.txt:
+        * inspector/timeline/timeline-network-resource.html:
+        * inspector/timeline/timeline-script-tag-1.html:
+        * inspector/timeline/timeline-script-tag-2.html:
+        * inspector/timeline/timeline-test.js:
+        (initialize_Timeline.InspectorTest.startTimeline.addRecord):
+        (initialize_Timeline.InspectorTest.startTimeline):
+        (initialize_Timeline.InspectorTest.stopTimeline):
+        (initialize_Timeline.InspectorTest.performActionsAndPrint.step2):
+        (initialize_Timeline.InspectorTest.performActionsAndPrint):
+        (initialize_Timeline.InspectorTest.printTimelineRecords):
+        * inspector/timeline/timeline-trivial.html:
+        * platform/chromium/inspector/timeline/timeline-network-resource-expected.txt:
+
 2011-03-05  Csaba Osztrogonác  <ossy@webkit.org>
 
         Unreviewed.
