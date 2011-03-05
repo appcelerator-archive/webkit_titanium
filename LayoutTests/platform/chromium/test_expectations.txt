@@ -2622,8 +2622,6 @@ BUGCR60393 MAC : fast/selectors/001.html = PASS TIMEOUT
 
 BUGCR61739 WIN LINUX DEBUG : animations/suspend-resume-animation-events.html = CRASH TEXT PASS
 
-BUGWK49477 WIN LINUX : fast/canvas/canvas-arc-360-winding.html = TEXT
-
 // New tests added with http://trac.webkit.org/changeset/72472 and further.
 // See https://bugs.webkit.org/show_bug.cgi?id=51982 for more info.
 BUGCR63921 LINUX WIN : fast/canvas/canvas-fillPath-shadow.html = TEXT
@@ -2989,10 +2987,6 @@ BUGWK50528 MAC : svg/custom/image-small-width-height.svg = IMAGE
 // GPU
 //
 
-// FIXME: Once media tests are running on the bots, upload expected test results
-// and remove this line.
-BUGNONE GPU : media = PASS FAIL
-
 // We only maintain pixel GPU baselines for Snow Leopard
 WONTFIX GPU MAC LEOPARD : compositing = IMAGE PASS
 WONTFIX GPU MAC LEOPARD : platform/chromium/compositing = IMAGE PASS
@@ -3077,6 +3071,19 @@ BUGNONE SLOW GPU DEBUG WIN : fast/canvas/canvas-getImageData.html = PASS
 BUGWK52341 GPU : fast/canvas/canvas-large-dimensions.html = TEXT
 
 BUGWK53469 GPU MAC : compositing/scroll-painted-composited-content.html = CRASH
+
+BUGCR74979 GPU MAC: media/video-canvas-alpha.html = IMAGE
+
+// These tests rely on the playing event to be fired immediately after play()
+// is called on a video, before the frames start loading.
+BUGCR74982 GPU : media/controls-after-reload.html = IMAGE
+BUGCR74982 GPU : media/controls-strict.html = IMAGE
+BUGCR74982 GPU : media/controls-styling.html = IMAGE
+BUGCR74982 GPU : media/controls-without-preload.html = IMAGE
+BUGCR74982 GPU : media/video-aspect-ratio.html = IMAGE
+BUGCR74982 GPU : media/video-controls-rendering.html = IMAGE
+BUGCR74982 GPU : media/video-transformed.html = IMAGE
+BUGCR74982 GPU : media/video-zoom-controls.html = IMAGE
 
 BUGWK55708 GPU MAC SNOWLEOPARD: media/video-controls-rendering.html = CRASH
 BUGWK55708 GPU MAC SNOWLEOPARD: media/video-zoom.html = CRASH
