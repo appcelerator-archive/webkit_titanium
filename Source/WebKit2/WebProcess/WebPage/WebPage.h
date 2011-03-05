@@ -329,7 +329,7 @@ public:
     void beginPrinting(uint64_t frameID, const PrintInfo&);
     void endPrinting();
     void computePagesForPrinting(uint64_t frameID, const PrintInfo&, uint64_t callbackID);
-#if PLATFORM(MAC)
+#if PLATFORM(MAC) || PLATFORM(WIN)
     void drawRectToPDF(uint64_t frameID, const WebCore::IntRect&, uint64_t callbackID);
     void drawPagesToPDF(uint64_t frameID, uint32_t first, uint32_t count, uint64_t callbackID);
 #endif
@@ -385,7 +385,7 @@ private:
     void setInitialFocus(bool);
     void setWindowResizerSize(const WebCore::IntSize&);
     void setIsInWindow(bool);
-    void validateCommand(const String&);
+    void validateCommand(const String&, uint64_t);
     void executeEditCommand(const String&);
 
     void mouseEvent(const WebMouseEvent&);

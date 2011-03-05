@@ -983,7 +983,7 @@ void WebPage::gestureEvent(const WebGestureEvent& gestureEvent)
 }
 #endif
 
-void WebPage::validateCommand(const String& commandName)
+void WebPage::validateCommand(const String& commandName, uint64_t callbackID)
 {
     bool isEnabled = false;
     int32_t state = 0;
@@ -994,7 +994,7 @@ void WebPage::validateCommand(const String& commandName)
         isEnabled = command.isSupported() && command.isEnabled();
     }
 
-    send(Messages::WebPageProxy::DidValidateCommand(commandName, isEnabled, state));
+    send(Messages::WebPageProxy::ValidateCommandCallback(commandName, isEnabled, state, callbackID));
 }
 
 void WebPage::executeEditCommand(const String& commandName)
@@ -1988,8 +1988,7 @@ void WebPage::computePagesForPrinting(uint64_t frameID, const PrintInfo& printIn
     send(Messages::WebPageProxy::ComputedPagesCallback(resultPageRects, resultTotalScaleFactorForPrinting, callbackID));
 }
 
-#if PLATFORM(MAC)
-// FIXME: Find a better place for Mac specific code.
+#if PLATFORM(MAC) || PLATFORM(WIN)
 void WebPage::drawRectToPDF(uint64_t frameID, const WebCore::IntRect& rect, uint64_t callbackID)
 {
     WebFrame* frame = WebProcess::shared().webFrame(frameID);

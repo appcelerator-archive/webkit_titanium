@@ -414,6 +414,7 @@ static void drawPageBackground(HDC dc, const RECT& rect)
 
 void WebView::paint(HDC hdc, const IntRect& dirtyRect)
 {
+    m_page->endPrinting();
     if (useNewDrawingArea()) {
         if (DrawingAreaProxyImpl* drawingArea = static_cast<DrawingAreaProxyImpl*>(m_page->drawingArea())) {
             // FIXME: We should port WebKit1's rect coalescing logic here.
@@ -797,10 +798,6 @@ void WebView::registerEditCommand(PassRefPtr<WebEditCommandProxy>, WebPageProxy:
 }
 
 void WebView::clearAllEditCommands()
-{
-}
-
-void WebView::setEditCommandState(const String&, bool, int)
 {
 }
 

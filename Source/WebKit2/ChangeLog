@@ -1,3 +1,148 @@
+2011-03-04  Jon Honeycutt  <jhoneycutt@apple.com>
+
+        WK2 needs printing support on Windows
+        https://bugs.webkit.org/show_bug.cgi?id=55800
+        <rdar://problem/8903808>
+
+        Reviewed by Darin Adler.
+
+        * UIProcess/API/C/WKPage.cpp:
+        (ComputedPagesContext::ComputedPagesContext):
+        (computedPagesCallback):
+        From the Vector of WebCore::IntRects, build up a Vector of WKRects.
+        Call the callback, passing these rects and the scale factor.
+        (printInfoFromWKPrintInfo):
+        Return a PrintInfo structure from the WKPrintInfo.
+        (WKPageComputePagesForPrinting):
+        Call WebPageProxy::computePagesForPrinting(). Pass
+        computedPagesCallback as the callback function, so that we can
+        translate the WebCore rect type to WKRect before calling the caller's
+        callback function.
+        (WKPageBeginPrinting):
+        Call WebPageProxy::beginPrinting().
+        (WKPageDrawPagesToPDF):
+        Call WebPageProxy::drawPagesToPDF().
+
+        * UIProcess/API/C/WKPagePrivate.h:
+        Declare the WKPrintInfo type and new functions.
+
+        * UIProcess/WebPageProxy.cpp:
+        Compile this code on Windows.
+
+        * UIProcess/WebPageProxy.h:
+        Ditto.
+
+        * UIProcess/win/WebView.cpp:
+        (WebKit::WebView::paint):
+        We're painting the window; leave printing mode.
+
+        * WebProcess/WebPage/WebPage.cpp:
+        Compile this code on Windows.
+
+        * WebProcess/WebPage/WebPage.h:
+        Ditto.
+
+        * WebProcess/WebPage/WebPage.messages.in:
+        Ditto.
+
+2011-03-04  Steve Falkenburg  <sfalken@apple.com>
+
+        Reviewed by Darin Adler.
+
+        Adopt VersionStamper tool for Windows WebKit DLLs
+        https://bugs.webkit.org/show_bug.cgi?id=55784
+        <rdar://problem/9021320>
+
+        We now use a tool to stamp the version number onto the Apple WebKit DLLs
+        during the post-build step.
+
+        Fetch the WebKit version from a string resource instead of the version resource.
+
+        * UIProcess/win/WebPageProxyWin.cpp:
+        (WebKit::userVisibleWebKitVersionString): Fetch version from a string resource.
+        * win/WebKit2.rc: Removed version, added stringtable.
+        * win/WebKit2WebProcess.rc: Removed.
+        * win/WebKit2WebProcess.vcproj:
+        * win/WebKit2WebProcessPostBuild.cmd: Don't run autoversion script. It isn't used in this project.
+        * win/WebKit2WebProcessPreBuild.cmd: Stamp version.
+        * win/WebKitPostBuild.cmd: Stamp version.
+
+2011-03-04  Jeff Miller  <jeffm@apple.com>
+
+        Reviewed by Darin Adler.
+
+        Add WKPageValidateCommand()
+        https://bugs.webkit.org/show_bug.cgi?id=55793
+        
+        On the Mac, validation of edit menu commands is handled within WebKit2 in WKView.mm.
+        However, on Windows we need to do this in the client, so expose this functionality
+        in the API via WKPageValidateCommand().
+        
+        Change the Mac implementation to call WebPageProxy::validateCommand() with a callback
+        to match this new API, so it no longer has to go through PageClient to get notified
+        when a command is validated.  This makes PageClient::setEditCommandState() obsolete,
+        so I removed the stub implementations in qt and gtk as well.
+
+        * UIProcess/API/C/WKPage.cpp:
+        (WKPageValidateCommand): Added.
+        * UIProcess/API/C/WKPage.h: Added WKPageValidateCommand().
+        * UIProcess/API/mac/PageClientImpl.h: Removed setEditCommandState().
+        * UIProcess/API/mac/PageClientImpl.mm: Removed setEditCommandState().
+        * UIProcess/API/mac/WKView.mm:
+        (validateCommandCallback): Added.
+        (-[WKView validateUserInterfaceItem:]): Pass callback to validateCommand().
+        * UIProcess/API/qt/qwkpage.cpp: Removed setEditCommandState().
+        * UIProcess/API/qt/qwkpage_p.h: Removed setEditCommandState().
+        * UIProcess/PageClient.h: Removed setEditCommandState().
+        * UIProcess/WebPageProxy.cpp: Removed didValidateCommand().
+        (WebKit::WebPageProxy::validateCommand): This now takes a callback.
+        (WebKit::WebPageProxy::validateCommandCallback): Added.
+        (WebKit::WebPageProxy::processDidCrash): Invalidate m_validateCommandCallbacks.
+        * UIProcess/WebPageProxy.h: Removed didValidateCommand(), validateCommand() now takes a callback.
+        (WebKit::ValidateCommandCallback::create): Added.
+        (WebKit::ValidateCommandCallback::~ValidateCommandCallback): Added.
+        (WebKit::ValidateCommandCallback::performCallbackWithReturnValue): Added.
+        (WebKit::ValidateCommandCallback::invalidate): Added.
+        (WebKit::ValidateCommandCallback::ValidateCommandCallback): Added.
+        * UIProcess/WebPageProxy.messages.in: Removed DidValidateCommand, added ValidateCommandCallback.
+        * UIProcess/gtk/WebView.cpp: Removed setEditCommandState().
+        * UIProcess/gtk/WebView.h: Removed setEditCommandState().
+        * UIProcess/win/WebView.cpp: Removed setEditCommandState().
+        * UIProcess/win/WebView.h: Removed setEditCommandState().
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::validateCommand): This now takes a callbackID.
+        * WebProcess/WebPage/WebPage.h: validateCommand now takes a callbackID.
+        * WebProcess/WebPage/WebPage.messages.in: ValidateCommand now takes a callbackID.
+
+2011-03-04  Brian Weinstein  <bweinstein@apple.com>
+
+        Reviewed by Darin Adler.
+
+        Reference-counting for WKBundlePageResourceLoadClient::willSendRequestForFrame seems unclear/wrong
+        https://bugs.webkit.org/show_bug.cgi?id=53919
+        <rdar://problem/8966020>
+        
+        Adopt the result of m_client.willSendRequestForFrame (which will be leaked by the client).
+
+        * WebProcess/InjectedBundle/InjectedBundlePageResourceLoadClient.cpp:
+        (WebKit::InjectedBundlePageResourceLoadClient::willSendRequestForFrame):
+
+2011-03-04  Darin Adler  <darin@apple.com>
+
+        Reviewed by Mark Rowe.
+
+        WebKit2 session state should include even loads too new to be in the back/forward list
+        https://bugs.webkit.org/show_bug.cgi?id=55781
+        part of <rdar://problem/8968847>
+
+        * UIProcess/cf/WebPageProxyCF.cpp:
+        (WebKit::WebPageProxy::sessionStateData): Save URLs that are early enough in the loading
+        process to not be included in the back/forward list yet: The pending API request URL and
+        the provisional URL.
+        (WebKit::WebPageProxy::restoreFromSessionStateData): Call loadURL if the back/forward
+        list is not restored and a URL is present. Later we can improve the way we handle the
+        case where we have both a back/forward list and a URL.
+
 2011-03-04  Jessie Berlin  <jberlin@apple.com>
 
         Reviewed by Darin Adler.
