@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2006 Zack Rusin <zack@kde.org>
- * Copyright (C) 2006 Apple Computer, Inc.  All rights reserved.
+ * Copyright (C) 2006, 2011 Apple Inc. All rights reserved.
  * Copyright (C) 2008 Collabora Ltd. All rights reserved.
  * Copyright (C) 2008 INdT - Instituto Nokia de Tecnologia
  * Copyright (C) 2009-2010 ProFUSION embedded systems
@@ -102,7 +102,7 @@ class FrameLoaderClientEfl : public FrameLoaderClient {
     virtual void dispatchWillClose();
     virtual void dispatchDidReceiveIcon();
     virtual void dispatchDidStartProvisionalLoad();
-    virtual void dispatchDidReceiveTitle(const String&);
+    virtual void dispatchDidReceiveTitle(const StringWithDirection&);
     virtual void dispatchDidChangeIcons();
     virtual void dispatchDidCommitLoad();
     virtual void dispatchDidFailProvisionalLoad(const ResourceError&);
@@ -115,7 +115,7 @@ class FrameLoaderClientEfl : public FrameLoaderClient {
     virtual Frame* dispatchCreatePage(const WebCore::NavigationAction&);
     virtual void dispatchShow();
 
-    virtual void dispatchDecidePolicyForMIMEType(FramePolicyFunction, const String& MIMEType, const ResourceRequest&);
+    virtual void dispatchDecidePolicyForResponse(FramePolicyFunction, const ResourceResponse&, const ResourceRequest&);
     virtual void dispatchDecidePolicyForNewWindowAction(FramePolicyFunction, const NavigationAction&, const ResourceRequest&, WTF::PassRefPtr<FormState>, const String& frameName);
     virtual void dispatchDecidePolicyForNavigationAction(FramePolicyFunction, const NavigationAction&, const ResourceRequest&, WTF::PassRefPtr<FormState>);
     virtual void cancelPolicyCheck();
@@ -149,7 +149,7 @@ class FrameLoaderClientEfl : public FrameLoaderClient {
 
     virtual void registerForIconNotification(bool);
 
-    virtual ObjectContentType objectContentType(const KURL& url, const String& mimeType);
+    virtual ObjectContentType objectContentType(const KURL&, const String& mimeType, bool shouldPreferPlugInsForImages);
 
     virtual void setMainFrameDocumentReady(bool);
 
@@ -193,7 +193,7 @@ class FrameLoaderClientEfl : public FrameLoaderClient {
     virtual void prepareForDataSourceReplacement();
 
     virtual WTF::PassRefPtr<DocumentLoader> createDocumentLoader(const ResourceRequest&, const SubstituteData&);
-    virtual void setTitle(const String& title, const KURL&);
+    virtual void setTitle(const StringWithDirection& title, const KURL&);
 
     virtual String userAgent(const KURL&);
 

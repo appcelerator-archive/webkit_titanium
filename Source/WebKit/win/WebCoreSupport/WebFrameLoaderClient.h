@@ -29,9 +29,7 @@
 #ifndef WebFrameLoaderClient_h
 #define WebFrameLoaderClient_h
 
-#pragma warning(push, 0)
 #include <WebCore/FrameLoaderClient.h>
-#pragma warning(pop)
 
 namespace WebCore {
     class PluginManualLoader;
@@ -40,6 +38,7 @@ namespace WebCore {
 
 template <typename T> class COMPtr;
 class WebFrame;
+class WebHistory;
 
 class WebFrameLoaderClient : public WebCore::FrameLoaderClient {
 public:
@@ -70,7 +69,7 @@ public:
     virtual void dispatchWillClose();
     virtual void dispatchDidReceiveIcon();
     virtual void dispatchDidStartProvisionalLoad();
-    virtual void dispatchDidReceiveTitle(const WTF::String&);
+    virtual void dispatchDidReceiveTitle(const WebCore::StringWithDirection&);
     virtual void dispatchDidChangeIcons();
     virtual void dispatchDidCommitLoad();
     virtual void dispatchDidFinishDocumentLoad();
@@ -104,7 +103,7 @@ public:
     virtual void didRunInsecureContent(WebCore::SecurityOrigin*, const WebCore::KURL&);
 
     virtual PassRefPtr<WebCore::DocumentLoader> createDocumentLoader(const WebCore::ResourceRequest&, const WebCore::SubstituteData&);
-    virtual void setTitle(const WTF::String& title, const WebCore::KURL&);
+    virtual void setTitle(const WebCore::StringWithDirection&, const WebCore::KURL&);
 
     virtual void savePlatformDataToCachedFrame(WebCore::CachedFrame*);
     virtual void transitionToCommittedFromCachedFrame(WebCore::CachedFrame*);

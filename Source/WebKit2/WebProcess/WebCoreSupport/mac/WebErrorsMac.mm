@@ -28,6 +28,7 @@
 
 #import "WKError.h"
 #import "WebError.h"
+#import <WebCore/LocalizedStrings.h>
 #import <WebCore/ResourceRequest.h>
 #import <WebCore/ResourceResponse.h>
 #import <pthread.h>
@@ -41,21 +42,18 @@ static NSString * const WebKitErrorMIMETypeKey =               @"WebKitErrorMIME
 static NSString * const WebKitErrorPlugInNameKey =             @"WebKitErrorPlugInNameKey";
 static NSString * const WebKitErrorPlugInPageURLStringKey =    @"WebKitErrorPlugInPageURLStringKey";
 
-// FIXME (WebKit2) <rdar://problem/8728860> WebKit2 needs to be localized
-#define UI_STRING(__str, __desc) [NSString stringWithUTF8String:__str]
-
 // Policy errors
-#define WebKitErrorDescriptionCannotShowMIMEType UI_STRING("Content with specified MIME type can’t be shown", "WebKitErrorCannotShowMIMEType description")
-#define WebKitErrorDescriptionCannotShowURL UI_STRING("The URL can’t be shown", "WebKitErrorCannotShowURL description")
-#define WebKitErrorDescriptionFrameLoadInterruptedByPolicyChange UI_STRING("Frame load interrupted", "WebKitErrorFrameLoadInterruptedByPolicyChange description")
-#define WebKitErrorDescriptionCannotUseRestrictedPort UI_STRING("Not allowed to use restricted network port", "WebKitErrorCannotUseRestrictedPort description")
+#define WebKitErrorDescriptionCannotShowMIMEType WEB_UI_STRING("Content with specified MIME type can’t be shown", "WebKitErrorCannotShowMIMEType description")
+#define WebKitErrorDescriptionCannotShowURL WEB_UI_STRING("The URL can’t be shown", "WebKitErrorCannotShowURL description")
+#define WebKitErrorDescriptionFrameLoadInterruptedByPolicyChange WEB_UI_STRING("Frame load interrupted", "WebKitErrorFrameLoadInterruptedByPolicyChange description")
+#define WebKitErrorDescriptionCannotUseRestrictedPort WEB_UI_STRING("Not allowed to use restricted network port", "WebKitErrorCannotUseRestrictedPort description")
 
 // Plug-in and java errors
-#define WebKitErrorDescriptionCannotFindPlugin UI_STRING("The plug-in can’t be found", "WebKitErrorCannotFindPlugin description")
-#define WebKitErrorDescriptionCannotLoadPlugin UI_STRING("The plug-in can’t be loaded", "WebKitErrorCannotLoadPlugin description")
-#define WebKitErrorDescriptionJavaUnavailable UI_STRING("Java is unavailable", "WebKitErrorJavaUnavailable description")
-#define WebKitErrorDescriptionPlugInCancelledConnection UI_STRING("Plug-in cancelled", "WebKitErrorPlugInCancelledConnection description")
-#define WebKitErrorDescriptionPlugInWillHandleLoad UI_STRING("Plug-in handled load", "WebKitErrorPlugInWillHandleLoad description")
+#define WebKitErrorDescriptionCannotFindPlugin WEB_UI_STRING("The plug-in can’t be found", "WebKitErrorCannotFindPlugin description")
+#define WebKitErrorDescriptionCannotLoadPlugin WEB_UI_STRING("The plug-in can’t be loaded", "WebKitErrorCannotLoadPlugin description")
+#define WebKitErrorDescriptionJavaUnavailable WEB_UI_STRING("Java is unavailable", "WebKitErrorJavaUnavailable description")
+#define WebKitErrorDescriptionPlugInCancelledConnection WEB_UI_STRING("Plug-in cancelled", "WebKitErrorPlugInCancelledConnection description")
+#define WebKitErrorDescriptionPlugInWillHandleLoad WEB_UI_STRING("Plug-in handled load", "WebKitErrorPlugInWillHandleLoad description")
 
 static pthread_once_t registerErrorsControl = PTHREAD_ONCE_INIT;
 static void registerErrors(void);
@@ -119,17 +117,17 @@ static void registerErrors()
 
     NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
         // Policy errors
-        WebKitErrorDescriptionCannotShowMIMEType,                   [NSNumber numberWithInt: kWKErrorCodeCannotShowMIMEType],
-        WebKitErrorDescriptionCannotShowURL,                        [NSNumber numberWithInt: kWKErrorCodeCannotShowURL],
-        WebKitErrorDescriptionFrameLoadInterruptedByPolicyChange,   [NSNumber numberWithInt: kWKErrorCodeFrameLoadInterruptedByPolicyChange],
-        WebKitErrorDescriptionCannotUseRestrictedPort,              [NSNumber numberWithInt: kWKErrorCodeCannotUseRestrictedPort],
+        (NSString *)WebKitErrorDescriptionCannotShowMIMEType,                   [NSNumber numberWithInt: kWKErrorCodeCannotShowMIMEType],
+        (NSString *)WebKitErrorDescriptionCannotShowURL,                        [NSNumber numberWithInt: kWKErrorCodeCannotShowURL],
+        (NSString *)WebKitErrorDescriptionFrameLoadInterruptedByPolicyChange,   [NSNumber numberWithInt: kWKErrorCodeFrameLoadInterruptedByPolicyChange],
+        (NSString *)WebKitErrorDescriptionCannotUseRestrictedPort,              [NSNumber numberWithInt: kWKErrorCodeCannotUseRestrictedPort],
         
         // Plug-in and java errors
-        WebKitErrorDescriptionCannotFindPlugin,                     [NSNumber numberWithInt: kWKErrorCodeCannotFindPlugIn],
-        WebKitErrorDescriptionCannotLoadPlugin,                     [NSNumber numberWithInt: kWKErrorCodeCannotLoadPlugIn],
-        WebKitErrorDescriptionJavaUnavailable,                      [NSNumber numberWithInt: kWKErrorCodeJavaUnavailable],
-        WebKitErrorDescriptionPlugInCancelledConnection,            [NSNumber numberWithInt: kWKErrorCodePlugInCancelledConnection],
-        WebKitErrorDescriptionPlugInWillHandleLoad,                 [NSNumber numberWithInt: kWKErrorCodePlugInWillHandleLoad],
+        (NSString *)WebKitErrorDescriptionCannotFindPlugin,                     [NSNumber numberWithInt: kWKErrorCodeCannotFindPlugIn],
+        (NSString *)WebKitErrorDescriptionCannotLoadPlugin,                     [NSNumber numberWithInt: kWKErrorCodeCannotLoadPlugIn],
+        (NSString *)WebKitErrorDescriptionJavaUnavailable,                      [NSNumber numberWithInt: kWKErrorCodeJavaUnavailable],
+        (NSString *)WebKitErrorDescriptionPlugInCancelledConnection,            [NSNumber numberWithInt: kWKErrorCodePlugInCancelledConnection],
+        (NSString *)WebKitErrorDescriptionPlugInWillHandleLoad,                 [NSNumber numberWithInt: kWKErrorCodePlugInWillHandleLoad],
         nil];
 
     [NSError _webkit_addErrorsWithCodesAndDescriptions:dict inDomain:WebError::webKitErrorDomain()];

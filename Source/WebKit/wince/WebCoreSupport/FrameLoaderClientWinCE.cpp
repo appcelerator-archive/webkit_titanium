@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2010 Patrick Gansterer <paroga@paroga.com>
+ * Copyright (C) 2011 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,7 +36,10 @@
 #include "Page.h"
 #include "PluginDatabase.h"
 #include "RenderPart.h"
+#include "SystemInfo.h"
+#include "WebKitVersion.h"
 #include "WebView.h"
+#include <wtf/text/StringConcatenate.h>
 
 using namespace WebCore;
 
@@ -54,7 +58,14 @@ FrameLoaderClientWinCE::~FrameLoaderClientWinCE()
 
 String FrameLoaderClientWinCE::userAgent(const KURL&)
 {
-    return "WebKitWinCE";
+    DEFINE_STATIC_LOCAL(String, userAgentString, ());
+
+    if (userAgentString.isNull()) {
+        String webKitVersion = String::format("%d.%d", WEBKIT_MAJOR_VERSION, WEBKIT_MINOR_VERSION);
+        userAgentString = makeString("Mozilla/5.0 (", windowsVersionForUAString(), ") AppleWebKit/", webKitVersion, " (KHTML, like Gecko) Mobile Safari/", webKitVersion);
+    }
+
+    return userAgentString;
 }
 
 PassRefPtr<DocumentLoader> FrameLoaderClientWinCE::createDocumentLoader(const WebCore::ResourceRequest& request, const SubstituteData& substituteData)
@@ -127,9 +138,9 @@ void FrameLoaderClientWinCE::dispatchDidReceiveResponse(DocumentLoader*, unsigne
     m_response = response;
 }
 
-void FrameLoaderClientWinCE::dispatchDecidePolicyForMIMEType(FramePolicyFunction policyFunction, const String& mimeType, const WebCore::ResourceRequest&)
+void FrameLoaderClientWinCE::dispatchDecidePolicyForResponse(FramePolicyFunction policyFunction, const WebCore::ResourceResponse& response, const WebCore::ResourceRequest&)
 {
-    if (canShowMIMEType(mimeType))
+    if (canShowMIMEType(response.mimeType()))
         (m_frame->loader()->policyChecker()->*policyFunction)(PolicyUse);
     else
         (m_frame->loader()->policyChecker()->*policyFunction)(PolicyDownload);
@@ -182,9 +193,9 @@ PassRefPtr<Widget> FrameLoaderClientWinCE::createJavaAppletWidget(const IntSize&
     return 0;
 }
 
-ObjectContentType FrameLoaderClientWinCE::objectContentType(const KURL& url, const String& mimeType)
+ObjectContentType FrameLoaderClientWinCE::objectContentType(const KURL& url, const String& mimeType, bool shouldPreferPlugInsForImages)
 {
-    return FrameLoader::defaultObjectContentType(url, mimeType);
+    return FrameLoader::defaultObjectContentType(url, mimeType, shouldPreferPlugInsForImages);
 }
 
 String FrameLoaderClientWinCE::overrideMediaType() const
@@ -360,7 +371,7 @@ void FrameLoaderClientWinCE::dispatchDidStartProvisionalLoad()
     notImplemented();
 }
 
-void FrameLoaderClientWinCE::dispatchDidReceiveTitle(const String&)
+void FrameLoaderClientWinCE::dispatchDidReceiveTitle(const StringWithDirection&)
 {
     notImplemented();
 }
@@ -479,7 +490,7 @@ void FrameLoaderClientWinCE::prepareForDataSourceReplacement()
     notImplemented();
 }
 
-void FrameLoaderClientWinCE::setTitle(const String&, const KURL&)
+void FrameLoaderClientWinCE::setTitle(const StringWithDirection&, const KURL&)
 {
     notImplemented();
 }

@@ -30,12 +30,13 @@
 #include "WebFrameLoaderClient.h"
 #include <JavaScriptCore/APICast.h>
 #include <WebCore/Document.h>
+#include <WebCore/Frame.h>
 #include <WebCore/HTMLFrameElement.h>
 #include <WebCore/HTMLIFrameElement.h>
-#include <WebCore/Frame.h>
 #include <WebCore/HTMLInputElement.h>
 #include <WebCore/HTMLNames.h>
 #include <WebCore/HTMLTableCellElement.h>
+#include <WebCore/HTMLTextAreaElement.h>
 #include <WebCore/IntRect.h>
 #include <WebCore/JSNode.h>
 #include <WebCore/Node.h>
@@ -132,7 +133,6 @@ bool InjectedBundleNodeHandle::isHTMLInputElementAutofilled() const
     return static_cast<HTMLInputElement*>(m_node.get())->isAutofilled();
 }
 
-
 void InjectedBundleNodeHandle::setHTMLInputElementAutofilled(bool filled)
 {
     if (!m_node->hasTagName(inputTag))
@@ -141,12 +141,36 @@ void InjectedBundleNodeHandle::setHTMLInputElementAutofilled(bool filled)
     static_cast<HTMLInputElement*>(m_node.get())->setAutofilled(filled);
 }
 
+bool InjectedBundleNodeHandle::htmlInputElementLastChangeWasUserEdit()
+{
+    if (!m_node->hasTagName(inputTag))
+        return false;
+
+    return static_cast<HTMLInputElement*>(m_node.get())->lastChangeWasUserEdit();
+}
+
+bool InjectedBundleNodeHandle::htmlTextAreaElementLastChangeWasUserEdit()
+{
+    if (!m_node->hasTagName(textareaTag))
+        return false;
+
+    return static_cast<HTMLTextAreaElement*>(m_node.get())->lastChangeWasUserEdit();
+}
+
 PassRefPtr<InjectedBundleNodeHandle> InjectedBundleNodeHandle::htmlTableCellElementCellAbove()
 {
     if (!m_node->hasTagName(tdTag))
         return 0;
 
     return getOrCreate(static_cast<HTMLTableCellElement*>(m_node.get())->cellAbove());
+}
+
+PassRefPtr<InjectedBundleNodeHandle> InjectedBundleNodeHandle::elementShadowRoot()
+{
+    if (!m_node->isElementNode())
+        return 0;
+
+    return getOrCreate(static_cast<Element*>(m_node.get())->shadowRoot());
 }
 
 PassRefPtr<WebFrame> InjectedBundleNodeHandle::documentFrame()

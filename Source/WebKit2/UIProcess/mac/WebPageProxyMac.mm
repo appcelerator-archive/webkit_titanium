@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2010, 2011 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,7 +26,15 @@
 #import "config.h"
 #import "WebPageProxy.h"
 
+#import "DataReference.h"
+#import "DictionaryPopupInfo.h"
+#import "NativeWebKeyboardEvent.h"
 #import "PageClient.h"
+#import "PageClientImpl.h"
+#import "TextChecker.h"
+#import "TextInputState.h"
+#import "WebPageMessages.h"
+#import "WebProcessProxy.h"
 #import <wtf/text/StringConcatenate.h>
 
 @interface NSApplication (Details)
@@ -99,8 +107,7 @@ void WebPageProxy::getIsSpeaking(bool& isSpeaking)
 
 void WebPageProxy::speak(const String& string)
 {
-    NSString *convertedString = string;
-    [NSApp speakString:convertedString];
+    [NSApp speakString:nsStringFromWebCoreString(string)];
 }
 
 void WebPageProxy::stopSpeaking()
@@ -108,9 +115,172 @@ void WebPageProxy::stopSpeaking()
     [NSApp stopSpeaking:nil];
 }
 
+void WebPageProxy::searchWithSpotlight(const String& string)
+{
+    [[NSWorkspace sharedWorkspace] showSearchResultsForQueryString:nsStringFromWebCoreString(string)];
+}
+
 CGContextRef WebPageProxy::containingWindowGraphicsContext()
 {
     return m_pageClient->containingWindowGraphicsContext();
+}
+
+void WebPageProxy::updateWindowIsVisible(bool windowIsVisible)
+{
+    if (!isValid())
+        return;
+    process()->send(Messages::WebPage::SetWindowIsVisible(windowIsVisible), m_pageID);
+}
+
+void WebPageProxy::windowAndViewFramesChanged(const IntRect& windowFrameInScreenCoordinates, const IntRect& viewFrameInWindowCoordinates, const IntPoint& accessibilityViewCoordinates)
+{
+    if (!isValid())
+        return;
+
+    process()->send(Messages::WebPage::WindowAndViewFramesChanged(windowFrameInScreenCoordinates, viewFrameInWindowCoordinates, accessibilityViewCoordinates), m_pageID);
+}
+
+void WebPageProxy::setComposition(const String& text, Vector<CompositionUnderline> underlines, uint64_t selectionStart, uint64_t selectionEnd, uint64_t replacementRangeStart, uint64_t replacementRangeEnd, TextInputState& newState)
+{
+    process()->sendSync(Messages::WebPage::SetComposition(text, underlines, selectionStart, selectionEnd, replacementRangeStart, replacementRangeEnd), Messages::WebPage::SetComposition::Reply(newState), m_pageID);
+}
+
+void WebPageProxy::confirmComposition(TextInputState& newState)
+{
+    process()->sendSync(Messages::WebPage::ConfirmComposition(), Messages::WebPage::ConfirmComposition::Reply(newState), m_pageID);
+}
+
+bool WebPageProxy::insertText(const String& text, uint64_t replacementRangeStart, uint64_t replacementRangeEnd, TextInputState& newState)
+{
+    bool handled;
+    process()->sendSync(Messages::WebPage::InsertText(text, replacementRangeStart, replacementRangeEnd), Messages::WebPage::InsertText::Reply(handled, newState), m_pageID);
+    return handled;
+}
+
+void WebPageProxy::getMarkedRange(uint64_t& location, uint64_t& length)
+{
+    process()->sendSync(Messages::WebPage::GetMarkedRange(), Messages::WebPage::GetMarkedRange::Reply(location, length), m_pageID);
+}
+
+void WebPageProxy::getSelectedRange(uint64_t& location, uint64_t& length)
+{
+    process()->sendSync(Messages::WebPage::GetSelectedRange(), Messages::WebPage::GetSelectedRange::Reply(location, length), m_pageID);
+}
+
+uint64_t WebPageProxy::characterIndexForPoint(const IntPoint point)
+{
+    uint64_t result;
+    process()->sendSync(Messages::WebPage::CharacterIndexForPoint(point), Messages::WebPage::CharacterIndexForPoint::Reply(result), m_pageID);
+    return result;
+}
+
+WebCore::IntRect WebPageProxy::firstRectForCharacterRange(uint64_t location, uint64_t length)
+{
+    IntRect resultRect;
+    process()->sendSync(Messages::WebPage::FirstRectForCharacterRange(location, length), Messages::WebPage::FirstRectForCharacterRange::Reply(resultRect), m_pageID);
+    return resultRect;
+}
+
+bool WebPageProxy::executeKeypressCommands(const Vector<WebCore::KeypressCommand>& commands, TextInputState& newState)
+{
+    bool result;
+    process()->sendSync(Messages::WebPage::ExecuteKeypressCommands(commands), Messages::WebPage::ExecuteKeypressCommands::Reply(result, newState), m_pageID);
+    return result;
+}
+
+bool WebPageProxy::writeSelectionToPasteboard(const String& pasteboardName, const Vector<String>& pasteboardTypes)
+{
+    bool result;
+    const double MessageTimeout = 20;
+    process()->sendSync(Messages::WebPage::WriteSelectionToPasteboard(pasteboardName, pasteboardTypes), Messages::WebPage::WriteSelectionToPasteboard::Reply(result), m_pageID, MessageTimeout);
+    return result;
+}
+
+bool WebPageProxy::readSelectionFromPasteboard(const String& pasteboardName)
+{
+    bool result;
+    const double MessageTimeout = 20;
+    process()->sendSync(Messages::WebPage::ReadSelectionFromPasteboard(pasteboardName), Messages::WebPage::ReadSelectionFromPasteboard::Reply(result), m_pageID, MessageTimeout);
+    return result;
+}
+
+void WebPageProxy::setDragImage(const WebCore::IntPoint& clientPosition, const ShareableBitmap::Handle& dragImageHandle, bool isLinkDrag)
+{
+    RefPtr<ShareableBitmap> dragImage = ShareableBitmap::create(dragImageHandle);
+    if (!dragImage)
+        return;
+    
+    m_pageClient->setDragImage(clientPosition, dragImage.release(), isLinkDrag);
+}
+
+void WebPageProxy::performDictionaryLookupAtLocation(const WebCore::FloatPoint& point)
+{
+    if (!isValid())
+        return;
+
+    process()->send(Messages::WebPage::PerformDictionaryLookupAtLocation(point), m_pageID); 
+}
+
+void WebPageProxy::interpretQueuedKeyEvent(const TextInputState& state, bool& handled, Vector<WebCore::KeypressCommand>& commands)
+{
+    handled = m_pageClient->interpretKeyEvent(m_keyEventQueue.first(), state, commands);
+}
+
+// Complex text input support for plug-ins.
+void WebPageProxy::sendComplexTextInputToPlugin(uint64_t pluginComplexTextInputIdentifier, const String& textInput)
+{
+    if (!isValid())
+        return;
+    
+    process()->send(Messages::WebPage::SendComplexTextInputToPlugin(pluginComplexTextInputIdentifier, textInput), m_pageID);
+}
+
+void WebPageProxy::uppercaseWord()
+{
+    process()->send(Messages::WebPage::UppercaseWord(), m_pageID);
+}
+
+void WebPageProxy::lowercaseWord()
+{
+    process()->send(Messages::WebPage::LowercaseWord(), m_pageID);
+}
+
+void WebPageProxy::capitalizeWord()
+{
+    process()->send(Messages::WebPage::CapitalizeWord(), m_pageID);
+}
+
+void WebPageProxy::setSmartInsertDeleteEnabled(bool isSmartInsertDeleteEnabled)
+{ 
+    if (m_isSmartInsertDeleteEnabled == isSmartInsertDeleteEnabled)
+        return;
+
+    TextChecker::setSmartInsertDeleteEnabled(isSmartInsertDeleteEnabled);
+    m_isSmartInsertDeleteEnabled = isSmartInsertDeleteEnabled;
+    process()->send(Messages::WebPage::SetSmartInsertDeleteEnabled(isSmartInsertDeleteEnabled), m_pageID);
+}
+
+void WebPageProxy::didPerformDictionaryLookup(const String& text, const DictionaryPopupInfo& dictionaryPopupInfo)
+{
+    m_pageClient->didPerformDictionaryLookup(text, m_viewScaleFactor, dictionaryPopupInfo);
+}
+    
+void WebPageProxy::registerWebProcessAccessibilityToken(const CoreIPC::DataReference& data)
+{
+    m_pageClient->accessibilityWebProcessTokenReceived(data);
+}    
+    
+void WebPageProxy::registerUIProcessAccessibilityTokens(const CoreIPC::DataReference& elementToken, const CoreIPC::DataReference& windowToken)
+{
+    if (!isValid())
+        return;
+
+    process()->send(Messages::WebPage::RegisterUIProcessAccessibilityTokens(elementToken, windowToken), m_pageID);
+}
+
+void WebPageProxy::setComplexTextInputEnabled(uint64_t pluginComplexTextInputIdentifier, bool complexTextInputEnabled)
+{
+    m_pageClient->setComplexTextInputEnabled(pluginComplexTextInputIdentifier, complexTextInputEnabled);
 }
 
 } // namespace WebKit

@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2006 Zack Rusin <zack@kde.org>
- * Copyright (C) 2006 Apple Computer, Inc.  All rights reserved.
+ * Copyright (C) 2006, 2011 Apple Inc. All rights reserved.
  * Copyright (C) 2008 Collabora Ltd. All rights reserved.
  *
  * All rights reserved.
@@ -81,7 +81,7 @@ namespace WebKit {
         virtual void dispatchWillClose();
         virtual void dispatchDidReceiveIcon();
         virtual void dispatchDidStartProvisionalLoad();
-        virtual void dispatchDidReceiveTitle(const WTF::String&);
+        virtual void dispatchDidReceiveTitle(const WebCore::StringWithDirection&);
         virtual void dispatchDidChangeIcons();
         virtual void dispatchDidCommitLoad();
         virtual void dispatchDidFailProvisionalLoad(const WebCore::ResourceError&);
@@ -94,7 +94,7 @@ namespace WebKit {
         virtual WebCore::Frame* dispatchCreatePage(const WebCore::NavigationAction&);
         virtual void dispatchShow();
 
-        virtual void dispatchDecidePolicyForMIMEType(WebCore::FramePolicyFunction, const WTF::String& MIMEType, const WebCore::ResourceRequest&);
+        virtual void dispatchDecidePolicyForResponse(WebCore::FramePolicyFunction, const WebCore::ResourceResponse&, const WebCore::ResourceRequest&);
         virtual void dispatchDecidePolicyForNewWindowAction(WebCore::FramePolicyFunction, const WebCore::NavigationAction&, const WebCore::ResourceRequest&, WTF::PassRefPtr<WebCore::FormState>, const WTF::String& frameName);
         virtual void dispatchDecidePolicyForNavigationAction(WebCore::FramePolicyFunction, const WebCore::NavigationAction&, const WebCore::ResourceRequest&, WTF::PassRefPtr<WebCore::FormState>);
         virtual void cancelPolicyCheck();
@@ -126,7 +126,7 @@ namespace WebKit {
 
         virtual void registerForIconNotification(bool);
 
-        virtual WebCore::ObjectContentType objectContentType(const WebCore::KURL& url, const WTF::String& mimeType);
+        virtual WebCore::ObjectContentType objectContentType(const WebCore::KURL&, const WTF::String& mimeType, bool shouldPreferPlugInsForImages);
 
         virtual void setMainFrameDocumentReady(bool);
 
@@ -174,7 +174,7 @@ namespace WebKit {
         virtual void prepareForDataSourceReplacement();
 
         virtual WTF::PassRefPtr<WebCore::DocumentLoader> createDocumentLoader(const WebCore::ResourceRequest&, const WebCore::SubstituteData&);
-        virtual void setTitle(const WTF::String& title, const WebCore::KURL&);
+        virtual void setTitle(const WebCore::StringWithDirection& title, const WebCore::KURL&);
 
         virtual WTF::String userAgent(const WebCore::KURL&);
 

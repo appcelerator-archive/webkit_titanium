@@ -223,7 +223,12 @@ bool HTMLFormElement::validateInteractively(Event* event)
     Vector<RefPtr<FormAssociatedElement> > unhandledInvalidControls;
     if (!checkInvalidControlsAndCollectUnhandled(unhandledInvalidControls))
         return true;
-    // If the form has invalid controls, abort submission.
+    // Because the form has invalid controls, we abort the form submission and
+    // show a validation message on a focusable form control.
+
+    // Needs to update layout now because we'd like to call isFocusable(), which
+    // has !renderer()->needsLayout() assertion.
+    document()->updateLayoutIgnorePendingStylesheets();
 
     RefPtr<HTMLFormElement> protector(this);
     // Focus on the first focusable control and show a validation message.
@@ -231,17 +236,11 @@ bool HTMLFormElement::validateInteractively(Event* event)
         FormAssociatedElement* unhandledAssociatedElement = unhandledInvalidControls[i].get();
         HTMLElement* unhandled = toHTMLElement(unhandledAssociatedElement);
         if (unhandled->isFocusable() && unhandled->inDocument()) {
-            RefPtr<Document> originalDocument(unhandled->document());
             unhandled->scrollIntoViewIfNeeded(false);
-            // scrollIntoViewIfNeeded() dispatches events, so the state
-            // of 'unhandled' might be changed so it's no longer focusable or
-            // moved to another document.
-            if (unhandled->isFocusable() && unhandled->inDocument() && originalDocument == unhandled->document()) {
-                unhandled->focus();
-                if (unhandled->isFormControlElement())
-                    static_cast<HTMLFormControlElement*>(unhandled)->updateVisibleValidationMessage();
-                break;
-            }
+            unhandled->focus();
+            if (unhandled->isFormControlElement())
+                static_cast<HTMLFormControlElement*>(unhandled)->updateVisibleValidationMessage();
+            break;
         }
     }
     // Warn about all of unfocusable controls.

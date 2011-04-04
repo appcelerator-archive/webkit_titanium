@@ -41,11 +41,7 @@ namespace WebKit {
 
 void WebContextMenuClient::lookUpInDictionary(Frame* frame)
 {
-    RefPtr<Range> selectedRange = frame->selection()->selection().toNormalizedRange();
-    if (!selectedRange)
-        return;
-
-    m_page->performDictionaryLookupForRange(DictionaryPopupInfo::ContextMenu, frame, selectedRange.get());
+    m_page->performDictionaryLookupForSelection(DictionaryPopupInfo::ContextMenu, frame, frame->selection()->selection());
 }
 
 bool WebContextMenuClient::isSpeaking()
@@ -84,9 +80,7 @@ void WebContextMenuClient::searchWithSpotlight()
     if (selectedString.isEmpty())
         return;
 
-    NSString *convertedSelectedString = selectedString;
-
-    [[NSWorkspace sharedWorkspace] showSearchResultsForQueryString:convertedSelectedString];
+    m_page->send(Messages::WebPageProxy::SearchWithSpotlight(selectedString));
 }
 
 } // namespace WebKit

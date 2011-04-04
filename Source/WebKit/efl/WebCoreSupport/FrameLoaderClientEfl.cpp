@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2006 Zack Rusin <zack@kde.org>
- * Copyright (C) 2006 Apple Computer, Inc.  All rights reserved.
+ * Copyright (C) 2006, 2011 Apple Inc. All rights reserved.
  * Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
  * Copyright (C) 2008 Collabora Ltd. All rights reserved.
  * Copyright (C) 2008 Holger Hans Peter Freyther
@@ -50,13 +50,15 @@
 #include "ProgressTracker.h"
 #include "RenderPart.h"
 #include "ResourceRequest.h"
-#include "ViewportArguments.h"
+#include "WebKitVersion.h"
 #include "ewk_private.h"
 #include <wtf/text/CString.h>
 #include <wtf/text/StringConcatenate.h>
 
-#if PLATFORM(UNIX)
+#if OS(UNIX)
 #include <sys/utsname.h>
+#elif OS(WINDOWS)
+#include "SystemInfo.h"
 #endif
 
 #include <Ecore_Evas.h>
@@ -75,29 +77,22 @@ FrameLoaderClientEfl::FrameLoaderClientEfl(Evas_Object *view)
 {
 }
 
-static String agentPlatform()
-{
-    notImplemented();
-    return "Unknown";
-}
-
 static String agentOS()
 {
-#if PLATFORM(DARWIN)
-#if PLATFORM(X86)
+#if OS(DARWIN)
+#if CPU(X86)
     return "Intel Mac OS X";
 #else
     return "PPC Mac OS X";
 #endif
-#elif PLATFORM(UNIX)
+#elif OS(UNIX)
     struct utsname name;
     if (uname(&name) != -1)
         return makeString(name.sysname, ' ', name.machine);
 
     return "Unknown";
-#elif PLATFORM(WIN_OS)
-    // FIXME: Compute the Windows version
-    return "Windows";
+#elif OS(WINDOWS)
+    return windowsVersionForUAString();
 #else
     notImplemented();
     return "Unknown";
@@ -106,35 +101,8 @@ static String agentOS()
 
 static String composeUserAgent()
 {
-    // This is a liberal interpretation of http://www.mozilla.org/build/revised-user-agent-strings.html
-    // See also http://developer.apple.com/internet/safari/faq.html#anchor2
-
-    String ua;
-
-    // Product
-    ua += "Mozilla/5.0";
-
-    // Comment
-    ua += " (";
-    ua += agentPlatform(); // Platform
-    ua += "; ";
-    ua += agentOS(); // OS-or-CPU
-    ua += ") ";
-
-    // WebKit Product
-    // FIXME: The WebKit version is hardcoded
-    static const String webKitVersion = "525.1+";
-    ua += "AppleWebKit/" + webKitVersion;
-    ua += " (KHTML, like Gecko, ";
-    // We mention Safari since many broken sites check for it (OmniWeb does this too)
-    // We re-use the WebKit version, though it doesn't seem to matter much in practice
-    ua += "Safari/" + webKitVersion;
-    ua += ") ";
-
-    // Vendor Product
-    // ua += g_get_prgname();
-
-    return ua;
+    String webKitVersion = String::format("%d.%d", WEBKIT_MAJOR_VERSION, WEBKIT_MINOR_VERSION);
+    return makeString("Mozilla/5.0 (", agentOS(), ") AppleWebKit/", webKitVersion, " (KHTML, like Gecko) Safari/", webKitVersion);
 }
 
 void FrameLoaderClientEfl::setCustomUserAgent(const String &agent)
@@ -314,11 +282,11 @@ void FrameLoaderClientEfl::dispatchDidReceiveResponse(DocumentLoader*, unsigned 
     m_response = response;
 }
 
-void FrameLoaderClientEfl::dispatchDecidePolicyForMIMEType(FramePolicyFunction function, const String& MIMEType, const ResourceRequest&)
+void FrameLoaderClientEfl::dispatchDecidePolicyForResponse(FramePolicyFunction function, const ResourceResponse& response, const ResourceRequest&)
 {
     // we need to call directly here (currently callPolicyFunction does that!)
     ASSERT(function);
-    if (canShowMIMEType(MIMEType))
+    if (canShowMIMEType(response.mimeType()))
         callPolicyFunction(function, PolicyUse);
     else
         callPolicyFunction(function, PolicyDownload);
@@ -399,8 +367,12 @@ PassRefPtr<Widget> FrameLoaderClientEfl::createJavaAppletWidget(const IntSize&, 
     return 0;
 }
 
-ObjectContentType FrameLoaderClientEfl::objectContentType(const KURL& url, const String& mimeType)
+ObjectContentType FrameLoaderClientEfl::objectContentType(const KURL& url, const String& mimeType, bool shouldPreferPlugInsForImages)
 {
+    // FIXME: once plugin support is enabled, this method needs to correctly handle the 'shouldPreferPlugInsForImages' flag. See
+    // WebCore::FrameLoader::defaultObjectContentType() for an example.
+    UNUSED_PARAM(shouldPreferPlugInsForImages);
+
     if (url.isEmpty() && mimeType.isEmpty())
         return ObjectContentNone;
 
@@ -604,9 +576,10 @@ void FrameLoaderClientEfl::dispatchDidStartProvisionalLoad()
         ewk_view_load_provisional(m_view);
 }
 
-void FrameLoaderClientEfl::dispatchDidReceiveTitle(const String& title)
+void FrameLoaderClientEfl::dispatchDidReceiveTitle(const StringWithDirection& title)
 {
-    CString cs = title.utf8();
+    // FIXME: use direction of title.
+    CString cs = title.string().utf8();
     ewk_frame_title_set(m_frame, cs.data());
 
     if (ewk_view_frame_main_get(m_view) != m_frame)
@@ -626,9 +599,6 @@ void FrameLoaderClientEfl::dispatchDidCommitLoad()
         return;
     ewk_view_title_set(m_view, 0);
     ewk_view_uri_changed(m_view);
-
-    ViewportArguments arguments;
-    ewk_view_viewport_attributes_set(m_view, arguments);
 }
 
 void FrameLoaderClientEfl::dispatchDidFinishDocumentLoad()
@@ -740,7 +710,7 @@ void FrameLoaderClientEfl::prepareForDataSourceReplacement()
     notImplemented();
 }
 
-void FrameLoaderClientEfl::setTitle(const String& title, const KURL& url)
+void FrameLoaderClientEfl::setTitle(const StringWithDirection& title, const KURL& url)
 {
     // no need for, dispatchDidReceiveTitle is the right callback
 }

@@ -58,9 +58,11 @@ DrawingAreaProxyImpl::DrawingAreaProxyImpl(WebPageProxy* webPageProxy)
 
 DrawingAreaProxyImpl::~DrawingAreaProxyImpl()
 {
+#if USE(ACCELERATED_COMPOSITING)
     // Make sure to exit accelerated compositing mode.
     if (isInAcceleratedCompositingMode())
         exitAcceleratedCompositingMode();
+#endif
 }
 
 void DrawingAreaProxyImpl::paint(BackingStore::PlatformGraphicsContext context, const IntRect& rect, Region& unpaintedRegion)
@@ -133,6 +135,13 @@ void DrawingAreaProxyImpl::visibilityDidChange()
 
     // Resume painting.
     m_webPageProxy->process()->send(Messages::DrawingArea::ResumePainting(), m_webPageProxy->pageID());
+
+#if USE(ACCELERATED_COMPOSITING)
+    // If we don't have a backing store, go ahead and mark the backing store as being changed so
+    // that when paint we'll actually wait for something to paint and not flash white.
+    if (!m_backingStore && m_layerTreeContext.isEmpty())
+        backingStoreStateDidChange(DoNotRespondImmediately);
+#endif
 }
 
 void DrawingAreaProxyImpl::setPageIsVisible(bool)
@@ -162,6 +171,7 @@ void DrawingAreaProxyImpl::didUpdateBackingStoreState(uint64_t backingStoreState
     if (m_nextBackingStoreStateID != m_currentBackingStoreStateID)
         sendUpdateBackingStoreState(RespondImmediately);
 
+#if USE(ACCELERATED_COMPOSITING)
     if (layerTreeContext != m_layerTreeContext) {
         if (!m_layerTreeContext.isEmpty()) {
             exitAcceleratedCompositingMode();
@@ -178,6 +188,7 @@ void DrawingAreaProxyImpl::didUpdateBackingStoreState(uint64_t backingStoreState
         ASSERT(!m_backingStore);
         return;
     }
+#endif
 
     // FIXME: We could just reuse our existing backing store if it's the same size as
     // updateInfo.viewSize.
@@ -191,7 +202,9 @@ void DrawingAreaProxyImpl::enterAcceleratedCompositingMode(uint64_t backingStore
     if (backingStoreStateID < m_currentBackingStoreStateID)
         return;
 
+#if USE(ACCELERATED_COMPOSITING)
     enterAcceleratedCompositingMode(layerTreeContext);
+#endif
 }
 
 void DrawingAreaProxyImpl::exitAcceleratedCompositingMode(uint64_t backingStoreStateID, const UpdateInfo& updateInfo)
@@ -200,7 +213,9 @@ void DrawingAreaProxyImpl::exitAcceleratedCompositingMode(uint64_t backingStoreS
     if (backingStoreStateID < m_currentBackingStoreStateID)
         return;
 
+#if USE(ACCELERATED_COMPOSITING)
     exitAcceleratedCompositingMode();
+#endif
 
     incorporateUpdate(updateInfo);
 }
@@ -252,11 +267,13 @@ void DrawingAreaProxyImpl::sendUpdateBackingStoreState(RespondImmediatelyOrNot r
     m_webPageProxy->process()->send(Messages::DrawingArea::UpdateBackingStoreState(m_nextBackingStoreStateID, respondImmediatelyOrNot == RespondImmediately, m_size, m_scrollOffset), m_webPageProxy->pageID());
     m_scrollOffset = IntSize();
 
+#if USE(ACCELERATED_COMPOSITING)
     if (m_isWaitingForDidUpdateBackingStoreState && !m_layerTreeContext.isEmpty()) {
         // Wait for the DidUpdateBackingStoreState message. Normally we don this in DrawingAreaProxyImpl::paint, but that
         // function is never called when in accelerated compositing mode.
         waitForAndDispatchDidUpdateBackingStoreState();
     }
+#endif
 }
 
 void DrawingAreaProxyImpl::waitForAndDispatchDidUpdateBackingStoreState()
@@ -267,7 +284,8 @@ void DrawingAreaProxyImpl::waitForAndDispatchDidUpdateBackingStoreState()
         return;
     if (m_webPageProxy->process()->isLaunching())
         return;
-    
+
+#if USE(ACCELERATED_COMPOSITING)
     // FIXME: waitForAndDispatchImmediately will always return the oldest DidUpdateBackingStoreState message that
     // hasn't yet been processed. But it might be better to skip ahead to some other DidUpdateBackingStoreState
     // message, if multiple DidUpdateBackingStoreState messages are waiting to be processed. For instance, we could
@@ -276,8 +294,10 @@ void DrawingAreaProxyImpl::waitForAndDispatchDidUpdateBackingStoreState()
     // The timeout, in seconds, we use when waiting for a DidUpdateBackingStoreState message when we're asked to paint.
     static const double didUpdateBackingStoreStateTimeout = 0.5;
     m_webPageProxy->process()->connection()->waitForAndDispatchImmediately<Messages::DrawingAreaProxy::DidUpdateBackingStoreState>(m_webPageProxy->pageID(), didUpdateBackingStoreStateTimeout);
+#endif
 }
 
+#if USE(ACCELERATED_COMPOSITING)
 void DrawingAreaProxyImpl::enterAcceleratedCompositingMode(const LayerTreeContext& layerTreeContext)
 {
     ASSERT(!isInAcceleratedCompositingMode());
@@ -294,6 +314,7 @@ void DrawingAreaProxyImpl::exitAcceleratedCompositingMode()
     m_layerTreeContext = LayerTreeContext();    
     m_webPageProxy->exitAcceleratedCompositingMode();
 }
+#endif
 
 void DrawingAreaProxyImpl::discardBackingStoreSoon()
 {

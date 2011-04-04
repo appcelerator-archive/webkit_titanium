@@ -27,6 +27,7 @@
 
 #include "AnimationList.h"
 #include "BorderValue.h"
+#include "CSSLineBoxContainValue.h"
 #include "CSSPrimitiveValue.h"
 #include "CSSPropertyNames.h"
 #include "Color.h"
@@ -58,6 +59,7 @@
 #include "StyleTransformData.h"
 #include "StyleVisualData.h"
 #include "TextDirection.h"
+#include "TextOrientation.h"
 #include "ThemeTypes.h"
 #include "TransformOperations.h"
 #include <wtf/Forward.h>
@@ -106,6 +108,7 @@ class RenderStyle: public RefCounted<RenderStyle> {
     friend class AnimationBase; // Used by CSS animations. We can't allow them to animate based off visited colors.
     friend class ApplyStyleCommand; // Editing has to only reveal unvisited info.
     friend class EditingStyle; // Editing has to only reveal unvisited info.
+    friend class CSSStyleApplyProperty; // Sets members directly.
     friend class CSSStyleSelector; // Sets members directly.
     friend class CSSComputedStyleDeclaration; // Ignores visited styles, so needs to be able to see unvisited info.
     friend class PropertyWrapperMaybeInvalidColor; // Used by CSS animations. We can't allow them to animate based off visited colors.
@@ -184,7 +187,7 @@ protected:
         unsigned _list_style_type : 7; // EListStyleType
         unsigned _list_style_position : 1; // EListStylePosition
         unsigned _visibility : 2; // EVisibility
-        unsigned _text_align : 3; // ETextAlign
+        unsigned _text_align : 4; // ETextAlign
         unsigned _text_transform : 2; // ETextTransform
         unsigned _text_decorations : 4;
         unsigned _cursor_style : 6; // ECursor
@@ -310,6 +313,7 @@ private:
 public:
     static PassRefPtr<RenderStyle> create();
     static PassRefPtr<RenderStyle> createDefaultStyle();
+    static PassRefPtr<RenderStyle> createAnonymousStyle(const RenderStyle* parentStyle);
     static PassRefPtr<RenderStyle> clone(const RenderStyle*);
 
     ~RenderStyle();
@@ -559,7 +563,6 @@ public:
         return wordBreak() == BreakWordBreak || wordWrap() == BreakWordWrap;
     }
 
-    StyleImage* backgroundImage() const { return m_background->background().image(); }
     EFillRepeat backgroundRepeatX() const { return static_cast<EFillRepeat>(m_background->background().repeatX()); }
     EFillRepeat backgroundRepeatY() const { return static_cast<EFillRepeat>(m_background->background().repeatY()); }
     CompositeOperator backgroundComposite() const { return static_cast<CompositeOperator>(m_background->background().composite()); }
@@ -694,6 +697,8 @@ public:
     EMatchNearestMailBlockquoteColor matchNearestMailBlockquoteColor() const { return static_cast<EMatchNearestMailBlockquoteColor>(rareNonInheritedData->matchNearestMailBlockquoteColor); }
     const AtomicString& highlight() const { return rareInheritedData->highlight; }
     Hyphens hyphens() const { return static_cast<Hyphens>(rareInheritedData->hyphens); }
+    short hyphenationLimitBefore() const { return rareInheritedData->hyphenationLimitBefore; }
+    short hyphenationLimitAfter() const { return rareInheritedData->hyphenationLimitAfter; }
     const AtomicString& hyphenationString() const { return rareInheritedData->hyphenationString; }
     const AtomicString& locale() const { return rareInheritedData->locale; }
     EBorderFit borderFit() const { return static_cast<EBorderFit>(rareNonInheritedData->m_borderFit); }
@@ -768,6 +773,7 @@ public:
     bool isRunningAcceleratedAnimation() const { return rareNonInheritedData->m_runningAcceleratedAnimation; }
 #endif
 
+    LineBoxContain lineBoxContain() const { return rareInheritedData->m_lineBoxContain; }
     const LineClampValue& lineClamp() const { return rareNonInheritedData->lineClamp; }
     bool textSizeAdjust() const { return rareInheritedData->textSizeAdjust; }
     ETextSecurity textSecurity() const { return static_cast<ETextSecurity>(rareInheritedData->textSecurity); }
@@ -1047,6 +1053,8 @@ public:
     void setMatchNearestMailBlockquoteColor(EMatchNearestMailBlockquoteColor c) { SET_VAR(rareNonInheritedData, matchNearestMailBlockquoteColor, c); }
     void setHighlight(const AtomicString& h) { SET_VAR(rareInheritedData, highlight, h); }
     void setHyphens(Hyphens h) { SET_VAR(rareInheritedData, hyphens, h); }
+    void setHyphenationLimitBefore(short limit) { SET_VAR(rareInheritedData, hyphenationLimitBefore, limit); }
+    void setHyphenationLimitAfter(short limit) { SET_VAR(rareInheritedData, hyphenationLimitAfter, limit); }
     void setHyphenationString(const AtomicString& h) { SET_VAR(rareInheritedData, hyphenationString, h); }
     void setLocale(const AtomicString& locale) { SET_VAR(rareInheritedData, locale, locale); }
     void setBorderFit(EBorderFit b) { SET_VAR(rareNonInheritedData, m_borderFit, b); }
@@ -1110,6 +1118,7 @@ public:
     void setIsRunningAcceleratedAnimation(bool b = true) { SET_VAR(rareNonInheritedData, m_runningAcceleratedAnimation, b); }
 #endif
 
+    void setLineBoxContain(LineBoxContain c) { SET_VAR(rareInheritedData, m_lineBoxContain, c); }
     void setLineClamp(LineClampValue c) { SET_VAR(rareNonInheritedData, lineClamp, c); }
     void setTextSizeAdjust(bool b) { SET_VAR(rareInheritedData, textSizeAdjust, b); }
     void setTextSecurity(ETextSecurity aTextSecurity) { SET_VAR(rareInheritedData, textSecurity, aTextSecurity); }
@@ -1207,6 +1216,7 @@ public:
     static TextDirection initialDirection() { return LTR; }
     static WritingMode initialWritingMode() { return TopToBottomWritingMode; }
     static TextCombine initialTextCombine() { return TextCombineNone; }
+    static TextOrientation initialTextOrientation() { return TextOrientationVerticalRight; }
     static EDisplay initialDisplay() { return INLINE; }
     static EEmptyCell initialEmptyCells() { return SHOW; }
     static EFloat initialFloating() { return FNONE; }
@@ -1273,6 +1283,8 @@ public:
     static const AtomicString& initialHighlight() { return nullAtom; }
     static ESpeak initialSpeak() { return SpeakNormal; }
     static Hyphens initialHyphens() { return HyphensManual; }
+    static short initialHyphenationLimitBefore() { return -1; }
+    static short initialHyphenationLimitAfter() { return -1; }
     static const AtomicString& initialHyphenationString() { return nullAtom; }
     static const AtomicString& initialLocale() { return nullAtom; }
     static EBorderFit initialBorderFit() { return BorderFitBorder; }
@@ -1298,6 +1310,7 @@ public:
     static TextEmphasisMark initialTextEmphasisMark() { return TextEmphasisMarkNone; }
     static const AtomicString& initialTextEmphasisCustomMark() { return nullAtom; }
     static TextEmphasisPosition initialTextEmphasisPosition() { return TextEmphasisPositionOver; }
+    static LineBoxContain initialLineBoxContain() { return LineBoxContainBlock | LineBoxContainInline | LineBoxContainReplaced; }
 
     // Keep these at the end.
     static LineClampValue initialLineClamp() { return LineClampValue(); }
@@ -1309,6 +1322,7 @@ public:
 #endif
 
 private:
+    void inheritUnicodeBidiFrom(const RenderStyle* parent) { noninherited_flags._unicodeBidi = parent->noninherited_flags._unicodeBidi; }
     void getShadowExtent(const ShadowData*, int& top, int& right, int& bottom, int& left) const;
     void getShadowHorizontalExtent(const ShadowData*, int& left, int& right) const;
     void getShadowVerticalExtent(const ShadowData*, int& top, int& bottom) const;

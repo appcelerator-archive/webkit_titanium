@@ -131,6 +131,7 @@ public:
     void willMoveOffscreen();
 
     void resetScrollbars();
+    void resetScrollbarsAndClearContentsSize();
     void detachCustomScrollbars();
 
     void clear();
@@ -139,7 +140,7 @@ public:
     void setTransparent(bool isTransparent);
 
     Color baseBackgroundColor() const;
-    void setBaseBackgroundColor(Color);
+    void setBaseBackgroundColor(const Color&);
     void updateBackgroundRecursively(const Color&, bool);
 
     bool shouldUpdateWhileOffscreen() const;
@@ -206,6 +207,7 @@ public:
     void setPaintBehavior(PaintBehavior);
     PaintBehavior paintBehavior() const;
     bool isPainting() const;
+    bool hasEverPainted() const { return m_lastPaintTime; }
     void setNodeToDraw(Node*);
 
     virtual void paintOverhangAreas(GraphicsContext*, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect);
@@ -267,8 +269,7 @@ public:
     // FIXME: Remove this method once plugin loading is decoupled from layout.
     void flushAnyPendingPostLayoutTasks();
 
-    void setIsRestoringFromBackForward(bool isRestoring) { m_isRestoringFromBackForward = isRestoring; }
-    bool isRestoringFromBackForward() const { return m_isRestoringFromBackForward; }
+    virtual bool shouldSuspendScrollAnimations() const;
 
 protected:
     virtual bool scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect);
@@ -315,6 +316,10 @@ private:
     virtual void getTickmarks(Vector<IntRect>&) const;
     virtual void scrollTo(const IntSize&);
     virtual void didCompleteRubberBand(const IntSize&) const;
+    virtual void scrollbarStyleChanged();
+
+    virtual void notifyPageThatContentAreaWillPaint() const;
+    virtual void disconnectFromPage() { m_page = 0; }
 
     void deferredRepaintTimerFired(Timer<FrameView>*);
     void doDeferredRepaints();
@@ -408,12 +413,12 @@ private:
     bool m_isVisuallyNonEmpty;
     bool m_firstVisuallyNonEmptyLayoutCallbackPending;
 
-    bool m_isRestoringFromBackForward;
-
     RefPtr<Node> m_maintainScrollPositionAnchor;
 
     // Renderer to hold our custom scroll corner.
     RenderScrollbarPart* m_scrollCorner;
+
+    Page* m_page;
 
     static double s_deferredRepaintDelay;
     static double s_initialDeferredRepaintDelayDuringLoading;

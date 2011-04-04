@@ -29,6 +29,8 @@
 #import "DataReference.h"
 #import "WKAPICast.h"
 #import "WKView.h"
+#import "WebData.h"
+#import "WebEventFactory.h"
 #import "WebPageGroup.h"
 #import "WebPageProxy.h"
 #import "WebPreferences.h"
@@ -116,7 +118,7 @@ extern "C" NSString *_NSPathForSystemFramework(NSString *framework);
     if (!_pdfViewController)
         return;
 
-    WebPreferences *preferences = toImpl([_pdfViewController->wkView() pageRef])->pageGroup()->preferences();
+    WebPreferences *preferences = _pdfViewController->page()->pageGroup()->preferences();
 
     CGFloat scaleFactor = preferences->pdfScaleFactor();
     if (!scaleFactor)
@@ -135,7 +137,7 @@ extern "C" NSString *_NSPathForSystemFramework(NSString *framework);
     if (!_pdfViewController)
         return;
 
-    WebPreferences* preferences = toImpl([_pdfViewController->wkView() pageRef])->pageGroup()->preferences();
+    WebPreferences* preferences = _pdfViewController->page()->pageGroup()->preferences();
 
     CGFloat scaleFactor = [_pdfView autoScales] ? 0 : [_pdfView scaleFactor];
     preferences->setPDFScaleFactor(scaleFactor);
@@ -182,9 +184,19 @@ extern "C" NSString *_NSPathForSystemFramework(NSString *framework);
 
 // PDFView delegate methods
 
+- (void)PDFViewWillClickOnLink:(PDFView *)sender withURL:(NSURL *)URL
+{
+    _pdfViewController->linkClicked([URL absoluteString]);
+}
+
 - (void)PDFViewOpenPDFInNativeApplication:(PDFView *)sender
 {
     _pdfViewController->openPDFInFinder();
+}
+
+- (void)PDFViewSavePDFToDownloadFolder:(PDFView *)sender
+{
+    _pdfViewController->savePDFToDownloadsFolder();
 }
 
 @end
@@ -212,6 +224,16 @@ PDFViewController::~PDFViewController()
     m_wkPDFView = nullptr;
 }
 
+WebPageProxy* PDFViewController::page() const
+{
+    return toImpl([m_wkView pageRef]);
+}
+
+NSView* PDFViewController::pdfView() const
+{ 
+    return m_wkPDFView.get(); 
+}
+    
 static RetainPtr<CFDataRef> convertPostScriptDataSourceToPDF(const CoreIPC::DataReference& dataReference)
 {
     // Convert PostScript to PDF using Quartz 2D API
@@ -330,6 +352,32 @@ void PDFViewController::openPDFInFinder()
     [[NSWorkspace sharedWorkspace] openFile:path];
 }
 
+static void releaseCFData(unsigned char*, const void* data)
+{
+    ASSERT(CFGetTypeID(data) == CFDataGetTypeID());
+
+    // Balanced by CFRetain in savePDFToDownloadsFolder.
+    CFRelease(data);
+}
+
+void PDFViewController::savePDFToDownloadsFolder()
+{
+    // We don't want to write the file until we have a document to write. (see 5267607).
+    if (![m_pdfView document]) {
+        NSBeep();
+        return;
+    }
+
+    ASSERT(m_pdfData);
+
+    // Balanced by CFRelease in releaseCFData.
+    CFRetain(m_pdfData.get());
+
+    RefPtr<WebData> data = WebData::createWithoutCopying(CFDataGetBytePtr(m_pdfData.get()), CFDataGetLength(m_pdfData.get()), releaseCFData, m_pdfData.get());
+
+    page()->saveDataToFileInDownloadsFolder(m_suggestedFilename.get(), page()->mainFrame()->mimeType(), page()->mainFrame()->url(), data.get());
+}
+
 static NSString *temporaryPDFDirectoryPath()
 {
     static NSString *temporaryPDFDirectoryPath;
@@ -372,6 +420,26 @@ NSString *PDFViewController::pathToPDFOnDisk()
 
     m_pathToPDFOnDisk.adoptNS([path copy]);
     return path;
+}
+
+void PDFViewController::linkClicked(const String& url)
+{
+    NSEvent* nsEvent = [NSApp currentEvent];
+    WebMouseEvent event;
+    switch ([nsEvent type]) {
+    case NSLeftMouseUp:
+    case NSRightMouseUp:
+    case NSOtherMouseUp:
+        event = WebEventFactory::createWebMouseEvent(nsEvent, m_pdfView);
+    default:
+        // For non mouse-clicks or for keyboard events, pass an empty WebMouseEvent
+        // through.  The event is only used by the WebFrameLoaderClient to determine
+        // the modifier keys and which mouse button is down.  These queries will be
+        // valid with an empty event.
+        break;
+    }
+    
+    page()->linkClicked(url, event);
 }
 
 } // namespace WebKit

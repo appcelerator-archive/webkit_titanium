@@ -45,12 +45,16 @@ WebInspector.ObjectPropertiesSection.prototype = {
     update: function()
     {
         var self = this;
-        var callback = function(properties) {
+        function callback(properties)
+        {
             if (!properties)
                 return;
             self.updateProperties(properties);
-        };
-        this.object.getProperties(this.ignoreHasOwnProperty, true, callback);
+        }
+        if (this.ignoreHasOwnProperty)
+            this.object.getAllProperties(callback);
+        else
+            this.object.getOwnProperties(callback);
     },
 
     updateProperties: function(properties, rootTreeElementConstructor, rootPropertyComparer)
@@ -155,7 +159,7 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
                 this.appendChild(new this.treeOutline.section.treeElementConstructor(properties[i]));
             }
         };
-        this.property.value.getOwnProperties(true, callback.bind(this));
+        this.property.value.getOwnProperties(callback.bind(this));
     },
 
     ondblclick: function(event)
@@ -183,9 +187,14 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
 
         var description = this.property.value.description;
         // Render \n as a nice unicode cr symbol.
-        if (this.property.value.type === "string" && typeof description === "string")
-            description = description.replace(/\n/g, "\u21B5");
-        this.valueElement.textContent = description;
+        if (this.property.value.type === "string" && typeof description === "string") {
+            this.valueElement.textContent = "\"" + description.replace(/\n/g, "\u21B5") + "\"";
+            this.valueElement._originalTextContent = "\"" + description + "\"";
+        } else if (this.property.value.type === "function" && typeof description === "string") {
+            this.valueElement.textContent = /.*/.exec(description)[0].replace(/ +$/g, "");
+            this.valueElement._originalTextContent = description;
+        } else
+            this.valueElement.textContent = description;
 
         if (this.property.isGetter)
             this.valueElement.addStyleClass("dimmed");
@@ -243,6 +252,10 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
 
         this.listItemElement.addStyleClass("editing-sub-part");
 
+        // Edit original source.
+        if (typeof this.valueElement._originalTextContent === "string")
+            this.valueElement.textContent = this.valueElement._originalTextContent;
+
         WebInspector.startEditing(this.valueElement, {
             context: context,
             commitHandler: this.editingCommitted.bind(this),
@@ -278,23 +291,23 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
     {
         expression = expression.trim();
         var expressionLength = expression.length;
-        var self = this;
-        var callback = function(success) {
+        function callback(error)
+        {
             if (!updateInterface)
                 return;
 
-            if (!success)
-                self.update();
+            if (error)
+                this.update();
 
             if (!expressionLength) {
                 // The property was deleted, so remove this tree element.
-                self.parent.removeChild(this);
+                this.parent.removeChild(this);
             } else {
                 // Call updateSiblings since their value might be based on the value that just changed.
-                self.updateSiblings();
+                this.updateSiblings();
             }
         };
-        this.property.parentObject.setPropertyValue(this.property.name, expression.trim(), callback);
+        this.property.parentObject.setPropertyValue(this.property.name, expression.trim(), callback.bind(this));
     }
 }
 

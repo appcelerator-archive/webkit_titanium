@@ -156,12 +156,13 @@ public:
 #endif
 
     virtual NativeImagePtr nativeImageForCurrentFrame() { return frameAtIndex(currentFrame()); }
+    bool frameHasAlphaAtIndex(size_t); 
 
 protected:
     enum RepetitionCountStatus {
       Unknown,    // We haven't checked the source's repetition count.
       Uncertain,  // We have a repetition count, but it might be wrong (some GIFs have a count after the image data, and will report "loop once" until all data has been decoded).
-      Certain,    // The repetition count is known to be correct.
+      Certain     // The repetition count is known to be correct.
     };
 
     BitmapImage(NativeImagePtr, ImageObserver* = 0);
@@ -186,7 +187,6 @@ protected:
     NativeImagePtr frameAtIndex(size_t);
     bool frameIsCompleteAtIndex(size_t);
     float frameDurationAtIndex(size_t);
-    bool frameHasAlphaAtIndex(size_t); 
 
     // Decodes and caches a frame. Never accessed except internally.
     void cacheFrame(size_t index);

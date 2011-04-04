@@ -128,7 +128,22 @@ void WKBundleOverrideXSSAuditorEnabledForTestRunner(WKBundleRef bundleRef, WKBun
     toImpl(bundleRef)->overrideXSSAuditorEnabledForTestRunner(toImpl(pageGroupRef), enabled);
 }
 
+void WKBundleOverrideAllowUniversalAccessFromFileURLsForTestRunner(WKBundleRef bundleRef, WKBundlePageGroupRef pageGroupRef, bool enabled)
+{
+    toImpl(bundleRef)->overrideAllowUniversalAccessFromFileURLsForTestRunner(toImpl(pageGroupRef), enabled);
+}
+
 void WKBundleReportException(JSContextRef context, JSValueRef exception)
 {
     InjectedBundle::reportException(context, exception);
+}
+
+void WKBundleClearAllDatabases(WKBundleRef bundleRef)
+{
+    toImpl(bundleRef)->clearAllDatabases();
+}
+
+void WKBundleSetDatabaseQuota(WKBundleRef bundleRef, uint64_t quota)
+{
+    toImpl(bundleRef)->setDatabaseQuota(quota);
 }

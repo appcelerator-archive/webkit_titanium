@@ -34,6 +34,18 @@ using namespace WebCore;
 
 namespace WebKit {
 
+static WebMouseEvent::Button currentMouseButton()
+{
+    NSUInteger pressedMouseButtons = [NSEvent pressedMouseButtons];
+    if (!pressedMouseButtons)
+        return WebMouseEvent::NoButton;
+    if (pressedMouseButtons == 1 << 0)
+        return WebMouseEvent::LeftButton;
+    if (pressedMouseButtons == 1 << 1)
+        return WebMouseEvent::RightButton;
+    return WebMouseEvent::MiddleButton;
+}
+
 static WebMouseEvent::Button mouseButtonForEvent(NSEvent *event)
 {
     switch ([event type]) {
@@ -49,6 +61,9 @@ static WebMouseEvent::Button mouseButtonForEvent(NSEvent *event)
         case NSOtherMouseUp:
         case NSOtherMouseDragged:
             return WebMouseEvent::MiddleButton;
+        case NSMouseEntered:
+        case NSMouseExited:
+            return currentMouseButton();
         default:
             return WebMouseEvent::NoButton;
     }
@@ -192,8 +207,9 @@ static WebWheelEvent::Phase phaseForEvent(NSEvent *event)
 
 static WebWheelEvent::Phase momentumPhaseForEvent(NSEvent *event)
 {
-#if !defined(BUILDING_ON_SNOW_LEOPARD)
     uint32_t phase = WebWheelEvent::PhaseNone; 
+
+#if !defined(BUILDING_ON_SNOW_LEOPARD)
     if ([event momentumPhase] & NSEventPhaseBegan)
         phase |= WebWheelEvent::PhaseBegan;
     if ([event momentumPhase] & NSEventPhaseStationary)
@@ -204,10 +220,24 @@ static WebWheelEvent::Phase momentumPhaseForEvent(NSEvent *event)
         phase |= WebWheelEvent::PhaseEnded;
     if ([event momentumPhase] & NSEventPhaseCancelled)
         phase |= WebWheelEvent::PhaseCancelled;
-    return static_cast<WebWheelEvent::Phase>(phase);
 #else
-    return WebWheelEvent::PhaseNone;
+    switch (WKGetNSEventMomentumPhase(event)) {
+    case WKEventPhaseNone:
+        phase = WebWheelEvent::PhaseNone;
+        break;
+    case WKEventPhaseBegan:
+        phase = WebWheelEvent::PhaseBegan;
+        break;
+    case WKEventPhaseChanged:
+        phase = WebWheelEvent::PhaseChanged;
+        break;
+    case WKEventPhaseEnded:
+        phase = WebWheelEvent::PhaseEnded;
+        break;
+    }
 #endif
+
+    return static_cast<WebWheelEvent::Phase>(phase);
 }
 
 #if ENABLE(GESTURE_EVENTS)

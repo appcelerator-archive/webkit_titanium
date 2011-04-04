@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -84,6 +84,7 @@ namespace WebCore {
     class ResourceResponse;
     class SecurityOrigin;
     class SharedBuffer;
+    class StringWithDirection;
     class SubstituteData;
     class Widget;
 
@@ -139,7 +140,7 @@ namespace WebCore {
         virtual void dispatchWillClose() = 0;
         virtual void dispatchDidReceiveIcon() = 0;
         virtual void dispatchDidStartProvisionalLoad() = 0;
-        virtual void dispatchDidReceiveTitle(const String& title) = 0;
+        virtual void dispatchDidReceiveTitle(const StringWithDirection&) = 0;
         virtual void dispatchDidChangeIcons() = 0;
         virtual void dispatchDidCommitLoad() = 0;
         virtual void dispatchDidFailProvisionalLoad(const ResourceError&) = 0;
@@ -152,7 +153,7 @@ namespace WebCore {
         virtual Frame* dispatchCreatePage(const NavigationAction&) = 0;
         virtual void dispatchShow() = 0;
 
-        virtual void dispatchDecidePolicyForMIMEType(FramePolicyFunction, const String& MIMEType, const ResourceRequest&) = 0;
+        virtual void dispatchDecidePolicyForResponse(FramePolicyFunction, const ResourceResponse&, const ResourceRequest&) = 0;
         virtual void dispatchDecidePolicyForNewWindowAction(FramePolicyFunction, const NavigationAction&, const ResourceRequest&, PassRefPtr<FormState>, const String& frameName) = 0;
         virtual void dispatchDecidePolicyForNavigationAction(FramePolicyFunction, const NavigationAction&, const ResourceRequest&, PassRefPtr<FormState>) = 0;
         virtual void cancelPolicyCheck() = 0;
@@ -227,7 +228,7 @@ namespace WebCore {
         virtual void prepareForDataSourceReplacement() = 0;
 
         virtual PassRefPtr<DocumentLoader> createDocumentLoader(const ResourceRequest&, const SubstituteData&) = 0;
-        virtual void setTitle(const String& title, const KURL&) = 0;
+        virtual void setTitle(const StringWithDirection&, const KURL&) = 0;
 
         virtual String userAgent(const KURL&) = 0;
         
@@ -259,7 +260,7 @@ namespace WebCore {
         virtual void showMediaPlayerProxyPlugin(Widget*) = 0;
 #endif
 
-        virtual ObjectContentType objectContentType(const KURL& url, const String& mimeType) = 0;
+        virtual ObjectContentType objectContentType(const KURL&, const String& mimeType, bool shouldPreferPlugInsForImages) = 0;
         virtual String overrideMediaType() const = 0;
 
         virtual void dispatchDidClearWindowObjectInWorld(DOMWrapperWorld*) = 0;

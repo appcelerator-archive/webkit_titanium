@@ -32,6 +32,7 @@
 @interface DOMElement (WebDOMElementOperationsPrivate)
 + (DOMElement *)_DOMElementFromJSContext:(JSContextRef)context value:(JSValueRef)value;
 - (NSString *)_markerTextForListItem;
+- (JSValueRef)_shadowRoot:(JSContextRef)context;
 @end
 
 @interface DOMDocument (WebDOMDocumentOperationsPrivate)
@@ -39,6 +40,7 @@
 @end
 
 @interface DOMHTMLInputElement (WebDOMHTMLInputElementOperationsPrivate)
+- (void)_setAutofilled:(BOOL)autofilled;
 - (void)_setValueForUser:(NSString *)value;
 @end
 

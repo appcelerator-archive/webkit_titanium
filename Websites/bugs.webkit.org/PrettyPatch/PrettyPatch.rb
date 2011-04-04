@@ -12,6 +12,7 @@ public
     GIT_PATH = "git"
 
     def self.prettify(string)
+        string = normalize_line_ending(string)
         fileDiffs = FileDiff.parse(string)
 
         str = HEADER + "\n"
@@ -65,10 +66,13 @@ private
 
     START_OF_BINARY_DATA_FORMAT = /^[0-9a-zA-Z\+\/=]{20,}/ # Assume 20 chars without a space is base64 binary data.
 
-    START_OF_SECTION_FORMAT = /^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@\s*(.*)/
+    START_OF_SECTION_FORMAT = /^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@\s*(.*)/
 
     START_OF_EXTENT_STRING = "%c" % 0
     END_OF_EXTENT_STRING = "%c" % 1
+
+    # We won't search for intra-line diffs in lines longer than this length, to avoid hangs. See <http://webkit.org/b/56109>.
+    MAXIMUM_INTRALINE_DIFF_LINE_LENGTH = 10000
 
     SMALLEST_EQUAL_OPERATION = 3
 
@@ -80,10 +84,13 @@ private
         PerformanceTests
         Source
         Tools
-        WebKit
         WebKitLibraries
         Websites
     ]
+
+    def self.normalize_line_ending(s)
+        s.gsub /\r\n?/, "\n"
+    end
 
     def self.find_url_and_path(file_path)
         # Search file_path from the bottom up, at each level checking whether
@@ -667,7 +674,14 @@ END
             lines.length >= 1 or raise "DiffSection.parse only received %d lines" % lines.length
 
             matches = START_OF_SECTION_FORMAT.match(lines[0])
-            from, to = [matches[1].to_i, matches[2].to_i] unless matches.nil?
+
+            if matches
+                from, to = [matches[1].to_i, matches[3].to_i]
+                if matches[2] and matches[4]
+                    from_end = from + matches[2].to_i
+                    to_end = to + matches[4].to_i
+                end
+            end
 
             @blocks = []
             diff_block = nil
@@ -707,6 +721,8 @@ END
                     from += 1 unless from.nil?
                     to += 1 unless to.nil?
                 end
+
+                break if from_end and to_end and from == from_end and to == to_end
             end
 
             changes = [ [ [], [] ] ]
@@ -726,7 +742,10 @@ END
             for change in changes
                 next unless change.first.length == change.last.length
                 for i in (0...change.first.length)
-                    raw_operations = HTMLDiff::DiffBuilder.new(change.first[i].text, change.last[i].text).operations
+                    from_text = change.first[i].text
+                    to_text = change.last[i].text
+                    next if from_text.length > MAXIMUM_INTRALINE_DIFF_LINE_LENGTH or to_text.length > MAXIMUM_INTRALINE_DIFF_LINE_LENGTH
+                    raw_operations = HTMLDiff::DiffBuilder.new(from_text, to_text).operations
                     operations = []
                     back = 0
                     raw_operations.each_with_index do |operation, j|
@@ -747,7 +766,7 @@ END
                 end
             end
 
-            @blocks.unshift(ContextLine.new(matches[3])) unless matches.nil? || matches[3].empty?
+            @blocks.unshift(ContextLine.new(matches[5])) unless matches.nil? || matches[5].empty?
         end
 
         def to_html

@@ -62,13 +62,18 @@ namespace WebCore {
 
 CCLayerImpl::CCLayerImpl(LayerChromium* owner)
     : m_owner(owner)
+    , m_anchorPoint(0.5, 0.5)
+    , m_anchorPointZ(0)
+    , m_doubleSided(true)
+    , m_masksToBounds(false)
+    , m_opacity(1.0)
+    , m_preserves3D(false)
 #ifndef NDEBUG
     , m_debugID(owner->debugID())
 #endif
     , m_targetRenderSurface(0)
     , m_drawDepth(0)
     , m_drawOpacity(0)
-    , m_doubleSided(true)
     , m_debugBorderColor(0, 0, 0, 0)
     , m_debugBorderWidth(0)
     , m_renderSurface(0)
@@ -107,21 +112,31 @@ RenderSurfaceChromium* CCLayerImpl::createRenderSurface()
     return m_renderSurface.get();
 }
 
-// This does not belong on CCLayerImpl.
-void CCLayerImpl::updateContentsIfDirty()
+bool CCLayerImpl::descendantsDrawsContent()
 {
-    m_owner->updateContentsIfDirty();
+    const Vector<RefPtr<LayerChromium> >& sublayers = m_owner->getSublayers();
+    for (size_t i = 0; i < sublayers.size(); ++i) {
+        sublayers[i]->createCCLayerImplIfNeeded();
+        if (sublayers[i]->ccLayerImpl()->drawsContent() || sublayers[i]->ccLayerImpl()->descendantsDrawsContent())
+            return true;
+    }
+    return false;
 }
 
-// These belong on CCLayerImpl, but should be subclased by each type and not defer to the LayerChromium subtypes.
+// These belong on CCLayerImpl, but should be overridden by each type and not defer to the LayerChromium subtypes.
 bool CCLayerImpl::drawsContent() const
 {
-    return m_owner->drawsContent();
+    return m_owner && m_owner->drawsContent();
 }
 
 void CCLayerImpl::draw()
 {
     return m_owner->draw();
+}
+
+void CCLayerImpl::updateCompositorResources()
+{
+    return m_owner->updateCompositorResources();
 }
 
 void CCLayerImpl::unreserveContentsTexture()
@@ -136,6 +151,7 @@ void CCLayerImpl::bindContentsTexture()
 
 void CCLayerImpl::cleanupResources()
 {
+    m_owner = 0;
     if (renderSurface())
         renderSurface()->cleanupResources();
 }
@@ -173,7 +189,7 @@ void CCLayerImpl::drawDebugBorder()
     GLC(context, context->drawElements(GraphicsContext3D::LINE_LOOP, 4, GraphicsContext3D::UNSIGNED_SHORT, 6 * sizeof(unsigned short)));
 }
 
-static void writeIndent(TextStream& ts, int indent)
+void CCLayerImpl::writeIndent(TextStream& ts, int indent)
 {
     for (int i = 0; i != indent; ++i)
         ts << "  ";
@@ -200,4 +216,3 @@ void CCLayerImpl::dumpLayerProperties(TextStream& ts, int indent) const
 }
 
 #endif // USE(ACCELERATED_COMPOSITING)
-

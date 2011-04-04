@@ -449,6 +449,9 @@ void RenderTextControlSingleLine::styleDidChange(StyleDifference diff, const Ren
     if (RenderObject* spinRenderer = m_outerSpinButton ? m_outerSpinButton->renderer() : 0)
         spinRenderer->setStyle(createOuterSpinButtonStyle());
 
+    if (RenderObject* spinRenderer = m_innerSpinButton ? m_innerSpinButton->renderer() : 0)
+        spinRenderer->setStyle(createInnerSpinButtonStyle());
+
 #if ENABLE(INPUT_SPEECH)
     if (RenderObject* speechRenderer = m_speechButton ? m_speechButton->renderer() : 0)
         speechRenderer->setStyle(createSpeechButtonStyle());
@@ -1104,7 +1107,7 @@ PassRefPtr<Scrollbar> RenderTextControlSingleLine::createScrollbar(ScrollableAre
 
 InputElement* RenderTextControlSingleLine::inputElement() const
 {
-    return toInputElement(static_cast<Element*>(node()));
+    return node()->toInputElement();
 }
 
 int RenderTextControlSingleLine::textBlockInsetLeft() const

@@ -370,7 +370,7 @@ static void decidePolicyForNewWindowAction(WKPageRef page, WKFrameRef frame, WKF
     WKFramePolicyListenerUse(listener);
 }
 
-static void decidePolicyForMIMEType(WKPageRef page, WKFrameRef frame, WKStringRef MIMEType, WKURLRequestRef request, WKFramePolicyListenerRef listener, WKTypeRef userData, const void* clientInfo)
+static void decidePolicyForResponse(WKPageRef page, WKFrameRef frame, WKURLResponseRef response, WKURLRequestRef request, WKFramePolicyListenerRef listener, WKTypeRef userData, const void* clientInfo)
 {
     WKFramePolicyListenerUse(listener);
 }
@@ -607,7 +607,8 @@ static void runOpenPanel(WKPageRef page, WKFrameRef frame, WKOpenPanelParameters
         self,       /* clientInfo */
         decidePolicyForNavigationAction,
         decidePolicyForNewWindowAction,
-        decidePolicyForMIMEType
+        decidePolicyForResponse,
+        0           /* unableToImplementPolicy */
     };
     WKPageSetPagePolicyClient(_webView.pageRef, &policyClient);
 
@@ -647,6 +648,7 @@ static void runOpenPanel(WKPageRef page, WKFrameRef frame, WKOpenPanelParameters
         0, // printFrame
         0, // showModal
         0, // didCompleteRubberBandForMainFrame
+        0, // saveDataToFileInDownloadsFolder
     };
     WKPageSetPageUIClient(_webView.pageRef, &uiClient);
 }

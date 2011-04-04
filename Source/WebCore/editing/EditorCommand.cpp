@@ -56,6 +56,7 @@
 #include "Sound.h"
 #include "TypingCommand.h"
 #include "UnlinkCommand.h"
+#include "UserTypingGestureIndicator.h"
 #include "htmlediting.h"
 #include "markup.h"
 #include <wtf/text/AtomicString.h>
@@ -156,21 +157,18 @@ static bool executeToggleStyleInList(Frame* frame, EditorCommandSource source, E
 
 static bool executeToggleStyle(Frame* frame, EditorCommandSource source, EditAction action, int propertyID, const char* offValue, const char* onValue)
 {
-    RefPtr<CSSMutableStyleDeclaration> style = CSSMutableStyleDeclaration::create();
-    style->setProperty(propertyID, onValue); // We need to add this style to pass it to selectionStartHasStyle / selectionHasStyle
-
     // Style is considered present when
     // Mac: present at the beginning of selection
     // other: present throughout the selection
 
     bool styleIsPresent;
     if (frame->editor()->behavior().shouldToggleStyleBasedOnStartOfSelection())
-        styleIsPresent = frame->editor()->selectionStartHasStyle(style.get());
+        styleIsPresent = frame->editor()->selectionStartHasStyle(propertyID, onValue);
     else
-        styleIsPresent = frame->editor()->selectionHasStyle(style.get()) == TrueTriState;
+        styleIsPresent = frame->editor()->selectionHasStyle(propertyID, onValue) == TrueTriState;
 
-    style->setProperty(propertyID, styleIsPresent ? offValue : onValue);
-    return applyCommandToFrame(frame, source, action, style.get());
+    RefPtr<EditingStyle> style = EditingStyle::create(propertyID, styleIsPresent ? offValue : onValue);
+    return applyCommandToFrame(frame, source, action, style->style());
 }
 
 static bool executeApplyParagraphStyle(Frame* frame, EditorCommandSource source, EditAction action, int propertyID, const String& propertyValue)
@@ -227,12 +225,9 @@ static bool expandSelectionToGranularity(Frame* frame, TextGranularity granulari
 
 static TriState stateStyle(Frame* frame, int propertyID, const char* desiredValue)
 {
-    RefPtr<CSSMutableStyleDeclaration> style = CSSMutableStyleDeclaration::create();
-    style->setProperty(propertyID, desiredValue);
-
     if (frame->editor()->behavior().shouldToggleStyleBasedOnStartOfSelection())
-        return frame->editor()->selectionStartHasStyle(style.get()) ? TrueTriState : FalseTriState;
-    return frame->editor()->selectionHasStyle(style.get());
+        return frame->editor()->selectionStartHasStyle(propertyID, desiredValue) ? TrueTriState : FalseTriState;
+    return frame->editor()->selectionHasStyle(propertyID, desiredValue);
 }
 
 static String valueStyle(Frame* frame, int propertyID)
@@ -260,7 +255,7 @@ static int verticalScrollDistance(Frame* frame)
     RenderStyle* style = renderer->style();
     if (!style)
         return 0;
-    if (!(style->overflowY() == OSCROLL || style->overflowY() == OAUTO || focusedNode->isContentEditable()))
+    if (!(style->overflowY() == OSCROLL || style->overflowY() == OAUTO || focusedNode->rendererIsEditable()))
         return 0;
     int height = std::min<int>(toRenderBox(renderer)->clientHeight(),
                                frame->view()->visibleHeight());
@@ -300,19 +295,25 @@ static bool executeCreateLink(Frame* frame, Event*, EditorCommandSource, const S
     return true;
 }
 
-static bool executeCut(Frame* frame, Event*, EditorCommandSource, const String&)
+static bool executeCut(Frame* frame, Event*, EditorCommandSource source, const String&)
 {
-    frame->editor()->cut();
+    if (source == CommandFromMenuOrKeyBinding) {
+        UserTypingGestureIndicator typingGestureIndicator(frame);
+        frame->editor()->cut();
+    } else
+        frame->editor()->cut();
     return true;
 }
 
 static bool executeDelete(Frame* frame, Event*, EditorCommandSource source, const String&)
 {
     switch (source) {
-    case CommandFromMenuOrKeyBinding:
+    case CommandFromMenuOrKeyBinding: {
         // Doesn't modify the text if the current selection isn't a range.
+        UserTypingGestureIndicator typingGestureIndicator(frame);
         frame->editor()->performDelete();
         return true;
+    }
     case CommandFromDOM:
     case CommandFromDOMWithUserInterface:
         // If the current selection is a caret, delete the preceding character. IE performs forwardDelete, but we currently side with Firefox.
@@ -889,21 +890,33 @@ static bool executeOutdent(Frame* frame, Event*, EditorCommandSource, const Stri
     return true;
 }
 
-static bool executePaste(Frame* frame, Event*, EditorCommandSource, const String&)
+static bool executePaste(Frame* frame, Event*, EditorCommandSource source, const String&)
 {
-    frame->editor()->paste();
+    if (source == CommandFromMenuOrKeyBinding) {
+        UserTypingGestureIndicator typingGestureIndicator(frame);
+        frame->editor()->paste();
+    } else
+        frame->editor()->paste();
     return true;
 }
 
-static bool executePasteAndMatchStyle(Frame* frame, Event*, EditorCommandSource, const String&)
+static bool executePasteAndMatchStyle(Frame* frame, Event*, EditorCommandSource source, const String&)
 {
-    frame->editor()->pasteAsPlainText();
+    if (source == CommandFromMenuOrKeyBinding) {
+        UserTypingGestureIndicator typingGestureIndicator(frame);
+        frame->editor()->pasteAsPlainText();
+    } else
+        frame->editor()->pasteAsPlainText();
     return true;
 }
 
-static bool executePasteAsPlainText(Frame* frame, Event*, EditorCommandSource, const String&)
+static bool executePasteAsPlainText(Frame* frame, Event*, EditorCommandSource source, const String&)
 {
-    frame->editor()->pasteAsPlainText();
+    if (source == CommandFromMenuOrKeyBinding) {
+        UserTypingGestureIndicator typingGestureIndicator(frame);
+        frame->editor()->pasteAsPlainText();
+    } else
+        frame->editor()->pasteAsPlainText();
     return true;
 }
 
@@ -1097,14 +1110,6 @@ static bool executeYankAndSelect(Frame* frame, Event*, EditorCommandSource, cons
     return true;
 }
 
-#if SUPPORT_AUTOCORRECTION_PANEL
-static bool executeCancelOperation(Frame* frame, Event*, EditorCommandSource, const String&)
-{
-    frame->editor()->handleCancelOperation();
-    return true;
-}
-#endif
-
 // Supported functions
 
 static bool supported(Frame*)
@@ -1191,25 +1196,25 @@ static bool enabledCut(Frame* frame, Event*, EditorCommandSource)
     return frame->editor()->canDHTMLCut() || frame->editor()->canCut();
 }
 
+static bool enabledInEditableText(Frame* frame, Event* event, EditorCommandSource)
+{
+    return frame->editor()->selectionForCommand(event).rootEditableElement();
+}
+
 static bool enabledDelete(Frame* frame, Event* event, EditorCommandSource source)
 {
     switch (source) {
     case CommandFromMenuOrKeyBinding:
         // "Delete" from menu only affects selected range, just like Cut but without affecting pasteboard
-        return frame->editor()->canDHTMLCut() || frame->editor()->canCut();
+        return enabledCut(frame, event, source);
     case CommandFromDOM:
     case CommandFromDOMWithUserInterface:
         // "Delete" from DOM is like delete/backspace keypress, affects selected range if non-empty,
         // otherwise removes a character
-        return frame->editor()->selectionForCommand(event).isContentEditable();
+        return enabledInEditableText(frame, event, source);
     }
     ASSERT_NOT_REACHED();
     return false;
-}
-
-static bool enabledInEditableText(Frame* frame, Event* event, EditorCommandSource)
-{
-    return frame->editor()->selectionForCommand(event).isContentEditable();
 }
 
 static bool enabledInEditableTextOrCaretBrowsing(Frame* frame, Event* event, EditorCommandSource)
@@ -1220,7 +1225,7 @@ static bool enabledInEditableTextOrCaretBrowsing(Frame* frame, Event* event, Edi
 
 static bool enabledInRichlyEditableText(Frame* frame, Event*, EditorCommandSource)
 {
-    return frame->selection()->isCaretOrRange() && frame->selection()->isContentRichlyEditable();
+    return frame->selection()->isCaretOrRange() && frame->selection()->isContentRichlyEditable() && frame->selection()->rootEditableElement();
 }
 
 static bool enabledPaste(Frame* frame, Event*, EditorCommandSource)
@@ -1254,13 +1259,6 @@ static bool enabledUndo(Frame* frame, Event*, EditorCommandSource)
 {
     return frame->editor()->canUndo();
 }
-
-#if SUPPORT_AUTOCORRECTION_PANEL
-static bool enabledDismissCorrectionPanel(Frame* frame, Event*, EditorCommandSource)
-{
-    return frame->editor()->isShowingCorrectionPanel();
-}
-#endif
 
 // State functions
 
@@ -1537,10 +1535,6 @@ static const CommandMap& createCommandMap()
 
 #if PLATFORM(MAC)
         { "TakeFindStringFromSelection", { executeTakeFindStringFromSelection, supportedFromMenuOrKeyBinding, enabledTakeFindStringFromSelection, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-#endif
-
-#if SUPPORT_AUTOCORRECTION_PANEL
-        { "CancelOperation", { executeCancelOperation, supportedFromMenuOrKeyBinding, enabledDismissCorrectionPanel, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
 #endif
     };
 

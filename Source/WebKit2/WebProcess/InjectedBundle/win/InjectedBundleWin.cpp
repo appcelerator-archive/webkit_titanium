@@ -28,12 +28,19 @@
 
 #include "WKBundleAPICast.h"
 #include "WKBundleInitialize.h"
+#include "WebCertificateInfo.h"
+#include <WebCore/ResourceHandle.h>
 #include <WebCore/SimpleFontData.h>
+#include <wtf/text/CString.h>
 
 #include <windows.h>
 #include <winbase.h>
 #include <shlobj.h>
 #include <shlwapi.h>
+
+#if USE(CFNETWORK)
+#include <WebCore/CertificateCFWin.h>
+#endif
 
 using namespace WebCore;
 
@@ -84,6 +91,51 @@ bool InjectedBundle::load(APIObject* initializationUserData)
 void InjectedBundle::activateMacFontAscentHack()
 {
     SimpleFontData::setShouldApplyMacAscentHack(true);
+}
+
+void InjectedBundle::setHostAllowsAnyHTTPSCertificate(const String& host)
+{
+#if USE(CFNETWORK)
+    ResourceHandle::setHostAllowsAnyHTTPSCertificate(host);
+#endif
+}
+
+void InjectedBundle::setClientCertificate(const String& host, const String& certificateSystemStoreName, const WebCertificateInfo* certificateInfo)
+{
+#if USE(CFNETWORK)
+    ASSERT_ARG(certificateInfo, certificateInfo);
+    if (!certificateInfo)
+        return;
+    
+    const Vector<PCCERT_CONTEXT> certificateChain = certificateInfo->platformCertificateInfo().certificateChain();
+    ASSERT(certificateChain.size() == 1);
+    if (certificateChain.size() != 1)
+        return;
+    
+    ASSERT_ARG(certificateSystemStoreName, !certificateSystemStoreName.isEmpty());
+    if (certificateSystemStoreName.isEmpty())
+        return;
+    
+    // The PCCERT_CONTEXT in the WebCertificateInfo we created using the message from the UI process doesn't contain enough information
+    // to actually use it in a request, we need to get the real certificate from the certificate store (which is typically the "MY" store).
+    String mutableCertificateSystemStoreName = certificateSystemStoreName;
+    HCERTSTORE certStore = ::CertOpenSystemStore(0, mutableCertificateSystemStoreName.charactersWithNullTermination());
+    if (!certStore) {
+        LOG_ERROR("Could not open system certificate store %s", certificateSystemStoreName.ascii().data());
+        return;
+    }
+    
+    PCCERT_CONTEXT realCert = ::CertFindCertificateInStore(certStore, X509_ASN_ENCODING | PKCS_7_ASN_ENCODING, 0, CERT_FIND_EXISTING, certificateChain.first(), 0);
+    if (!realCert) {
+        LOG_ERROR("Could not find certificate in system certificate store");
+        return;
+    }
+
+    ResourceHandle::setClientCertificate(host, WebCore::copyCertificateToData(realCert).get());
+    CertFreeCertificateContext(realCert);
+
+    // We can't close certStore here, since the certificate is still in use.
+#endif
 }
 
 } // namespace WebKit

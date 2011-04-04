@@ -91,6 +91,7 @@ WEBCORE_INCLUDEPATH = \
     $$SOURCE_DIR/WebCore/platform/audio \
     $$SOURCE_DIR/WebCore/platform/graphics \
     $$SOURCE_DIR/WebCore/platform/graphics/filters \
+    $$SOURCE_DIR/WebCore/platform/graphics/texmap \
     $$SOURCE_DIR/WebCore/platform/graphics/transforms \
     $$SOURCE_DIR/WebCore/platform/image-decoders \
     $$SOURCE_DIR/WebCore/platform/mock \
@@ -299,7 +300,7 @@ contains (CONFIG, text_breaking_with_icu) {
 !CONFIG(QTDIR_build) {
     win32-*|wince* {
         DLLDESTDIR = $$OUTPUT_DIR/bin
-        build_pass: TARGET = $$qtLibraryTarget($$TARGET)
+        isEmpty(QT_SOURCE_TREE):build_pass: TARGET = $$qtLibraryTarget($$TARGET)
 
         dlltarget.commands = $(COPY_FILE) $(DESTDIR_TARGET) $$[QT_INSTALL_BINS]
         dlltarget.CONFIG = no_path
@@ -311,6 +312,7 @@ contains (CONFIG, text_breaking_with_icu) {
 }
 
 win32-* {
+    INCLUDEPATH += $$SOURCE_DIR/WebCore/platform/win
     LIBS += -lgdi32
     LIBS += -lole32
     LIBS += -luser32

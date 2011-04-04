@@ -125,7 +125,6 @@ WebView *getWebView(WebFrame *webFrame);
 - (BOOL)_needsLayout;
 - (void)_drawRect:(NSRect)rect contentsOnly:(BOOL)contentsOnly;
 - (BOOL)_getVisibleRect:(NSRect*)rect;
-- (NSArray*)_computePageRectsWithPrintScaleFactor:(float)printWidthScaleFactor pageSize:(NSSize)pageSize;
 
 - (NSString *)_stringByEvaluatingJavaScriptFromString:(NSString *)string;
 - (NSString *)_stringByEvaluatingJavaScriptFromString:(NSString *)string forceUserGesture:(BOOL)forceUserGesture;
@@ -143,6 +142,7 @@ WebView *getWebView(WebFrame *webFrame);
 - (NSRange)_convertToNSRange:(WebCore::Range*)range;
 - (DOMRange *)_convertNSRangeToDOMRange:(NSRange)range;
 - (NSRange)_convertDOMRangeToNSRange:(DOMRange *)range;
+- (PassRefPtr<WebCore::Range>)_convertToDOMRange:(NSRange)nsrange;
 
 - (DOMDocumentFragment *)_documentFragmentWithMarkupString:(NSString *)markupString baseURLString:(NSString *)baseURLString;
 - (DOMDocumentFragment *)_documentFragmentWithNodesAsParagraphs:(NSArray *)nodes;

@@ -63,11 +63,11 @@ void InitWebCoreSystemInterface(void)
     INIT(GetHTTPPipeliningPriority);
     INIT(GetMIMETypeForExtension);
     INIT(GetNSURLResponseLastModifiedDate);
+    INIT(SignedPublicKeyAndChallengeString);
     INIT(GetPreferredExtensionForMIMEType);
     INIT(GetWheelEventDeltas);
     INIT(HitTestMediaUIPart);
     INIT(InitializeMaximumHTTPConnectionCountPerHost);
-    INIT(IsLatchingWheelEvent);
     INIT(MeasureMediaUIPart);
     INIT(MediaControllerThemeAvailable);
     INIT(PopupMenu);
@@ -118,9 +118,11 @@ void InitWebCoreSystemInterface(void)
 
 #if defined(BUILDING_ON_TIGER) || defined(BUILDING_ON_LEOPARD) || defined(BUILDING_ON_SNOW_LEOPARD)
     INIT(GetHyphenationLocationBeforeIndex);
+    INIT(GetNSEventMomentumPhase);
 #endif
 
     INIT(CreateCTLineWithUniCharProvider);
+
 #if !defined(BUILDING_ON_TIGER) && !defined(BUILDING_ON_LEOPARD) && !defined(BUILDING_ON_SNOW_LEOPARD)
     INIT(IOSurfaceContextCreate);
     INIT(IOSurfaceContextCreateImage);
@@ -128,6 +130,7 @@ void InitWebCoreSystemInterface(void)
     INIT(MakeScrollbarPainter);
     INIT(ScrollbarPainterSetDelegate);
     INIT(ScrollbarPainterPaint);
+    INIT(ScrollbarPainterForceFlashScrollers);
     INIT(ScrollbarThickness);
     INIT(ScrollbarMinimumThumbLength);
     INIT(ScrollbarMinimumTotalLengthNeededForThumb);
@@ -168,6 +171,17 @@ void InitWebCoreSystemInterface(void)
     INIT(UnregisterUniqueIdForElement);
     INIT(CreatePrivateStorageSession);
     INIT(CopyRequestWithStorageSession);
+    INIT(CopyHTTPCookieStorage);
+    INIT(GetHTTPCookieAcceptPolicy);
+    INIT(HTTPCookiesForURL);
+    INIT(SetHTTPCookiesForURL);
+    INIT(DeleteHTTPCookie);
+
+    INIT(GetCFURLResponseMIMEType);
+    INIT(GetCFURLResponseURL);
+    INIT(GetCFURLResponseHTTPResponse);
+    INIT(CopyCFURLResponseSuggestedFilename);
+    INIT(SetCFURLResponseMIMEType);
 
     didInit = true;
 }

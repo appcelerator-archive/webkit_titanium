@@ -29,6 +29,10 @@
 #include "FontInfo.h"
 #include <WebCore/FloatPoint.h>
 
+#if PLATFORM(MAC)
+#include <wtf/RetainPtr.h>
+#endif
+
 namespace CoreIPC {
     class ArgumentDecoder;
     class ArgumentEncoder;
@@ -48,6 +52,9 @@ struct DictionaryPopupInfo {
     WebCore::FloatPoint origin;
     FontInfo fontInfo;
     Type type;
+#if PLATFORM(MAC) && !defined(BUILDING_ON_SNOW_LEOPARD)
+    RetainPtr<CFDictionaryRef> options;
+#endif
 };
 
 } // namespace WebKit

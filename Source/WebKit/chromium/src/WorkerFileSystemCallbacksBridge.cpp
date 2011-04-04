@@ -45,6 +45,7 @@
 #include "WorkerThread.h"
 #include <wtf/MainThread.h>
 #include <wtf/Threading.h>
+#include <wtf/UnusedParam.h>
 
 namespace WebCore {
 
@@ -57,6 +58,7 @@ template<> struct CrossThreadCopierBase<false, false, WebKit::WebFileInfo> {
         newInfo.modificationTime = info.modificationTime;
         newInfo.length = info.length;
         newInfo.type = info.type;
+        newInfo.platformPath.assign(info.platformPath.data(), info.platformPath.length());
         return newInfo;
     }
 };
@@ -85,7 +87,7 @@ namespace WebKit {
 class MainThreadFileSystemCallbacks : public WebFileSystemCallbacks {
 public:
     // Callbacks are self-destructed and we always return leaked pointer here.
-    static MainThreadFileSystemCallbacks* createLeakedPtr(PassRefPtr<WorkerFileSystemCallbacksBridge> bridge, const String& mode)
+    static MainThreadFileSystemCallbacks* createLeakedPtr(WorkerFileSystemCallbacksBridge* bridge, const String& mode)
     {
         OwnPtr<MainThreadFileSystemCallbacks> callbacks = adoptPtr(new MainThreadFileSystemCallbacks(bridge, mode));
         return callbacks.leakPtr();
@@ -126,15 +128,16 @@ public:
     }
 
 private:
-    MainThreadFileSystemCallbacks(PassRefPtr<WorkerFileSystemCallbacksBridge> bridge, const String& mode)
+    MainThreadFileSystemCallbacks(WorkerFileSystemCallbacksBridge* bridge, const String& mode)
         : m_bridge(bridge)
         , m_mode(mode)
     {
-        ASSERT(m_bridge.get());
+        ASSERT(m_bridge);
     }
 
     friend class WorkerFileSystemCallbacksBridge;
-    RefPtr<WorkerFileSystemCallbacksBridge> m_bridge;
+    // The bridge pointer is kept by the bridge itself on the WorkerThread.
+    WorkerFileSystemCallbacksBridge* m_bridge;
     const String m_mode;
 };
 
@@ -150,9 +153,9 @@ void WorkerFileSystemCallbacksBridge::stop()
     }
 }
 
-void WorkerFileSystemCallbacksBridge::postOpenFileSystemToMainThread(WebCommonWorkerClient* commonClient, WebFileSystem::Type type, long long size, const String& mode)
+void WorkerFileSystemCallbacksBridge::postOpenFileSystemToMainThread(WebCommonWorkerClient* commonClient, WebFileSystem::Type type, long long size, bool create, const String& mode)
 {
-    dispatchTaskToMainThread(createCallbackTask(&openFileSystemOnMainThread, commonClient, type, size, this, mode));
+    dispatchTaskToMainThread(createCallbackTask(&openFileSystemOnMainThread, commonClient, type, size, create, this, mode));
 }
 
 void WorkerFileSystemCallbacksBridge::postMoveToMainThread(WebFileSystem* fileSystem, const String& sourcePath, const String& destinationPath, const String& mode)
@@ -212,12 +215,12 @@ void WorkerFileSystemCallbacksBridge::postReadDirectoryToMainThread(WebFileSyste
     dispatchTaskToMainThread(createCallbackTask(&readDirectoryOnMainThread, fileSystem, path, this, mode));
 }
 
-void WorkerFileSystemCallbacksBridge::openFileSystemOnMainThread(ScriptExecutionContext*, WebCommonWorkerClient* commonClient, WebFileSystem::Type type, long long size, WorkerFileSystemCallbacksBridge* bridge, const String& mode)
+void WorkerFileSystemCallbacksBridge::openFileSystemOnMainThread(ScriptExecutionContext*, WebCommonWorkerClient* commonClient, WebFileSystem::Type type, long long size, bool create, WorkerFileSystemCallbacksBridge* bridge, const String& mode)
 {
     if (!commonClient)
         bridge->didFailOnMainThread(WebFileErrorAbort, mode);
     else {
-        commonClient->openFileSystem(type, size, MainThreadFileSystemCallbacks::createLeakedPtr(bridge, mode));
+        commonClient->openFileSystem(type, size, create, MainThreadFileSystemCallbacks::createLeakedPtr(bridge, mode));
     }
 }
 
@@ -335,26 +338,14 @@ void WorkerFileSystemCallbacksBridge::didReadDirectoryOnWorkerThread(ScriptExecu
     bridge->m_callbacksOnWorkerThread->didReadDirectory(entries, hasMore);
 }
 
-bool WorkerFileSystemCallbacksBridge::derefIfWorkerIsStopped()
-{
-    WebWorkerBase* worker = 0;
-    {
-        MutexLocker locker(m_mutex);
-        worker = m_worker;
-    }
 
-    if (!worker) {
-        m_selfRef.clear();
-        return true;
-    }
-    return false;
-}
-
-void WorkerFileSystemCallbacksBridge::runTaskOnMainThread(WebCore::ScriptExecutionContext* scriptExecutionContext, WorkerFileSystemCallbacksBridge* bridge, PassOwnPtr<WebCore::ScriptExecutionContext::Task> taskToRun)
+void WorkerFileSystemCallbacksBridge::runTaskOnMainThread(WebCore::ScriptExecutionContext* scriptExecutionContext, PassRefPtr<WorkerFileSystemCallbacksBridge> bridge, PassOwnPtr<WebCore::ScriptExecutionContext::Task> taskToRun)
 {
     ASSERT(isMainThread());
-    if (bridge->derefIfWorkerIsStopped())
-        return;
+
+    // Every task run will result in one call to mayPostTaskToWorker, which is where this ref is released.
+    WorkerFileSystemCallbacksBridge* leaked = bridge.leakRef();
+    UNUSED_PARAM(leaked);
     taskToRun->performTask(scriptExecutionContext);
 }
 
@@ -365,26 +356,27 @@ void WorkerFileSystemCallbacksBridge::runTaskOnWorkerThread(WebCore::ScriptExecu
     ASSERT(bridge->m_workerContext->isContextThread());
     taskToRun->performTask(scriptExecutionContext);
     bridge->m_callbacksOnWorkerThread = 0;
+    bridge->stopObserving();
 }
 
 void WorkerFileSystemCallbacksBridge::dispatchTaskToMainThread(PassOwnPtr<WebCore::ScriptExecutionContext::Task> task)
 {
-    ASSERT(!m_selfRef);
     ASSERT(m_worker);
     ASSERT(m_workerContext->isContextThread());
-    m_selfRef = this;
-    m_worker->dispatchTaskToMainThread(createCallbackTask(&runTaskOnMainThread, this, task));
+    m_worker->dispatchTaskToMainThread(createCallbackTask(&runTaskOnMainThread, RefPtr<WorkerFileSystemCallbacksBridge>(this).release(), task));
 }
 
 void WorkerFileSystemCallbacksBridge::mayPostTaskToWorker(PassOwnPtr<ScriptExecutionContext::Task> task, const String& mode)
 {
     ASSERT(isMainThread());
-    { // Let go of the mutex before possibly deleting this due to m_selfRef.clear().
-        MutexLocker locker(m_mutex);
-        if (m_worker)
-            m_worker->postTaskForModeToWorkerContext(createCallbackTask(&runTaskOnWorkerThread, m_selfRef, task), mode);
-    }
-    m_selfRef.clear();
+
+    // Balancing out the ref() done in runTaskOnMainThread. (Since m_mutex is a member and the deref may result
+    // in the destruction of WorkerFileSystemCallbacksBridge, the ordering of the RefPtr and the MutexLocker
+    // is very important, to ensure that the m_mutex is still valid when it gets unlocked.)
+    RefPtr<WorkerFileSystemCallbacksBridge> bridge = adoptRef(this);
+    MutexLocker locker(m_mutex);
+    if (m_worker)
+        m_worker->postTaskForModeToWorkerContext(createCallbackTask(&runTaskOnWorkerThread, bridge, task), mode);
 }
 
 } // namespace WebCore

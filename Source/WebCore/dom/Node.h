@@ -53,6 +53,7 @@ class EventContext;
 class EventListener;
 class FloatPoint;
 class Frame;
+class InputElement;
 class IntRect;
 class KeyboardEvent;
 class NSResolver;
@@ -84,11 +85,6 @@ enum StyleChangeType {
     InlineStyleChange = 1 << nodeStyleChangeShift, 
     FullStyleChange = 2 << nodeStyleChangeShift, 
     SyntheticStyleChange = 3 << nodeStyleChangeShift
-};
-
-enum EventDispatchBehavior {
-    RetargetEvent,
-    StayInsideShadowDOM
 };
 
 class Node : public EventTarget, public TreeShared<ContainerNode>, public ScriptWrappable {
@@ -224,9 +220,6 @@ public:
     // Returns the enclosing event parent node (or self) that, when clicked, would trigger a navigation.
     Node* enclosingLinkEventParentOrSelf();
 
-    // Node ancestors when concerned about event flow.
-    void getEventAncestors(Vector<EventContext>& ancestors, EventTarget*, EventDispatchBehavior = RetargetEvent);
-
     bool isBlockFlow() const;
     bool isBlockFlowOrBlockTable() const;
     
@@ -326,8 +319,12 @@ public:
     virtual bool isKeyboardFocusable(KeyboardEvent*) const;
     virtual bool isMouseFocusable() const;
 
-    virtual bool isContentEditable() const;
-    virtual bool isContentRichlyEditable() const;
+#if PLATFORM(MAC)
+    // Objective-C extensions
+    bool isContentEditable() const { return rendererIsEditable(Editable); }
+#endif
+    bool rendererIsEditable() const { return rendererIsEditable(Editable); }
+    bool rendererIsRichlyEditable() const { return rendererIsEditable(RichlyEditable); }
     virtual bool shouldUseInputMethod() const;
     virtual IntRect getRect() const;
     IntRect renderRect(bool* isReplaced);
@@ -357,6 +354,9 @@ public:
     // Do not use this method to change the document of a node until after the node has been
     // removed from its previous document.
     void setDocument(Document*);
+
+    // Used by the basic DOM methods (e.g., appendChild()).
+    void setDocumentRecursively(Document*);
 
     // Returns true if this node is associated with a document and is in its associated document's
     // node tree, false otherwise.
@@ -514,6 +514,8 @@ public:
 
     virtual Node* toNode() { return this; }
 
+    virtual InputElement* toInputElement();
+
     virtual ScriptExecutionContext* scriptExecutionContext() const;
 
     virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture);
@@ -528,7 +530,6 @@ public:
     bool dispatchEvent(PassRefPtr<Event>);
     void dispatchScopedEvent(PassRefPtr<Event>);
 
-    bool dispatchGenericEvent(PassRefPtr<Event>);
     virtual void handleLocalEvents(Event*);
 
     void dispatchSubtreeModifiedEvent();
@@ -536,11 +537,6 @@ public:
     bool dispatchKeyEvent(const PlatformKeyboardEvent&);
     void dispatchWheelEvent(PlatformWheelEvent&);
     bool dispatchMouseEvent(const PlatformMouseEvent&, const AtomicString& eventType, int clickCount = 0, Node* relatedTarget = 0);
-    bool dispatchMouseEvent(const AtomicString& eventType, int button, int clickCount,
-        int pageX, int pageY, int screenX, int screenY,
-        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey,
-        bool isSimulated, Node* relatedTarget, PassRefPtr<Event> underlyingEvent);
-    void dispatchSimulatedMouseEvent(const AtomicString& eventType, PassRefPtr<Event> underlyingEvent);
     void dispatchSimulatedClick(PassRefPtr<Event> underlyingEvent, bool sendMouseEvents = false, bool showPressedLook = true);
 
     virtual void dispatchFocusEvent();
@@ -653,7 +649,9 @@ private:
     void markCachedNodeListsSlow(JSC::MarkStack&, JSC::JSGlobalData&);
 #endif
 
-    void setDocumentRecursively(Document*);
+    enum EditableLevel { Editable, RichlyEditable };
+    bool rendererIsEditable(EditableLevel) const;
+
     void setStyleChange(StyleChangeType);
 
     // Used to share code between lazyAttach and setNeedsStyleRecalc.

@@ -33,6 +33,7 @@
 #import "Base64.h"
 #import "BlobRegistry.h"
 #import "BlockExceptions.h"
+#import "CookieStorage.h"
 #import "CredentialStorage.h"
 #import "CachedResourceLoader.h"
 #import "EmptyProtocolDefinitions.h"
@@ -186,6 +187,35 @@ bool ResourceHandle::didSendBodyDataDelegateExists()
     return NSFoundationVersionNumber > MaxFoundationVersionWithoutdidSendBodyDataDelegate;
 }
 
+static bool shouldRelaxThirdPartyCookiePolicy(const KURL& url)
+{
+    // If a URL already has cookies, then we'll relax the 3rd party cookie policy and accept new cookies.
+
+    NSHTTPCookieStorage *sharedStorage = [NSHTTPCookieStorage sharedHTTPCookieStorage];
+
+    NSHTTPCookieAcceptPolicy cookieAcceptPolicy;
+#if USE(CFURLSTORAGESESSIONS)
+    CFHTTPCookieStorageRef cfPrivateBrowsingStorage = privateBrowsingCookieStorage().get();
+    if (cfPrivateBrowsingStorage)
+        cookieAcceptPolicy =  wkGetHTTPCookieAcceptPolicy(cfPrivateBrowsingStorage);
+    else
+#endif
+        cookieAcceptPolicy = [sharedStorage cookieAcceptPolicy];
+
+    if (cookieAcceptPolicy != NSHTTPCookieAcceptPolicyOnlyFromMainDocumentDomain)
+        return false;
+
+    NSArray *cookies;
+#if USE(CFURLSTORAGESESSIONS)
+    if (cfPrivateBrowsingStorage)
+        cookies = wkHTTPCookiesForURL(cfPrivateBrowsingStorage, url);
+    else
+#endif
+        cookies = [sharedStorage cookiesForURL:url];
+
+    return [cookies count];
+}
+
 void ResourceHandle::createNSURLConnection(id delegate, bool shouldUseCredentialStorage, bool shouldContentSniff)
 {
     // Credentials for ftp can only be passed in URL, the connection:didReceiveAuthenticationChallenge: delegate call won't be made.
@@ -200,9 +230,7 @@ void ResourceHandle::createNSURLConnection(id delegate, bool shouldUseCredential
         firstRequest().setURL(urlWithCredentials);
     }
 
-    // If a URL already has cookies, then we'll relax the 3rd party cookie policy and accept new cookies.
-    NSHTTPCookieStorage *sharedStorage = [NSHTTPCookieStorage sharedHTTPCookieStorage];
-    if ([sharedStorage cookieAcceptPolicy] == NSHTTPCookieAcceptPolicyOnlyFromMainDocumentDomain && [[sharedStorage cookiesForURL:firstRequest().url()] count])
+    if (shouldRelaxThirdPartyCookiePolicy(firstRequest().url()))
         firstRequest().setFirstPartyForCookies(firstRequest().url());
 
 #if !defined(BUILDING_ON_TIGER)
@@ -511,9 +539,7 @@ void ResourceHandle::loadResourceSynchronously(NetworkingContext* context, const
     UNUSED_PARAM(context);
     NSURLRequest *firstRequest = request.nsURLRequest();
 
-    // If a URL already has cookies, then we'll relax the 3rd party cookie policy and accept new cookies.
-    NSHTTPCookieStorage *sharedStorage = [NSHTTPCookieStorage sharedHTTPCookieStorage];
-    if ([sharedStorage cookieAcceptPolicy] == NSHTTPCookieAcceptPolicyOnlyFromMainDocumentDomain && [[sharedStorage cookiesForURL:[firstRequest URL]] count]) {
+    if (shouldRelaxThirdPartyCookiePolicy([firstRequest URL])) {
         NSMutableURLRequest *mutableRequest = [[firstRequest mutableCopy] autorelease];
         [mutableRequest setMainDocumentURL:[mutableRequest URL]];
         firstRequest = mutableRequest;
@@ -860,7 +886,7 @@ String ResourceHandle::privateBrowsingStorageSessionIdentifierDefaultBase()
     // Avoid MIME type sniffing if the response comes back as 304 Not Modified.
     int statusCode = [r respondsToSelector:@selector(statusCode)] ? [(id)r statusCode] : 0;
     if (statusCode != 304)
-        [r adjustMIMETypeIfNecessary];
+        adjustMIMETypeIfNecessary([r _CFURLResponse]);
 
     if ([m_handle->firstRequest().nsURLRequest() _propertyForKey:@"ForceHTMLMIMEType"])
         [r _setMIMEType:@"text/html"];
@@ -884,9 +910,32 @@ String ResourceHandle::privateBrowsingStorageSessionIdentifierDefaultBase()
     m_handle->client()->didReceiveResponse(m_handle, r);
 }
 
+#if HAVE(CFNETWORK_DATA_ARRAY_CALLBACK)
+- (void)connection:(NSURLConnection *)connection didReceiveDataArray:(NSArray *)dataArray
+{
+    UNUSED_PARAM(connection);
+    LOG(Network, "Handle %p delegate connection:%p didReceiveDataArray:%p arraySize:%d", m_handle, connection, dataArray, [dataArray count]);
+
+    if (!dataArray)
+        return;
+
+    if (!m_handle || !m_handle->client())
+        return;
+
+    if (m_handle->client()->supportsDataArray())
+        m_handle->client()->didReceiveDataArray(m_handle, reinterpret_cast<CFArrayRef>(dataArray));
+    else {
+        for (NSData *data in dataArray)
+            m_handle->client()->didReceiveData(m_handle, static_cast<const char*>([data bytes]), [data length], static_cast<int>([data length]));
+    }
+    return;
+}
+#endif
+
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data lengthReceived:(long long)lengthReceived
 {
     UNUSED_PARAM(connection);
+    UNUSED_PARAM(lengthReceived);
 
     LOG(Network, "Handle %p delegate connection:%p didReceiveData:%p lengthReceived:%lld", m_handle, connection, data, lengthReceived);
 
@@ -896,7 +945,10 @@ String ResourceHandle::privateBrowsingStorageSessionIdentifierDefaultBase()
     // However, with today's computers and networking speeds, this won't happen in practice.
     // Could be an issue with a giant local file.
     CallbackGuard guard;
-    m_handle->client()->didReceiveData(m_handle, (const char*)[data bytes], [data length], static_cast<int>(lengthReceived));
+    // FIXME: https://bugs.webkit.org/show_bug.cgi?id=19793
+    // -1 means we do not provide any data about transfer size to inspector so it would use
+    // Content-Length headers or content size to show transfer size.
+    m_handle->client()->didReceiveData(m_handle, (const char*)[data bytes], [data length], -1);
 }
 
 - (void)connection:(NSURLConnection *)connection willStopBufferingData:(NSData *)data

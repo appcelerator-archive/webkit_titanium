@@ -46,29 +46,43 @@ from webkitpy.common.config import committers
 from webkitpy.common.net.credentials import Credentials
 from webkitpy.common.system.user import User
 from webkitpy.thirdparty.autoinstalled.mechanize import Browser
-from webkitpy.thirdparty.BeautifulSoup import BeautifulSoup, SoupStrainer
+from webkitpy.thirdparty.BeautifulSoup import BeautifulSoup, BeautifulStoneSoup, SoupStrainer
 
 
 # FIXME: parse_bug_id should not be a free function.
 def parse_bug_id(message):
     if not message:
         return None
-    match = re.search("http\://webkit\.org/b/(?P<bug_id>\d+)", message)
+    match = re.search(Bugzilla.bug_url_short, message)
     if match:
         return int(match.group('bug_id'))
-    match = re.search(
-        Bugzilla.bug_server_regex + "show_bug\.cgi\?id=(?P<bug_id>\d+)",
-        message)
+    match = re.search(Bugzilla.bug_url_long, message)
     if match:
         return int(match.group('bug_id'))
     return None
 
 
+# FIXME: parse_bug_id_from_changelog should not be a free function.
+# Parse the bug ID out of a Changelog message based on the format that is
+# used by prepare-ChangeLog
+def parse_bug_id_from_changelog(message):
+    if not message:
+        return None
+    match = re.search("^\s*" + Bugzilla.bug_url_short + "$", message, re.MULTILINE)
+    if match:
+        return int(match.group('bug_id'))
+    match = re.search("^\s*" + Bugzilla.bug_url_long + "$", message, re.MULTILINE)
+    if match:
+        return int(match.group('bug_id'))
+    # We weren't able to find a bug URL in the format used by prepare-ChangeLog. Fall back to the
+    # first bug URL found anywhere in the message.
+    return parse_bug_id(message)
+
 def timestamp():
     return datetime.now().strftime("%Y%m%d%H%M%S")
 
 
-# A container for all of the logic for making and parsing buzilla queries.
+# A container for all of the logic for making and parsing bugzilla queries.
 class BugzillaQueries(object):
 
     def __init__(self, bugzilla):
@@ -210,6 +224,8 @@ class Bugzilla(object):
     bug_server_host = "bugs.webkit.org"
     bug_server_regex = "https?://%s/" % re.sub('\.', '\\.', bug_server_host)
     bug_server_url = "https://%s/" % bug_server_host
+    bug_url_long = bug_server_regex + r"show_bug\.cgi\?id=(?P<bug_id>\d+)(&ctype=xml)?"
+    bug_url_short = r"http\://webkit\.org/b/(?P<bug_id>\d+)"
 
     def quips(self):
         # We only fetch and parse the list of quips once per instantiation
@@ -256,7 +272,7 @@ class Bugzilla(object):
 
     def _string_contents(self, soup):
         # WebKit's bugzilla instance uses UTF-8.
-        # BeautifulSoup always returns Unicode strings, however
+        # BeautifulStoneSoup always returns Unicode strings, however
         # the .string method returns a (unicode) NavigableString.
         # NavigableString can confuse other parts of the code, so we
         # convert from NavigableString to a real unicode() object using unicode().
@@ -303,7 +319,7 @@ class Bugzilla(object):
         return [Bug(self._parse_bug_dictionary_from_xml(unicode(bug_xml)), self) for bug_xml in soup('bug')]
 
     def _parse_bug_dictionary_from_xml(self, page):
-        soup = BeautifulSoup(page)
+        soup = BeautifulStoneSoup(page, convertEntities=BeautifulStoneSoup.XML_ENTITIES)
         bug = {}
         bug["id"] = int(soup.find("bug_id").string)
         bug["title"] = self._string_contents(soup.find("short_desc"))

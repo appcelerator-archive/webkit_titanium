@@ -68,13 +68,14 @@ public:
     bool syntheticOblique() const { return m_syntheticOblique; }
 
     FontOrientation orientation() const { return Horizontal; } // FIXME: Implement.
+    void setOrientation(FontOrientation) { } // FIXME: Implement.
 
     cairo_scaled_font_t* scaledFont() const { return m_scaledFont; }
 
     unsigned hash() const
     {
         uintptr_t hashCodes[1] = { reinterpret_cast<uintptr_t>(m_scaledFont) };
-        return WTF::StringHasher::createBlobHash<sizeof(hashCodes)>(hashCodes);
+        return StringHasher::hashMemory<sizeof(hashCodes)>(hashCodes);
     }
 
     bool operator==(const FontPlatformData&) const;

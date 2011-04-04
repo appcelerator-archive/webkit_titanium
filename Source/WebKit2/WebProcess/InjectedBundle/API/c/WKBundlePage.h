@@ -120,18 +120,19 @@ enum {
 };
 typedef uint32_t WKBundlePagePolicyAction;
 
-    
 // Policy Client
 typedef WKBundlePagePolicyAction (*WKBundlePageDecidePolicyForNavigationActionCallback)(WKBundlePageRef page, WKBundleFrameRef frame, WKBundleNavigationActionRef navigationAction, WKURLRequestRef request, WKTypeRef* userData, const void* clientInfo);
 typedef WKBundlePagePolicyAction (*WKBundlePageDecidePolicyForNewWindowActionCallback)(WKBundlePageRef page, WKBundleFrameRef frame, WKBundleNavigationActionRef navigationAction, WKURLRequestRef request, WKStringRef frameName, WKTypeRef* userData, const void* clientInfo);
-typedef WKBundlePagePolicyAction (*WKBundlePageDecidePolicyForMIMETypeCallback)(WKBundlePageRef page, WKBundleFrameRef frame,  WKStringRef MIMEType, WKURLRequestRef request, WKTypeRef* userData, const void* clientInfo);
+typedef WKBundlePagePolicyAction (*WKBundlePageDecidePolicyForResponseCallback)(WKBundlePageRef page, WKBundleFrameRef frame, WKURLResponseRef response, WKURLRequestRef request, WKTypeRef* userData, const void* clientInfo);
+typedef void (*WKBundlePageUnableToImplementPolicyCallback)(WKBundlePageRef page, WKBundleFrameRef frame, WKErrorRef error, WKTypeRef* userData, const void* clientInfo);
 
 struct WKBundlePagePolicyClient {
     int                                                                 version;
     const void *                                                        clientInfo;
     WKBundlePageDecidePolicyForNavigationActionCallback                 decidePolicyForNavigationAction;
     WKBundlePageDecidePolicyForNewWindowActionCallback                  decidePolicyForNewWindowAction;
-    WKBundlePageDecidePolicyForMIMETypeCallback                         decidePolicyForMIMEType;
+    WKBundlePageDecidePolicyForResponseCallback                         decidePolicyForResponse;
+    WKBundlePageUnableToImplementPolicyCallback                         unableToImplementPolicy;
 };
 typedef struct WKBundlePagePolicyClient WKBundlePagePolicyClient;
 
@@ -167,6 +168,7 @@ typedef void (*WKBundlePageWillRunJavaScriptPromptCallback)(WKBundlePageRef page
 typedef void (*WKBundlePageMouseDidMoveOverElementCallback)(WKBundlePageRef page, WKBundleHitTestResultRef hitTestResult, WKEventModifiers modifiers, WKTypeRef* userData, const void *clientInfo);
 typedef void (*WKBundlePageDidScrollCallback)(WKBundlePageRef page, const void *clientInfo);
 typedef void (*WKBundlePagePaintCustomOverhangAreaCallback)(WKBundlePageRef page, WKGraphicsContextRef graphicsContext, WKRect horizontalOverhang, WKRect verticalOverhang, WKRect dirtyRect, const void* clientInfo);
+typedef WKStringRef (*WKBundlePageGenerateFileForUploadCallback)(WKBundlePageRef page, WKStringRef originalFilePath, const void* clientInfo);
 
 struct WKBundlePageUIClient {
     int                                                                 version;
@@ -179,6 +181,8 @@ struct WKBundlePageUIClient {
     WKBundlePageMouseDidMoveOverElementCallback                         mouseDidMoveOverElement;
     WKBundlePageDidScrollCallback                                       pageDidScroll;
     WKBundlePagePaintCustomOverhangAreaCallback                         paintCustomOverhangArea;
+    WKBundlePageGenerateFileForUploadCallback                           shouldGenerateFileForUpload;
+    WKBundlePageGenerateFileForUploadCallback                           generateFileForUpload;
 };
 typedef struct WKBundlePageUIClient WKBundlePageUIClient;
 

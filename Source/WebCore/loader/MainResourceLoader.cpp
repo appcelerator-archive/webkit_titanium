@@ -118,7 +118,9 @@ ResourceError MainResourceLoader::interruptionForPolicyChangeError() const
 
 void MainResourceLoader::stopLoadingForPolicyChange()
 {
-    cancel(interruptionForPolicyChangeError());
+    ResourceError error = interruptionForPolicyChangeError();
+    error.setIsCancellation(true);
+    cancel(error);
 }
 
 void MainResourceLoader::callContinueAfterNavigationPolicy(void* argument, const ResourceRequest& request, PassRefPtr<FormState>, bool shouldContinue)
@@ -406,7 +408,7 @@ void MainResourceLoader::didReceiveResponse(const ResourceResponse& r)
     }
 #endif
 
-    frameLoader()->policyChecker()->checkContentPolicy(m_response.mimeType(), callContinueAfterContentPolicy, this);
+    frameLoader()->policyChecker()->checkContentPolicy(m_response, callContinueAfterContentPolicy, this);
 }
 
 void MainResourceLoader::didReceiveData(const char* data, int length, long long lengthReceived, bool allAtOnce)

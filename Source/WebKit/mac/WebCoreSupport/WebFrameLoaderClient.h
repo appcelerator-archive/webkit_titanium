@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2006, 2007, 2008, 2011 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -101,7 +101,7 @@ private:
     virtual void dispatchWillClose();
     virtual void dispatchDidReceiveIcon();
     virtual void dispatchDidStartProvisionalLoad();
-    virtual void dispatchDidReceiveTitle(const WTF::String& title);
+    virtual void dispatchDidReceiveTitle(const WebCore::StringWithDirection&);
     virtual void dispatchDidChangeIcons();
     virtual void dispatchDidCommitLoad();
     virtual void dispatchDidFailProvisionalLoad(const WebCore::ResourceError&);
@@ -114,8 +114,8 @@ private:
     virtual WebCore::Frame* dispatchCreatePage(const WebCore::NavigationAction&);
     virtual void dispatchShow();
 
-    virtual void dispatchDecidePolicyForMIMEType(WebCore::FramePolicyFunction,
-        const WTF::String& MIMEType, const WebCore::ResourceRequest&);
+    virtual void dispatchDecidePolicyForResponse(WebCore::FramePolicyFunction, 
+        const WebCore::ResourceResponse&, const WebCore::ResourceRequest&);
     virtual void dispatchDecidePolicyForNewWindowAction(WebCore::FramePolicyFunction,
         const WebCore::NavigationAction&, const WebCore::ResourceRequest&, PassRefPtr<WebCore::FormState>, const WTF::String& frameName);
     virtual void dispatchDecidePolicyForNavigationAction(WebCore::FramePolicyFunction,
@@ -196,7 +196,7 @@ private:
     virtual void prepareForDataSourceReplacement();
     virtual PassRefPtr<WebCore::DocumentLoader> createDocumentLoader(const WebCore::ResourceRequest&, const WebCore::SubstituteData&);
 
-    virtual void setTitle(const WTF::String& title, const WebCore::KURL&);
+    virtual void setTitle(const WebCore::StringWithDirection&, const WebCore::KURL&);
 
     virtual PassRefPtr<WebCore::Frame> createFrame(const WebCore::KURL& url, const WTF::String& name, WebCore::HTMLFrameOwnerElement*,
                                         const WTF::String& referrer, bool allowsScrolling, int marginWidth, int marginHeight);
@@ -216,7 +216,7 @@ private:
     virtual void showMediaPlayerProxyPlugin(WebCore::Widget*);
 #endif
     
-    virtual WebCore::ObjectContentType objectContentType(const WebCore::KURL& url, const WTF::String& mimeType);
+    virtual WebCore::ObjectContentType objectContentType(const WebCore::KURL&, const WTF::String& mimeType, bool shouldPreferPlugInsForImages);
     virtual WTF::String overrideMediaType() const;
     
     virtual void dispatchDidClearWindowObjectInWorld(WebCore::DOMWrapperWorld*);

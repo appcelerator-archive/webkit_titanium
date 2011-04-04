@@ -286,6 +286,14 @@ EditingStyle::EditingStyle(const CSSStyleDeclaration* style)
     extractFontSizeDelta();
 }
 
+EditingStyle::EditingStyle(int propertyID, const String& value)
+    : m_mutableStyle(0)
+    , m_shouldUseFixedDefaultFontSize(false)
+    , m_fontSizeDelta(NoFontDelta)
+{
+    setProperty(propertyID, value);
+}
+
 EditingStyle::~EditingStyle()
 {
 }
@@ -369,15 +377,13 @@ bool EditingStyle::textDirection(WritingDirection& writingDirection) const
         return false;
 
     RefPtr<CSSValue> unicodeBidi = m_mutableStyle->getPropertyCSSValue(CSSPropertyUnicodeBidi);
-    if (!unicodeBidi)
+    if (!unicodeBidi || !unicodeBidi->isPrimitiveValue())
         return false;
 
-    ASSERT(unicodeBidi->isPrimitiveValue());
     int unicodeBidiValue = static_cast<CSSPrimitiveValue*>(unicodeBidi.get())->getIdent();
     if (unicodeBidiValue == CSSValueEmbed) {
         RefPtr<CSSValue> direction = m_mutableStyle->getPropertyCSSValue(CSSPropertyDirection);
-        ASSERT(!direction || direction->isPrimitiveValue());
-        if (!direction)
+        if (!direction || !direction->isPrimitiveValue())
             return false;
 
         writingDirection = static_cast<CSSPrimitiveValue*>(direction.get())->getIdent() == CSSValueLtr ? LeftToRightWritingDirection : RightToLeftWritingDirection;
@@ -503,6 +509,30 @@ void EditingStyle::collapseTextDecorationProperties()
 
     m_mutableStyle->setProperty(CSSPropertyTextDecoration, textDecorationsInEffect->cssText(), m_mutableStyle->getPropertyPriority(CSSPropertyTextDecoration));
     m_mutableStyle->removeProperty(CSSPropertyWebkitTextDecorationsInEffect);
+}
+
+// CSS properties that create a visual difference only when applied to text.
+static const int textOnlyProperties[] = {
+    CSSPropertyTextDecoration,
+    CSSPropertyWebkitTextDecorationsInEffect,
+    CSSPropertyFontStyle,
+    CSSPropertyFontWeight,
+    CSSPropertyColor,
+};
+
+TriState EditingStyle::triStateOfStyle(CSSStyleDeclaration* styleToCompare, ShouldIgnoreTextOnlyProperties shouldIgnoreTextOnlyProperties) const
+{
+    RefPtr<CSSMutableStyleDeclaration> difference = getPropertiesNotIn(m_mutableStyle.get(), styleToCompare);
+
+    if (shouldIgnoreTextOnlyProperties == IgnoreTextOnlyProperties)
+        difference->removePropertiesInSet(textOnlyProperties, WTF_ARRAY_LENGTH(textOnlyProperties));
+
+    if (!difference->length())
+        return TrueTriState;
+    if (difference->length() == m_mutableStyle->length())
+        return FalseTriState;
+
+    return MixedTriState;
 }
 
 bool EditingStyle::conflictsWithInlineStyleOfElement(StyledElement* element, EditingStyle* extractedStyle, Vector<CSSPropertyID>* conflictingProperties) const
@@ -643,6 +673,11 @@ bool EditingStyle::extractConflictingImplicitStyleOfAttributes(HTMLElement* elem
     return removed;
 }
 
+bool EditingStyle::styleIsPresentInComputedStyleOfNode(Node* node) const
+{
+    return !m_mutableStyle || !getPropertiesNotIn(m_mutableStyle.get(), computedStyle(node).get())->length();
+}
+
 void EditingStyle::prepareToApplyAt(const Position& position, ShouldPreserveWritingDirection shouldPreserveWritingDirection)
 {
     if (!m_mutableStyle)
@@ -670,13 +705,10 @@ void EditingStyle::prepareToApplyAt(const Position& position, ShouldPreserveWrit
         m_mutableStyle->removeProperty(CSSPropertyBackgroundColor, ec);
     }
 
-    if (unicodeBidi) {
-        ASSERT(unicodeBidi->isPrimitiveValue());
+    if (unicodeBidi && unicodeBidi->isPrimitiveValue()) {
         m_mutableStyle->setProperty(CSSPropertyUnicodeBidi, static_cast<CSSPrimitiveValue*>(unicodeBidi.get())->getIdent());
-        if (direction) {
-            ASSERT(direction->isPrimitiveValue());
+        if (direction && direction->isPrimitiveValue())
             m_mutableStyle->setProperty(CSSPropertyDirection, static_cast<CSSPrimitiveValue*>(direction.get())->getIdent());
-        }
     }
 }
 

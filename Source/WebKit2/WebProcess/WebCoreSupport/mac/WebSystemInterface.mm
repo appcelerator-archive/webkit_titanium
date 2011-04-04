@@ -59,12 +59,12 @@ void InitWebCoreSystemInterface(void)
         INIT(GetHTTPPipeliningPriority);
         INIT(GetMIMETypeForExtension);
         INIT(GetNSURLResponseLastModifiedDate);
+        INIT(SignedPublicKeyAndChallengeString);
         INIT(GetPreferredExtensionForMIMEType);
         INIT(GetUserToBaseCTM);
         INIT(GetWheelEventDeltas);
         INIT(HitTestMediaUIPart);
         INIT(InitializeMaximumHTTPConnectionCountPerHost);
-        INIT(IsLatchingWheelEvent);
         INIT(MeasureMediaUIPart);
         INIT(MediaControllerThemeAvailable);
         INIT(PopupMenu);
@@ -95,6 +95,11 @@ void InitWebCoreSystemInterface(void)
         INIT(SignalCFReadStreamHasBytes);
         INIT(CreatePrivateStorageSession);
         INIT(CopyRequestWithStorageSession);
+        INIT(CopyHTTPCookieStorage);
+        INIT(GetHTTPCookieAcceptPolicy);
+        INIT(HTTPCookiesForURL);
+        INIT(SetHTTPCookiesForURL);
+        INIT(DeleteHTTPCookie);
 
 #if !defined(BUILDING_ON_SNOW_LEOPARD)
         INIT(IOSurfaceContextCreate);
@@ -103,6 +108,7 @@ void InitWebCoreSystemInterface(void)
         INIT(MakeScrollbarPainter);
         INIT(ScrollbarPainterSetDelegate);
         INIT(ScrollbarPainterPaint);
+        INIT(ScrollbarPainterForceFlashScrollers);
         INIT(ScrollbarThickness);
         INIT(ScrollbarMinimumThumbLength);
         INIT(ScrollbarMinimumTotalLengthNeededForThumb);
@@ -131,6 +137,7 @@ void InitWebCoreSystemInterface(void)
         INIT(ScrollbarPainterUsesOverlayScrollers);
 #else
         INIT(GetHyphenationLocationBeforeIndex);
+        INIT(GetNSEventMomentumPhase);
 #endif
         
         INIT(GetAXTextMarkerTypeID);
@@ -143,5 +150,11 @@ void InitWebCoreSystemInterface(void)
         INIT(AccessibilityHandleFocusChanged);
         INIT(CreateAXUIElementRef);
         INIT(UnregisterUniqueIdForElement);        
+
+        INIT(GetCFURLResponseMIMEType);
+        INIT(GetCFURLResponseURL);
+        INIT(GetCFURLResponseHTTPResponse);
+        INIT(CopyCFURLResponseSuggestedFilename);
+        INIT(SetCFURLResponseMIMEType);
     });
 }

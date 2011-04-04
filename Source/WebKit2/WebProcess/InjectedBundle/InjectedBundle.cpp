@@ -35,6 +35,7 @@
 #include "WKBundleAPICast.h"
 #include "WebContextMessageKinds.h"
 #include "WebCoreArgumentCoders.h"
+#include "WebDatabaseManager.h"
 #include "WebPage.h"
 #include "WebPreferencesStore.h"
 #include "WebProcess.h"
@@ -108,6 +109,26 @@ void InjectedBundle::overrideXSSAuditorEnabledForTestRunner(WebPageGroupProxy* p
         (*iter)->settings()->setXSSAuditorEnabled(enabled);
 }
 
+void InjectedBundle::overrideAllowUniversalAccessFromFileURLsForTestRunner(WebPageGroupProxy* pageGroup, bool enabled)
+{
+    // Override the preference for all future pages.
+    WebPreferencesStore::overrideAllowUniversalAccessFromFileURLsForTestRunner(enabled);
+
+    // Change the setting for existing ones.
+    const HashSet<Page*>& pages = PageGroup::pageGroup(pageGroup->identifier())->pages();
+    for (HashSet<Page*>::iterator iter = pages.begin(); iter != pages.end(); ++iter)
+        (*iter)->settings()->setAllowUniversalAccessFromFileURLs(enabled);
+}
+
+void InjectedBundle::clearAllDatabases()
+{
+    WebDatabaseManager::shared().deleteAllDatabases();
+}
+
+void InjectedBundle::setDatabaseQuota(uint64_t quota)
+{
+    WebDatabaseManager::shared().setQuotaForOrigin("file:///", quota);
+}
 
 static PassOwnPtr<Vector<String> > toStringVector(ImmutableArray* patterns)
 {

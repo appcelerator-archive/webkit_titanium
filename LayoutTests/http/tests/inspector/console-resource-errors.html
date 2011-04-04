@@ -3,34 +3,51 @@
 <script src="console-test.js"></script>
 <script src="inspector-test.js"></script>
 
-<link rel="stylesheet" type="text/css" href="missing.css">
-
 <script>
-var xhr = new XMLHttpRequest();
-xhr.open("GET","non-existent-xhr", false);
-xhr.send(null);
+
+function performActions()
+{
+    loadXHR();
+    loadIframe();
+}
+
+function loadXHR()
+{
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET","non-existent-xhr", false);
+    xhr.send(null);
+}
+
+function loadIframe()
+{
+    var iframe = document.createElement("iframe");
+    iframe.src = "resources/console-resource-errors-iframe.html";
+    document.body.appendChild(iframe);
+}
 
 function test()
 {
-    InspectorTest.reloadPage(function() {
-        InspectorTest.expandConsoleMessages();
-        InspectorTest.dumpConsoleMessagesWithClasses(true);
-        InspectorTest.completeTest();
-    });
+    InspectorTest.addSniffer(WebInspector.ConsoleView.prototype, "addMessage", addMessage, true);
+
+    var messageCount = 0;
+    function addMessage(message)
+    {
+       if (message.toString().indexOf("non-existent-iframe") !== -1) {
+           InspectorTest.expandConsoleMessages();
+           InspectorTest.dumpConsoleMessagesWithClasses(true);
+           InspectorTest.completeTest();
+        }
+    }
+
+    InspectorTest.evaluateInPage("performActions()");
 }
-
-
 
 </script>
 </head>
 
 <body onload="runTest()">
 <p>
-<script src="non-existent-script.js"></script>
-<iframe src="non-existent-iframe.html"></iframe>
-
 Tests that errors to load a resource cause error messages to be logged to console.
 </p>
-
 </body>
 </html>

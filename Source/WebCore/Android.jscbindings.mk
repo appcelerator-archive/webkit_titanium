@@ -198,12 +198,13 @@ LOCAL_SRC_FILES += \
 	bridge/c/c_instance.cpp \
 	bridge/c/c_runtime.cpp \
 	bridge/c/c_utility.cpp \
-	bridge/jni/JNIBridge.cpp \
 	bridge/jni/JNIUtility.cpp \
+	bridge/jni/JavaMethodJobject.cpp \
 	bridge/jni/JobjectWrapper.cpp \
-	bridge/jni/jsc/JNIBridgeJSC.cpp \
 	bridge/jni/jsc/JNIUtilityPrivate.cpp \
+	bridge/jni/jsc/JavaArrayJSC.cpp \
 	bridge/jni/jsc/JavaClassJSC.cpp \
+	bridge/jni/jsc/JavaFieldJSC.cpp \
 	bridge/jni/jsc/JavaInstanceJSC.cpp \
 	bridge/jsc/BridgeJSC.cpp \
 	bridge/npruntime.cpp \

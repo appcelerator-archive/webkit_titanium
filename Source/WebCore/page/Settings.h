@@ -283,6 +283,9 @@ namespace WebCore {
         void setXSSAuditorEnabled(bool);
         bool xssAuditorEnabled() const { return m_xssAuditorEnabled; }
 
+        void setCanvasUsesAcceleratedDrawing(bool);
+        bool canvasUsesAcceleratedDrawing() const { return m_canvasUsesAcceleratedDrawing; }
+
         void setAcceleratedDrawingEnabled(bool);
         bool acceleratedDrawingEnabled() const { return m_acceleratedDrawingEnabled; }
         
@@ -359,6 +362,14 @@ namespace WebCore {
         // and http://webkit.org/b/40908
         void setInteractiveFormValidationEnabled(bool flag) { m_interactiveFormValidation = flag; }
         bool interactiveFormValidationEnabled() const { return m_interactiveFormValidation; }
+
+        // Sets the maginication value for validation message timer.
+        // If the maginication value is N, a validation message disappears
+        // automatically after <message length> * N / 1000 seconds. If N is
+        // equal to or less than 0, a validation message doesn't disappears
+        // automaticaly. The default value is 50.
+        void setValidationMessageTimerMagnification(int newValue) { m_validationMessageTimerMagnification = newValue; }
+        int validationMessageTimerMaginification() const { return m_validationMessageTimerMagnification; }
         
         void setUsePreHTML5ParserQuirks(bool flag) { m_usePreHTML5ParserQuirks = flag; }
         bool usePreHTML5ParserQuirks() const { return m_usePreHTML5ParserQuirks; }
@@ -368,6 +379,12 @@ namespace WebCore {
 
         void setCrossOriginCheckInGetMatchedCSSRulesDisabled(bool flag) { m_crossOriginCheckInGetMatchedCSSRulesDisabled = flag; }
         bool crossOriginCheckInGetMatchedCSSRulesDisabled() const { return m_crossOriginCheckInGetMatchedCSSRulesDisabled; }
+        
+        void setUseQuickLookResourceCachingQuirks(bool flag) { m_useQuickLookResourceCachingQuirks = flag; }
+        bool useQuickLookResourceCachingQuirks() const { return m_useQuickLookResourceCachingQuirks; }
+
+        void setForceCompositingMode(bool flag) { m_forceCompositingMode = flag; }
+        bool forceCompositingMode() { return m_forceCompositingMode; }
 
     private:
         Page* m_page;
@@ -388,6 +405,7 @@ namespace WebCore {
         int m_minimumLogicalFontSize;
         int m_defaultFontSize;
         int m_defaultFixedFontSize;
+        int m_validationMessageTimerMagnification;
         size_t m_maximumDecodedImageSize;
 #if ENABLE(DOM_STORAGE)
         unsigned m_sessionStorageQuota;
@@ -437,6 +455,7 @@ namespace WebCore {
         bool m_enforceCSSMIMETypeInNoQuirksMode : 1;
         bool m_usesEncodingDetector : 1;
         bool m_allowScriptsToCloseWindows : 1;
+        bool m_canvasUsesAcceleratedDrawing : 1;
         bool m_acceleratedDrawingEnabled : 1;
         bool m_downloadableBinaryFontsEnabled : 1;
         bool m_xssAuditorEnabled : 1;
@@ -466,6 +485,8 @@ namespace WebCore {
         bool m_usePreHTML5ParserQuirks: 1;
         bool m_hyperlinkAuditingEnabled : 1;
         bool m_crossOriginCheckInGetMatchedCSSRulesDisabled : 1;
+        bool m_useQuickLookResourceCachingQuirks : 1;
+        bool m_forceCompositingMode : 1;
 
 #if USE(SAFARI_THEME)
         static bool gShouldPaintNativeControls;

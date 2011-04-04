@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2011 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -103,7 +104,7 @@ public:
     virtual void dispatchWillClose();
     virtual void dispatchDidReceiveIcon();
     virtual void dispatchDidStartProvisionalLoad();
-    virtual void dispatchDidReceiveTitle(const WTF::String& title);
+    virtual void dispatchDidReceiveTitle(const WebCore::StringWithDirection&);
     virtual void dispatchDidChangeIcons();
     virtual void dispatchDidCommitLoad();
     virtual void dispatchDidFailProvisionalLoad(const WebCore::ResourceError&);
@@ -114,7 +115,7 @@ public:
     virtual void dispatchDidFirstVisuallyNonEmptyLayout();
     virtual WebCore::Frame* dispatchCreatePage(const WebCore::NavigationAction&);
     virtual void dispatchShow();
-    virtual void dispatchDecidePolicyForMIMEType(WebCore::FramePolicyFunction function, const WTF::String& mime_type, const WebCore::ResourceRequest&);
+    virtual void dispatchDecidePolicyForResponse(WebCore::FramePolicyFunction function, const WebCore::ResourceResponse&, const WebCore::ResourceRequest&);
     virtual void dispatchDecidePolicyForNewWindowAction(WebCore::FramePolicyFunction function, const WebCore::NavigationAction& action, const WebCore::ResourceRequest& request, PassRefPtr<WebCore::FormState> form_state, const WTF::String& frame_name);
     virtual void dispatchDecidePolicyForNavigationAction(WebCore::FramePolicyFunction function, const WebCore::NavigationAction& action, const WebCore::ResourceRequest& request, PassRefPtr<WebCore::FormState> form_state);
     virtual void cancelPolicyCheck();
@@ -165,7 +166,7 @@ public:
     virtual void prepareForDataSourceReplacement();
     virtual PassRefPtr<WebCore::DocumentLoader> createDocumentLoader(
         const WebCore::ResourceRequest&, const WebCore::SubstituteData&);
-    virtual void setTitle(const WTF::String& title, const WebCore::KURL&);
+    virtual void setTitle(const WebCore::StringWithDirection&, const WebCore::KURL&);
     virtual WTF::String userAgent(const WebCore::KURL&);
     virtual void savePlatformDataToCachedFrame(WebCore::CachedFrame*);
     virtual void transitionToCommittedFromCachedFrame(WebCore::CachedFrame*);
@@ -197,7 +198,7 @@ public:
         const Vector<WTF::String>& paramNames,
         const Vector<WTF::String>& paramValues);
     virtual WebCore::ObjectContentType objectContentType(
-        const WebCore::KURL& url, const WTF::String& mimeType);
+        const WebCore::KURL&, const WTF::String& mimeType, bool shouldPreferPlugInsForImages);
     virtual WTF::String overrideMediaType() const;
     virtual void didPerformFirstNavigation() const;
     virtual void registerForIconNotification(bool listen = true);

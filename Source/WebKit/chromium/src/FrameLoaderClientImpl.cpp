@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2011 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -733,10 +734,11 @@ void FrameLoaderClientImpl::dispatchDidStartProvisionalLoad()
     }
 }
 
-void FrameLoaderClientImpl::dispatchDidReceiveTitle(const String& title)
+void FrameLoaderClientImpl::dispatchDidReceiveTitle(const StringWithDirection& title)
 {
+    // FIXME: use direction of title.
     if (m_webFrame->client())
-        m_webFrame->client()->didReceiveTitle(m_webFrame, title);
+        m_webFrame->client()->didReceiveTitle(m_webFrame, title.string());
 }
 
 void FrameLoaderClientImpl::dispatchDidChangeIcons()
@@ -842,14 +844,11 @@ void FrameLoaderClientImpl::dispatchShow()
         webView->client()->show(webView->initialNavigationPolicy());
 }
 
-void FrameLoaderClientImpl::dispatchDecidePolicyForMIMEType(
+void FrameLoaderClientImpl::dispatchDecidePolicyForResponse(
      FramePolicyFunction function,
-     const String& mimeType,
+     const ResourceResponse& response,
      const ResourceRequest&)
 {
-    const ResourceResponse& response =
-        m_webFrame->frame()->loader()->activeDocumentLoader()->response();
-
     PolicyAction action;
 
     int statusCode = response.httpStatusCode();
@@ -861,7 +860,7 @@ void FrameLoaderClientImpl::dispatchDecidePolicyForMIMEType(
         // Downloading is handled by the embedder, but we still get the initial
         // response so that we can ignore it and clean up properly.
         action = PolicyIgnore;
-    } else if (!canShowMIMEType(mimeType)) {
+    } else if (!canShowMIMEType(response.mimeType())) {
         // Make sure that we can actually handle this type internally.
         action = PolicyIgnore;
     } else {
@@ -1330,7 +1329,7 @@ PassRefPtr<DocumentLoader> FrameLoaderClientImpl::createDocumentLoader(
     return ds.release();
 }
 
-void FrameLoaderClientImpl::setTitle(const String& title, const KURL& url)
+void FrameLoaderClientImpl::setTitle(const StringWithDirection& title, const KURL& url)
 {
     // FIXME: inform consumer of changes to the title.
 }
@@ -1482,7 +1481,8 @@ PassRefPtr<Widget> FrameLoaderClientImpl::createJavaAppletWidget(
 
 ObjectContentType FrameLoaderClientImpl::objectContentType(
     const KURL& url,
-    const String& explicitMimeType)
+    const String& explicitMimeType,
+    bool shouldPreferPlugInsForImages)
 {
     // This code is based on Apple's implementation from
     // WebCoreSupport/WebFrameBridge.mm.
@@ -1506,12 +1506,14 @@ ObjectContentType FrameLoaderClientImpl::objectContentType(
             return ObjectContentFrame;
     }
 
-    if (MIMETypeRegistry::isSupportedImageMIMEType(mimeType))
-        return ObjectContentImage;
-
     // If Chrome is started with the --disable-plugins switch, pluginData is 0.
     PluginData* pluginData = m_webFrame->frame()->page()->pluginData();
-    if (pluginData && pluginData->supportsMimeType(mimeType))
+    bool plugInSupportsMIMEType = pluginData && pluginData->supportsMimeType(mimeType);
+
+    if (MIMETypeRegistry::isSupportedImageMIMEType(mimeType))
+        return shouldPreferPlugInsForImages && plugInSupportsMIMEType ? ObjectContentNetscapePlugin : ObjectContentImage;
+
+    if (plugInSupportsMIMEType)
         return ObjectContentNetscapePlugin;
 
     if (MIMETypeRegistry::isSupportedNonImageMIMEType(mimeType))

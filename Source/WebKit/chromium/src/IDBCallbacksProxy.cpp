@@ -35,9 +35,7 @@
 #include "WebIDBCursorImpl.h"
 #include "WebIDBDatabaseImpl.h"
 #include "WebIDBDatabaseError.h"
-#include "WebIDBIndexImpl.h"
 #include "WebIDBKey.h"
-#include "WebIDBObjectStoreImpl.h"
 #include "WebIDBTransactionImpl.h"
 #include "WebSerializedScriptValue.h"
 
@@ -74,19 +72,9 @@ void IDBCallbacksProxy::onSuccess(PassRefPtr<IDBDatabaseBackendInterface> backen
     m_callbacks->onSuccess(new WebKit::WebIDBDatabaseImpl(backend));
 }
 
-void IDBCallbacksProxy::onSuccess(PassRefPtr<IDBIndexBackendInterface> backend)
-{
-    m_callbacks->onSuccess(new WebKit::WebIDBIndexImpl(backend));
-}
-
 void IDBCallbacksProxy::onSuccess(PassRefPtr<IDBKey> idbKey)
 {
     m_callbacks->onSuccess(WebKit::WebIDBKey(idbKey));
-}
-
-void IDBCallbacksProxy::onSuccess(PassRefPtr<IDBObjectStoreBackendInterface> backend)
-{
-    m_callbacks->onSuccess(new WebKit::WebIDBObjectStoreImpl(backend));
 }
 
 void IDBCallbacksProxy::onSuccess(PassRefPtr<IDBTransactionBackendInterface> backend)

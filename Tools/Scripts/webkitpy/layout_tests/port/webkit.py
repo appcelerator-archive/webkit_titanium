@@ -69,10 +69,6 @@ class WebKitPort(base.Port):
         return self._filesystem.join(self._webkit_baseline_path(self._name),
                                      'test_expectations.txt')
 
-    # Only needed by ports which maintain versioned test expectations (like mac-tiger vs. mac-leopard)
-    def version(self):
-        return ''
-
     def _build_driver(self):
         configuration = self.get_option('configuration')
         return self._config.build_dumprendertree(configuration)
@@ -180,19 +176,17 @@ class WebKitPort(base.Port):
         return WebKitDriver(self, worker_number)
 
     def _tests_for_other_platforms(self):
-        raise NotImplementedError('WebKitPort._tests_for_other_platforms')
-        # The original run-webkit-tests builds up a "whitelist" of tests to
-        # run, and passes that to DumpRenderTree. new-run-webkit-tests assumes
-        # we run *all* tests and test_expectations.txt functions as a
-        # blacklist.
-        # FIXME: This list could be dynamic based on platform name and
-        # pushed into base.Port.
-        return [
-            "platform/chromium",
-            "platform/gtk",
-            "platform/qt",
-            "platform/win",
-        ]
+        # By default we will skip any directory under LayoutTests/platform
+        # that isn't in our baseline search path (this mirrors what
+        # old-run-webkit-tests does in findTestsToRun()).
+        # Note this returns LayoutTests/platform/*, not platform/*/*.
+        entries = self._filesystem.glob(self._webkit_baseline_path('*'))
+        dirs_to_skip = []
+        for entry in entries:
+            if self._filesystem.isdir(entry) and not entry in self.baseline_search_path():
+                basename = self._filesystem.basename(entry)
+                dirs_to_skip.append('platform/%s' % basename)
+        return dirs_to_skip
 
     def _runtime_feature_list(self):
         """Return the supported features of DRT. If a port doesn't support
@@ -326,12 +320,6 @@ class WebKitPort(base.Port):
         tests_to_skip.update(self._tests_for_other_platforms())
         tests_to_skip.update(self._tests_for_disabled_features())
         return tests_to_skip
-
-    def test_platform_name(self):
-        return self._name + self.version()
-
-    def test_platform_names(self):
-        return ('mac', 'win', 'mac-tiger', 'mac-leopard', 'mac-snowleopard')
 
     def _build_path(self, *comps):
         return self._filesystem.join(self._config.build_directory(

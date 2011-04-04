@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008, 2009, 2010 Apple, Inc.  All rights reserved.
+ * Copyright (C) 2007, 2008, 2009, 2010, 2011 Apple, Inc.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -28,8 +28,11 @@
 #if ENABLE(VIDEO)
 #include "MediaPlayerPrivateQuickTimeVisualContext.h"
 
+#include "ApplicationCacheHost.h"
+#include "ApplicationCacheResource.h"
 #include "Cookie.h"
 #include "CookieJar.h"
+#include "DocumentLoader.h"
 #include "Frame.h"
 #include "FrameView.h"
 #include "GraphicsContext.h"
@@ -153,7 +156,7 @@ MediaPlayerPrivateInterface* MediaPlayerPrivateQuickTimeVisualContext::create(Me
 void MediaPlayerPrivateQuickTimeVisualContext::registerMediaEngine(MediaEngineRegistrar registrar)
 {
     if (isAvailable())
-        registrar(create, getSupportedTypes, supportsType);
+        registrar(create, getSupportedTypes, supportsType, 0, 0, 0);
 }
 
 MediaPlayerPrivateQuickTimeVisualContext::MediaPlayerPrivateQuickTimeVisualContext(MediaPlayer* player)
@@ -177,6 +180,7 @@ MediaPlayerPrivateQuickTimeVisualContext::MediaPlayerPrivateQuickTimeVisualConte
 #endif
     , m_visualContextClient(new MediaPlayerPrivateQuickTimeVisualContext::VisualContextClient(this))
     , m_delayingLoad(false)
+    , m_privateBrowsing(false)
     , m_preload(MediaPlayer::Auto)
 {
 }
@@ -368,7 +372,16 @@ void MediaPlayerPrivateQuickTimeVisualContext::loadInternal(const String& url)
     setUpCookiesForQuickTime(url);
 
     m_movie = adoptRef(new QTMovie(m_movieClient.get()));
-    m_movie->load(url.characters(), url.length(), m_player->preservesPitch());
+
+#if ENABLE(OFFLINE_WEB_APPLICATIONS)
+    Frame* frame = m_player->frameView() ? m_player->frameView()->frame() : 0;
+    ApplicationCacheHost* cacheHost = frame ? frame->loader()->documentLoader()->applicationCacheHost() : 0;
+    ApplicationCacheResource* resource = 0;
+    if (cacheHost && cacheHost->shouldLoadResourceFromApplicationCache(ResourceRequest(url), resource) && resource && !resource->path().isEmpty())
+        m_movie->load(resource->path().characters(), resource->path().length(), m_player->preservesPitch());
+    else
+#endif
+        m_movie->load(url.characters(), url.length(), m_player->preservesPitch());
     m_movie->setVolume(m_player->volume());
 }
 
@@ -1246,6 +1259,13 @@ void MediaPlayerPrivateQuickTimeVisualContext::acceleratedRenderingStateChanged(
     setUpVideoRendering();
 }
 
+void MediaPlayerPrivateQuickTimeVisualContext::setPrivateBrowsingMode(bool privateBrowsing)
+{
+    m_privateBrowsing = privateBrowsing;
+    if (m_movie)
+        m_movie->setPrivateBrowsingMode(m_privateBrowsing);
+}
+    
 #endif
 
 

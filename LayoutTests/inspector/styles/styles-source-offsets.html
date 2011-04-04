@@ -23,13 +23,13 @@ function test()
             style = ruleOrStyle;
             header = "element.style:";
         }
-        InspectorTest.addResult(header + " [" + style.properties.startOffset  + "-" + style.properties.endOffset + "]");
+        InspectorTest.addResult(header + " " + InspectorTest.rangeText(style.range));
         var allProperties = style.cssProperties;
         for (var i = 0; i < allProperties.length; ++i) {
             var property = allProperties[i];
-            if (property.status === "style")
+            if (!property.status)
                 continue;
-            InspectorTest.addResult("['" + property.name + "':'" + property.value + "'" + (property.priority ? " !important" : "") + (property.parsedOk ? "" : " non-parsed") +"] @[" + property.startOffset + "-" + property.endOffset + "]");
+            InspectorTest.addResult("['" + property.name + "':'" + property.value + "'" + (property.priority ? " !important" : "") + (("parsedOk" in property) ? " non-parsed" : "") +"] @" + InspectorTest.rangeText(property.range));
         }
     }
     
@@ -40,12 +40,16 @@ function test()
         CSSAgent.getStylesForNode(node.id, step2);
     }
 
-    function step2(styles)
+    function step2(error, styles)
     {
-        var matchedCSSRules = styles.matchedCSSRules;
-        for (var i = 0; i < matchedCSSRules.length; ++i)
-            dumpStyleData(matchedCSSRules[i]);
-        dumpStyleData(styles.inlineStyle);
+        if (error)
+            InspectorTest.addResult("error: " + error);
+        else {
+            var matchedCSSRules = styles.matchedCSSRules;
+            for (var i = 0; i < matchedCSSRules.length; ++i)
+                dumpStyleData(matchedCSSRules[i]);
+            dumpStyleData(styles.inlineStyle);
+        }
         InspectorTest.completeTest();
     }
 }

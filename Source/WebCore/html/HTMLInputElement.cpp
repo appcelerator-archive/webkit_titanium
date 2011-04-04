@@ -146,6 +146,17 @@ void HTMLInputElement::updateCheckedRadioButtons()
         renderer()->theme()->stateChanged(renderer(), CheckedState);
 }
 
+bool HTMLInputElement::lastChangeWasUserEdit() const
+{
+    if (!isTextField())
+        return false;
+    
+    if (!renderer())
+        return false;
+
+    return toRenderTextControl(renderer())->lastChangeWasUserEdit();
+}
+
 bool HTMLInputElement::isValidValue(const String& value) const
 {
     if (!m_inputType->canSetStringValue()) {
@@ -424,21 +435,18 @@ void HTMLInputElement::setType(const String& type)
 
 void HTMLInputElement::updateType()
 {
-    const AtomicString& typeString = fastGetAttribute(typeAttr);
+    OwnPtr<InputType> newType = InputType::create(this, fastGetAttribute(typeAttr));
+    bool hadType = m_hasType;
+    m_hasType = true;
+    if (m_inputType->formControlType() == newType->formControlType())
+        return;
 
-    OwnPtr<InputType> newType = InputType::create(this, typeString);
-
-    if (m_hasType && !newType->canChangeFromAnotherType()) {
+    if (hadType && !newType->canChangeFromAnotherType()) {
         // Set the attribute back to the old value.
         // Useful in case we were called from inside parseMappedAttribute.
         setAttribute(typeAttr, type());
         return;
     }
-
-    m_hasType = true;
-
-    if (m_inputType->formControlType() == newType->formControlType())
-        return;
 
     checkedRadioButtons().removeButton(this);
 
@@ -739,6 +747,7 @@ void HTMLInputElement::reset()
     if (m_inputType->storesValueSeparateFromAttribute())
         setValue(String());
 
+    setAutofilled(false);
     setChecked(hasAttribute(checkedAttr));
     m_reflectsCheckedAttribute = true;
 }
@@ -778,8 +787,10 @@ void HTMLInputElement::setChecked(bool nowChecked, bool sendChangeEvent)
     // unchecked to match other browsers. DOM is not a useful standard for this
     // because it says only to fire change events at "lose focus" time, which is
     // definitely wrong in practice for these types of elements.
-    if (sendChangeEvent && inDocument() && m_inputType->shouldSendChangeEventAfterCheckedChanged())
+    if (sendChangeEvent && inDocument() && m_inputType->shouldSendChangeEventAfterCheckedChanged()) {
+        setTextAsOfLastFormControlChangeEvent(String());
         dispatchFormControlChangeEvent();
+    }
 }
 
 void HTMLInputElement::setIndeterminate(bool newValue)
@@ -899,6 +910,9 @@ void HTMLInputElement::setValue(const String& value, bool sendChangeEvent)
         else
             dispatchFormControlChangeEvent();
     }
+
+    if (isText() && (!focused() || !sendChangeEvent))
+        setTextAsOfLastFormControlChangeEvent(value);
 
     InputElement::notifyFormStateChanged(this);
 }

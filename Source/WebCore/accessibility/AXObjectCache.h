@@ -62,7 +62,10 @@ public:
 
     static AccessibilityObject* focusedUIElementForPage(const Page*);
 
+    // Returns the root object for the entire document.
     AccessibilityObject* rootObject();
+    // Returns the root object for a specific frame.
+    AccessibilityObject* rootObjectForFrame(Frame*);
     
     // For AX objects with elements that back them.
     AccessibilityObject* getOrCreate(RenderObject*);
@@ -93,7 +96,8 @@ public:
     void handleScrollbarUpdate(ScrollView*);
     
     static void enableAccessibility() { gAccessibilityEnabled = true; }
-    static void enableEnhancedUserInterfaceAccessibility() { gAccessibilityEnhancedUserInterfaceEnabled = true; }
+    // Enhanced user interface accessibility can be toggled by the assistive technology.
+    static void setEnhancedUserInterfaceAccessibility(bool flag) { gAccessibilityEnhancedUserInterfaceEnabled = flag; }
     
     static bool accessibilityEnabled() { return gAccessibilityEnabled; }
     static bool accessibilityEnhancedUserInterfaceEnabled() { return gAccessibilityEnhancedUserInterfaceEnabled; }

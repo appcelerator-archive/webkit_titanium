@@ -31,6 +31,8 @@
 using namespace std;
 extern NPNetscapeFuncs *browser;
 
+static void (*shutdownFunction)();
+
 PluginTest* PluginTest::create(NPP npp, const string& identifier)
 {
     if (identifier.empty())
@@ -47,10 +49,36 @@ PluginTest::PluginTest(NPP npp, const string& identifier)
     : m_npp(npp)
     , m_identifier(identifier)
 {
+    // Reset the shutdown function.
+    shutdownFunction = 0;
 }
 
 PluginTest::~PluginTest()
 {
+}
+
+void PluginTest::NP_Shutdown()
+{
+    if (shutdownFunction)
+        shutdownFunction();
+}
+
+void PluginTest::registerNPShutdownFunction(void (*func)())
+{
+    assert(!shutdownFunction);
+    shutdownFunction = func;
+}
+
+void PluginTest::indicateTestFailure()
+{
+    // This should really be an assert, but there's no way for the test framework
+    // to know that the plug-in process crashed, so we'll just sleep for a while
+    // to ensure that the test times out.
+#if defined(XP_WIN)
+    ::Sleep(100000);
+#else
+    sleep(1000);
+#endif
 }
 
 NPError PluginTest::NPP_New(NPMIMEType pluginType, uint16_t mode, int16_t argc, char *argn[], char *argv[], NPSavedData *saved)
@@ -118,6 +146,13 @@ bool PluginTest::NPN_RemoveProperty(NPObject* npObject, NPIdentifier propertyNam
 {
     return browser->removeproperty(m_npp, npObject, propertyName);
 }
+
+#ifdef XP_MACOSX
+bool PluginTest::NPN_ConvertPoint(double sourceX, double sourceY, NPCoordinateSpace sourceSpace, double *destX, double *destY, NPCoordinateSpace destSpace)
+{
+    return browser->convertpoint(m_npp, sourceX, sourceY, sourceSpace, destX, destY, destSpace);
+}
+#endif
 
 void PluginTest::executeScript(const char* script)
 {

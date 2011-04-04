@@ -163,7 +163,7 @@ IntRect InlineTextBox::selectionRect(int tx, int ty, int startPos, int endPos)
         ePos = len;
     }
 
-    IntRect r = enclosingIntRect(f.selectionRectForText(TextRun(characters, len, textObj->allowTabs(), textPos(), m_expansion, trailingExpansionBehavior(), !isLeftToRightDirection(), m_dirOverride),
+    IntRect r = enclosingIntRect(f.selectionRectForText(TextRun(characters, len, textObj->allowTabs(), textPos(), m_expansion, expansionBehavior(), !isLeftToRightDirection(), m_dirOverride),
                                                         IntPoint(), selHeight, sPos, ePos));
                                                         
     int logicalWidth = r.width();
@@ -314,7 +314,7 @@ bool InlineTextBox::isLineBreak() const
     return renderer()->isBR() || (renderer()->style()->preserveNewline() && len() == 1 && (*textRenderer()->text())[start()] == '\n');
 }
 
-bool InlineTextBox::nodeAtPoint(const HitTestRequest&, HitTestResult& result, int x, int y, int tx, int ty)
+bool InlineTextBox::nodeAtPoint(const HitTestRequest&, HitTestResult& result, int x, int y, int tx, int ty, int /* lineTop */, int /*lineBottom*/)
 {
     if (isLineBreak())
         return false;
@@ -427,7 +427,15 @@ bool InlineTextBox::getEmphasisMarkPosition(RenderStyle* style, TextEmphasisPosi
     return !rubyText || !rubyText->firstLineBox();
 }
 
-void InlineTextBox::paint(PaintInfo& paintInfo, int tx, int ty)
+enum RotationDirection { Counterclockwise, Clockwise };
+
+static inline AffineTransform rotation(const FloatRect& boxRect, RotationDirection clockwise)
+{
+    return clockwise ? AffineTransform(0, 1, -1, 0, boxRect.x() + boxRect.maxY(), boxRect.maxY() - boxRect.x())
+        : AffineTransform(0, -1, 1, 0, boxRect.x() - boxRect.maxY(), boxRect.x() + boxRect.maxY());
+}
+
+void InlineTextBox::paint(PaintInfo& paintInfo, int tx, int ty, int lineTop, int lineBottom)
 {
     if (isLineBreak() || !paintInfo.shouldPaintWithinRoot(renderer()) || renderer()->style()->visibility() != VISIBLE ||
         m_truncation == cFullTruncation || paintInfo.phase == PaintPhaseOutline || !m_len)
@@ -435,10 +443,15 @@ void InlineTextBox::paint(PaintInfo& paintInfo, int tx, int ty)
 
     ASSERT(paintInfo.phase != PaintPhaseSelfOutline && paintInfo.phase != PaintPhaseChildOutlines);
 
-    // FIXME: Technically we're potentially incorporating other visual overflow that had nothing to do with us.
-    // Would it be simpler to just check our own shadow and stroke overflow by hand here?
-    int logicalLeftOverflow = parent()->logicalLeft() - parent()->logicalLeftVisualOverflow();
-    int logicalRightOverflow = parent()->logicalRightVisualOverflow() - (parent()->logicalLeft() + parent()->logicalWidth());
+    int logicalLeftOverflow = 0;
+    int logicalRightOverflow = 0;
+    if (!knownToHaveNoOverflow()) {
+        // FIXME: Technically we're potentially incorporating other visual overflow that had nothing to do with us.
+        // Would it be simpler to just check our own shadow and stroke overflow by hand here?
+        IntRect parentVisualOverflow = parent()->logicalVisualOverflowRect(lineTop, lineBottom);
+        logicalLeftOverflow = parent()->logicalLeft() - parentVisualOverflow.x();
+        logicalRightOverflow = parentVisualOverflow.maxX() - parent()->logicalRight();
+    }
     int logicalStart = logicalLeft() - logicalLeftOverflow + (isHorizontal() ? tx : ty);
     int logicalExtent = logicalWidth() + logicalLeftOverflow + logicalRightOverflow;
     
@@ -485,25 +498,21 @@ void InlineTextBox::paint(PaintInfo& paintInfo, int tx, int ty)
     FloatPoint boxOrigin = locationIncludingFlipping();
     boxOrigin.move(tx, ty);    
     FloatRect boxRect(boxOrigin, IntSize(logicalWidth(), logicalHeight()));
-    FloatPoint textOrigin = FloatPoint(boxOrigin.x(), boxOrigin.y() + styleToUse->fontMetrics().ascent());
 
-    RenderCombineText* combinedText = styleToUse->hasTextCombine() ? toRenderCombineText(textRenderer()) : 0;
-    bool shouldRotate = !isHorizontal() && (!combinedText || !combinedText->isCombined());
-    if (shouldRotate) {
-        context->save();
-        context->translate(boxRect.x(), boxRect.maxY());
-        context->rotate(static_cast<float>(deg2rad(90.)));
-        context->translate(-boxRect.x(), -boxRect.maxY());
-    }
-    
-    
+    RenderCombineText* combinedText = styleToUse->hasTextCombine() && textRenderer()->isCombineText() && toRenderCombineText(textRenderer())->isCombined() ? toRenderCombineText(textRenderer()) : 0;
+
+    bool shouldRotate = !isHorizontal() && !combinedText;
+    if (shouldRotate)
+        context->concatCTM(rotation(boxRect, Clockwise));
+
     // Determine whether or not we have composition underlines to draw.
     bool containsComposition = renderer()->node() && renderer()->frame()->editor()->compositionNode() == renderer()->node();
     bool useCustomUnderlines = containsComposition && renderer()->frame()->editor()->compositionUsesCustomUnderlines();
 
     // Set our font.
-    int d = styleToUse->textDecorationsInEffect();
     const Font& font = styleToUse->font();
+
+    FloatPoint textOrigin = FloatPoint(boxOrigin.x(), boxOrigin.y() + font.fontMetrics().ascent());
 
     if (combinedText)
         combinedText->adjustTextOrigin(textOrigin, boxRect);
@@ -618,7 +627,7 @@ void InlineTextBox::paint(PaintInfo& paintInfo, int tx, int ty)
     if (hasHyphen())
         adjustCharactersAndLengthForHyphen(charactersWithHyphen, styleToUse, characters, length);
 
-    TextRun textRun(characters, length, textRenderer()->allowTabs(), textPos(), m_expansion, trailingExpansionBehavior(), !isLeftToRightDirection(), m_dirOverride || styleToUse->visuallyOrdered());
+    TextRun textRun(characters, length, textRenderer()->allowTabs(), textPos(), m_expansion, expansionBehavior(), !isLeftToRightDirection(), m_dirOverride || styleToUse->visuallyOrdered());
 
     int sPos = 0;
     int ePos = 0;
@@ -653,11 +662,21 @@ void InlineTextBox::paint(PaintInfo& paintInfo, int tx, int ty)
 
         if (!emphasisMark.isEmpty()) {
             updateGraphicsContext(context, emphasisMarkColor, textStrokeColor, textStrokeWidth, styleToUse->colorSpace());
+
+            static TextRun objectReplacementCharacterTextRun(&objectReplacementCharacter, 1);
+            TextRun& emphasisMarkTextRun = combinedText ? objectReplacementCharacterTextRun : textRun;
+            FloatPoint emphasisMarkTextOrigin = combinedText ? FloatPoint(boxOrigin.x() + boxRect.width() / 2, boxOrigin.y() + font.fontMetrics().ascent()) : textOrigin;
+            if (combinedText)
+                context->concatCTM(rotation(boxRect, Clockwise));
+
             if (!paintSelectedTextSeparately || ePos <= sPos) {
                 // FIXME: Truncate right-to-left text correctly.
-                paintTextWithShadows(context, font, textRun, emphasisMark, emphasisMarkOffset, 0, length, length, textOrigin, boxRect, textShadow, textStrokeWidth > 0, isHorizontal());
+                paintTextWithShadows(context, combinedText ? combinedText->originalFont() : font, emphasisMarkTextRun, emphasisMark, emphasisMarkOffset, 0, length, length, emphasisMarkTextOrigin, boxRect, textShadow, textStrokeWidth > 0, isHorizontal());
             } else
-                paintTextWithShadows(context, font, textRun, emphasisMark, emphasisMarkOffset, ePos, sPos, length, textOrigin, boxRect, textShadow, textStrokeWidth > 0, isHorizontal());
+                paintTextWithShadows(context, combinedText ? combinedText->originalFont() : font, emphasisMarkTextRun, emphasisMark, emphasisMarkOffset, ePos, sPos, length, emphasisMarkTextOrigin, boxRect, textShadow, textStrokeWidth > 0, isHorizontal());
+
+            if (combinedText)
+                context->concatCTM(rotation(boxRect, Counterclockwise));
         }
 
         if (textStrokeWidth > 0)
@@ -673,16 +692,27 @@ void InlineTextBox::paint(PaintInfo& paintInfo, int tx, int ty)
         paintTextWithShadows(context, font, textRun, nullAtom, 0, sPos, ePos, length, textOrigin, boxRect, selectionShadow, selectionStrokeWidth > 0, isHorizontal());
         if (!emphasisMark.isEmpty()) {
             updateGraphicsContext(context, selectionEmphasisMarkColor, textStrokeColor, textStrokeWidth, styleToUse->colorSpace());
-            paintTextWithShadows(context, font, textRun, emphasisMark, emphasisMarkOffset, sPos, ePos, length, textOrigin, boxRect, selectionShadow, selectionStrokeWidth > 0, isHorizontal());
+
+            static TextRun objectReplacementCharacterTextRun(&objectReplacementCharacter, 1);
+            TextRun& emphasisMarkTextRun = combinedText ? objectReplacementCharacterTextRun : textRun;
+            FloatPoint emphasisMarkTextOrigin = combinedText ? FloatPoint(boxOrigin.x() + boxRect.width() / 2, boxOrigin.y() + font.fontMetrics().ascent()) : textOrigin;
+            if (combinedText)
+                context->concatCTM(rotation(boxRect, Clockwise));
+
+            paintTextWithShadows(context, combinedText ? combinedText->originalFont() : font, emphasisMarkTextRun, emphasisMark, emphasisMarkOffset, sPos, ePos, length, emphasisMarkTextOrigin, boxRect, selectionShadow, selectionStrokeWidth > 0, isHorizontal());
+
+            if (combinedText)
+                context->concatCTM(rotation(boxRect, Counterclockwise));
         }
         if (selectionStrokeWidth > 0)
             context->restore();
     }
 
     // Paint decorations
-    if (d != TDNONE && paintInfo.phase != PaintPhaseSelection) {
+    int textDecorations = styleToUse->textDecorationsInEffect();
+    if (textDecorations != TDNONE && paintInfo.phase != PaintPhaseSelection) {
         updateGraphicsContext(context, textFillColor, textStrokeColor, textStrokeWidth, styleToUse->colorSpace());
-        paintDecoration(context, boxOrigin, d, textShadow);
+        paintDecoration(context, boxOrigin, textDecorations, textShadow);
     }
 
     if (paintInfo.phase == PaintPhaseForeground) {
@@ -715,7 +745,7 @@ void InlineTextBox::paint(PaintInfo& paintInfo, int tx, int ty)
     }
     
     if (shouldRotate)
-        context->restore();
+        context->concatCTM(rotation(boxRect, Counterclockwise));
 }
 
 void InlineTextBox::selectionStartEnd(int& sPos, int& ePos)
@@ -772,7 +802,7 @@ void InlineTextBox::paintSelection(GraphicsContext* context, const FloatPoint& b
     int selHeight = selectionHeight();
     FloatPoint localOrigin(boxOrigin.x(), boxOrigin.y() - deltaY);
     context->clip(FloatRect(localOrigin, FloatSize(m_logicalWidth, selHeight)));
-    context->drawHighlightForText(font, TextRun(characters, length, textRenderer()->allowTabs(), textPos(), m_expansion, trailingExpansionBehavior(), 
+    context->drawHighlightForText(font, TextRun(characters, length, textRenderer()->allowTabs(), textPos(), m_expansion, expansionBehavior(), 
                                   !isLeftToRightDirection(), m_dirOverride || style->visuallyOrdered()),
                                   localOrigin, selHeight, c, style->colorSpace(), sPos, ePos);
     context->restore();
@@ -796,7 +826,7 @@ void InlineTextBox::paintCompositionBackground(GraphicsContext* context, const F
     int deltaY = renderer()->style()->isFlippedLinesWritingMode() ? selectionBottom() - logicalBottom() : logicalTop() - selectionTop();
     int selHeight = selectionHeight();
     FloatPoint localOrigin(boxOrigin.x(), boxOrigin.y() - deltaY);
-    context->drawHighlightForText(font, TextRun(textRenderer()->text()->characters() + m_start, m_len, textRenderer()->allowTabs(), textPos(), m_expansion, trailingExpansionBehavior(),
+    context->drawHighlightForText(font, TextRun(textRenderer()->text()->characters() + m_start, m_len, textRenderer()->allowTabs(), textPos(), m_expansion, expansionBehavior(),
                                   !isLeftToRightDirection(), m_dirOverride || style->visuallyOrdered()),
                                   localOrigin, selHeight, c, style->colorSpace(), sPos, ePos);
     context->restore();
@@ -958,7 +988,7 @@ void InlineTextBox::paintSpellingOrGrammarMarker(GraphicsContext* pt, const Floa
         int deltaY = renderer()->style()->isFlippedLinesWritingMode() ? selectionBottom() - logicalBottom() : logicalTop() - selectionTop();
         int selHeight = selectionHeight();
         FloatPoint startPoint(boxOrigin.x(), boxOrigin.y() - deltaY);
-        TextRun run(textRenderer()->text()->characters() + m_start, m_len, textRenderer()->allowTabs(), textPos(), m_expansion, trailingExpansionBehavior(), !isLeftToRightDirection(), m_dirOverride || style->visuallyOrdered());
+        TextRun run(textRenderer()->text()->characters() + m_start, m_len, textRenderer()->allowTabs(), textPos(), m_expansion, expansionBehavior(), !isLeftToRightDirection(), m_dirOverride || style->visuallyOrdered());
         
         // FIXME: Convert the document markers to float rects.
         IntRect markerRect = enclosingIntRect(font.selectionRectForText(run, startPoint, selHeight, startPosition, endPosition));
@@ -1003,7 +1033,7 @@ void InlineTextBox::paintTextMatchMarker(GraphicsContext* pt, const FloatPoint& 
 
     int sPos = max(marker.startOffset - m_start, (unsigned)0);
     int ePos = min(marker.endOffset - m_start, (unsigned)m_len);    
-    TextRun run(textRenderer()->text()->characters() + m_start, m_len, textRenderer()->allowTabs(), textPos(), m_expansion, trailingExpansionBehavior(), !isLeftToRightDirection(), m_dirOverride || style->visuallyOrdered());
+    TextRun run(textRenderer()->text()->characters() + m_start, m_len, textRenderer()->allowTabs(), textPos(), m_expansion, expansionBehavior(), !isLeftToRightDirection(), m_dirOverride || style->visuallyOrdered());
     
     // Always compute and store the rect associated with this marker. The computed rect is in absolute coordinates.
     IntRect markerRect = enclosingIntRect(font.selectionRectForText(run, IntPoint(m_x, selectionTop()), selHeight, sPos, ePos));
@@ -1031,7 +1061,7 @@ void InlineTextBox::computeRectForReplacementMarker(const DocumentMarker& marker
     
     int sPos = max(marker.startOffset - m_start, (unsigned)0);
     int ePos = min(marker.endOffset - m_start, (unsigned)m_len);    
-    TextRun run(textRenderer()->text()->characters() + m_start, m_len, textRenderer()->allowTabs(), textPos(), m_expansion, trailingExpansionBehavior(), !isLeftToRightDirection(), m_dirOverride || style->visuallyOrdered());
+    TextRun run(textRenderer()->text()->characters() + m_start, m_len, textRenderer()->allowTabs(), textPos(), m_expansion, expansionBehavior(), !isLeftToRightDirection(), m_dirOverride || style->visuallyOrdered());
     IntPoint startPoint = IntPoint(m_x, y);
     
     // Compute and store the rect associated with this marker.
@@ -1192,7 +1222,7 @@ int InlineTextBox::offsetForPosition(float lineOffset, bool includePartialGlyphs
     RenderStyle* style = text->style(m_firstLine);
     const Font* f = &style->font();
     int offset = f->offsetForPosition(TextRun(textRenderer()->text()->characters() + m_start, m_len,
-        textRenderer()->allowTabs(), textPos(), m_expansion, trailingExpansionBehavior(), !isLeftToRightDirection(), m_dirOverride || style->visuallyOrdered()),
+        textRenderer()->allowTabs(), textPos(), m_expansion, expansionBehavior(), !isLeftToRightDirection(), m_dirOverride || style->visuallyOrdered()),
         lineOffset - logicalLeft(), includePartialGlyphs);
     if (blockIsInOppositeDirection && (!offset || offset == m_len))
         return !offset ? m_len : 0;
@@ -1212,7 +1242,7 @@ float InlineTextBox::positionForOffset(int offset) const
     int from = !isLeftToRightDirection() ? offset - m_start : 0;
     int to = !isLeftToRightDirection() ? m_len : offset - m_start;
     // FIXME: Do we need to add rightBearing here?
-    return f.selectionRectForText(TextRun(text->text()->characters() + m_start, m_len, textRenderer()->allowTabs(), textPos(), m_expansion, trailingExpansionBehavior(), !isLeftToRightDirection(), m_dirOverride),
+    return f.selectionRectForText(TextRun(text->text()->characters() + m_start, m_len, textRenderer()->allowTabs(), textPos(), m_expansion, expansionBehavior(), !isLeftToRightDirection(), m_dirOverride),
                                   IntPoint(logicalLeft(), 0), 0, from, to).maxX();
 }
 

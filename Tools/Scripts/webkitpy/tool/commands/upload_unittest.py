@@ -59,14 +59,32 @@ class UploadCommandsTest(CommandsTest):
         options.request_commit = False
         options.review = True
         options.suggest_reviewers = False
-        expected_stderr = """Running check-webkit-style
-MOCK: user.open_url: file://...
+        expected_stderr = """MOCK: user.open_url: file://...
 Was that diff correct?
 Obsoleting 2 old patches on bug 42
 MOCK add_patch_to_bug: bug_id=42, description=MOCK description, mark_for_review=True, mark_for_commit_queue=False, mark_for_landing=False
 MOCK: user.open_url: http://example.com/42
 """
         self.assert_execute_outputs(Post(), [42], options=options, expected_stderr=expected_stderr)
+
+    def test_attach_to_bug(self):
+        options = MockOptions()
+        options.comment = "extra comment"
+        options.description = "file description"
+        expected_stderr = """MOCK add_attachment_to_bug: bug_id=42, description=file description filename=None
+-- Begin comment --
+extra comment
+-- End comment --
+"""
+        self.assert_execute_outputs(AttachToBug(), [42, "path/to/file.txt", "file description"], options=options, expected_stderr=expected_stderr)
+
+    def test_attach_to_bug_no_description_or_comment(self):
+        options = MockOptions()
+        options.comment = None
+        options.description = None
+        expected_stderr = """MOCK add_attachment_to_bug: bug_id=42, description=file.txt filename=None
+"""
+        self.assert_execute_outputs(AttachToBug(), [42, "path/to/file.txt"], options=options, expected_stderr=expected_stderr)
 
     def test_land_safely(self):
         expected_stderr = "Obsoleting 2 old patches on bug 42\nMOCK add_patch_to_bug: bug_id=42, description=Patch for landing, mark_for_review=False, mark_for_commit_queue=False, mark_for_landing=True\n"
@@ -88,8 +106,7 @@ MOCK: user.open_url: http://example.com/42
         options.request_commit = False
         options.review = True
         options.suggest_reviewers = False
-        expected_stderr = """Running check-webkit-style
-MOCK: user.open_url: file://...
+        expected_stderr = """MOCK: user.open_url: file://...
 Was that diff correct?
 Obsoleting 2 old patches on bug 42
 MOCK add_patch_to_bug: bug_id=42, description=MOCK description, mark_for_review=True, mark_for_commit_queue=False, mark_for_landing=False

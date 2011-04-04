@@ -34,6 +34,7 @@
 #include "CachedScript.h"
 #include "CachedXSLStyleSheet.h"
 #include "Console.h"
+#include "ContentSecurityPolicy.h"
 #include "DOMWindow.h"
 #include "Document.h"
 #include "Frame.h"
@@ -41,12 +42,12 @@
 #include "FrameLoaderClient.h"
 #include "HTMLElement.h"
 #include "Logging.h"
-#include "NestingLevelIncrementer.h"
 #include "MemoryCache.h"
 #include "PingLoader.h"
 #include "ResourceLoadScheduler.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
+#include <wtf/UnusedParam.h>
 #include <wtf/text/CString.h>
 #include <wtf/text/StringConcatenate.h>
 
@@ -85,18 +86,11 @@ CachedResourceLoader::CachedResourceLoader(Document* document)
     , m_autoLoadImages(true)
     , m_loadFinishing(false)
     , m_allowStaleResources(false)
-    , m_isInMethod(0)
 {
 }
 
 CachedResourceLoader::~CachedResourceLoader()
 {
-    // Try to catch https://bugs.webkit.org/show_bug.cgi?id=54486
-    // Crashes under CachedResourceLoader::revalidateResource
-    // FIXME: Remove this and the related code when it has served its purpose.
-    if (m_isInMethod)
-        CRASH();
-
     m_document = 0;
 
     cancelRequests();
@@ -128,7 +122,6 @@ Frame* CachedResourceLoader::frame() const
 
 CachedImage* CachedResourceLoader::requestImage(const String& url)
 {
-    NestingLevelIncrementer debugIncrementer(m_isInMethod);
     if (Frame* f = frame()) {
         Settings* settings = f->settings();
         if (!f->loader()->client()->allowImages(!settings || settings->areImagesEnabled()))
@@ -161,7 +154,6 @@ CachedCSSStyleSheet* CachedResourceLoader::requestCSSStyleSheet(const String& ur
 
 CachedCSSStyleSheet* CachedResourceLoader::requestUserCSSStyleSheet(const String& requestURL, const String& charset)
 {
-    NestingLevelIncrementer debugIncrementer(m_isInMethod);
     KURL url = MemoryCache::removeFragmentIdentifierIfNeeded(KURL(KURL(), requestURL));
 
     if (CachedResource* existing = memoryCache()->resourceForURL(url)) {
@@ -227,9 +219,6 @@ bool CachedResourceLoader::canRequest(CachedResource::Type type, const KURL& url
         }
         break;
 #endif
-    default:
-        ASSERT_NOT_REACHED();
-        break;
     }
 
     // Given that the load is allowed by the same-origin policy, we should
@@ -263,17 +252,17 @@ bool CachedResourceLoader::canRequest(CachedResource::Type type, const KURL& url
         // Prefetch cannot affect the current document.
         break;
 #endif
-    default:
-        ASSERT_NOT_REACHED();
-        break;
     }
     // FIXME: Consider letting the embedder block mixed content loads.
+
+    if (type == CachedResource::Script && !m_document->contentSecurityPolicy()->allowScriptFromSource(url))
+        return false;
+
     return true;
 }
 
 CachedResource* CachedResourceLoader::requestResource(CachedResource::Type type, const String& resourceURL, const String& charset, ResourceLoadPriority priority, bool forPreload)
 {
-    NestingLevelIncrementer debugIncrementer(m_isInMethod);
     KURL url = m_document->completeURL(resourceURL);
     
     LOG(ResourceLoading, "CachedResourceLoader::requestResource '%s', charset '%s', priority=%d, forPreload=%u", url.string().latin1().data(), charset.latin1().data(), priority, forPreload);
@@ -340,7 +329,8 @@ CachedResource* CachedResourceLoader::revalidateResource(CachedResource* resourc
     ASSERT(resource->canUseCacheValidator());
     ASSERT(!resource->resourceToRevalidate());
     
-    const String& url = resource->url();
+    // Copy the URL out of the resource to be revalidated in case it gets deleted by the remove() call below.
+    String url = resource->url();
     CachedResource* newResource = createResource(resource->type(), KURL(ParsedURLString, url), resource->encoding());
     
     LOG(ResourceLoading, "Resource %p created to revalidate %p", newResource, resource);
@@ -481,7 +471,6 @@ void CachedResourceLoader::printAccessDeniedMessage(const KURL& url) const
 
 void CachedResourceLoader::setAutoLoadImages(bool enable)
 {
-    NestingLevelIncrementer debugIncrementer(m_isInMethod);
     if (enable == m_autoLoadImages)
         return;
 
@@ -519,7 +508,6 @@ void CachedResourceLoader::removeCachedResource(CachedResource* resource) const
 
 void CachedResourceLoader::load(CachedResource* resource, bool incremental, SecurityCheckPolicy securityCheck, bool sendResourceLoadCallbacks)
 {
-    NestingLevelIncrementer debugIncrementer(m_isInMethod);
     incrementRequestCount(resource);
 
     RefPtr<CachedResourceRequest> request = CachedResourceRequest::load(this, resource, incremental, securityCheck, sendResourceLoadCallbacks);
@@ -529,7 +517,6 @@ void CachedResourceLoader::load(CachedResource* resource, bool incremental, Secu
 
 void CachedResourceLoader::loadDone(CachedResourceRequest* request)
 {
-    NestingLevelIncrementer debugIncrementer(m_isInMethod);
     m_loadFinishing = false;
     RefPtr<CachedResourceRequest> protect(request);
     if (request)
@@ -606,11 +593,14 @@ int CachedResourceLoader::requestCount()
     
 void CachedResourceLoader::preload(CachedResource::Type type, const String& url, const String& charset, bool referencedFromBody)
 {
-    NestingLevelIncrementer debugIncrementer(m_isInMethod);
+    // FIXME: Rip this out when we are sure it is no longer necessary (even for mobile).
+    UNUSED_PARAM(referencedFromBody);
+
     bool hasRendering = m_document->body() && m_document->body()->renderer();
-    if (!hasRendering && (referencedFromBody || type == CachedResource::ImageResource)) {
-        // Don't preload images or body resources before we have something to draw. This prevents
-        // preloads from body delaying first display when bandwidth is limited.
+    bool canBlockParser = type == CachedResource::Script || type == CachedResource::CSSStyleSheet;
+    if (!hasRendering && !canBlockParser) {
+        // Don't preload subresources that can't block the parser before we have something to draw.
+        // This helps prevent preloads from delaying first display when bandwidth is limited.
         PendingPreload pendingPreload = { type, url, charset };
         m_pendingPreloads.append(pendingPreload);
         return;
@@ -633,7 +623,6 @@ void CachedResourceLoader::checkForPendingPreloads()
 
 void CachedResourceLoader::requestPreload(CachedResource::Type type, const String& url, const String& charset)
 {
-    NestingLevelIncrementer debugIncrementer(m_isInMethod);
     String encoding;
     if (type == CachedResource::Script || type == CachedResource::CSSStyleSheet)
         encoding = charset.isEmpty() ? m_document->charset() : charset;

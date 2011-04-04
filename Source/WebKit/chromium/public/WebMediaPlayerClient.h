@@ -31,6 +31,8 @@
 #ifndef WebMediaPlayerClient_h
 #define WebMediaPlayerClient_h
 
+#include "WebMediaPlayer.h"
+
 namespace WebKit {
 
 class WebRequest;
@@ -49,6 +51,8 @@ public:
     virtual void sizeChanged() = 0;
     virtual void sawUnsupportedTracks() = 0;
     virtual float volume() const = 0;
+    virtual void playbackStateChanged() = 0;
+    virtual WebMediaPlayer::Preload preload() const = 0;
 
 protected:
     ~WebMediaPlayerClient() { }

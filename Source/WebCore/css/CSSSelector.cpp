@@ -27,6 +27,7 @@
 #include "CSSSelector.h"
 
 #include "CSSOMUtils.h"
+#include "CSSSelectorList.h"
 #include "HTMLNames.h"
 #include <wtf/Assertions.h>
 #include <wtf/HashMap.h>
@@ -78,9 +79,12 @@ inline unsigned CSSSelector::specificityForOneSelector() const
     case Contain:
     case Begin:
     case End:
-        if (pseudoType() == PseudoNot && simpleSelector())
-            s += simpleSelector()->specificityForOneSelector();
-        else
+        // FIXME: PsuedoAny should base the specificity on the sub-selectors.
+        // See http://lists.w3.org/Archives/Public/www-style/2010Sep/0530.html
+        if (pseudoType() == PseudoNot) {
+            ASSERT(selectorList());
+            s += selectorList()->first()->specificityForOneSelector();
+        } else
             s += 0x100;
     case None:
         break;
@@ -157,31 +161,19 @@ PseudoId CSSSelector::pseudoId(PseudoType type)
     case PseudoOuterSpinButton:
         return OUTER_SPIN_BUTTON;
 #if ENABLE(METER_TAG)
-    case PseudoMeterHorizontalBar:
-        return METER_HORIZONTAL_BAR;
-    case PseudoMeterHorizontalOptimum:
-        return METER_HORIZONTAL_OPTIMUM;
-    case PseudoMeterHorizontalSuboptimal:
-        return METER_HORIZONTAL_SUBOPTIMAL;
-    case PseudoMeterHorizontalEvenLessGood:
-        return METER_HORIZONTAL_EVEN_LESS_GOOD;
-    case PseudoMeterVerticalBar:
-        return METER_VERTICAL_BAR;
-    case PseudoMeterVerticalOptimum:
-        return METER_VERTICAL_OPTIMUM;
-    case PseudoMeterVerticalSuboptimal:
-        return METER_VERTICAL_SUBOPTIMAL;
-    case PseudoMeterVerticalEvenLessGood:
-        return METER_VERTICAL_EVEN_LESS_GOOD;
+    case PseudoMeterBar:
+        return METER_BAR;
+    case PseudoMeterOptimum:
+        return METER_OPTIMUM;
+    case PseudoMeterSuboptimal:
+        return METER_SUBOPTIMAL;
+    case PseudoMeterEvenLessGood:
+        return METER_EVEN_LESS_GOOD;
 #else
-    case PseudoMeterHorizontalBar:
-    case PseudoMeterHorizontalOptimum:
-    case PseudoMeterHorizontalSuboptimal:
-    case PseudoMeterHorizontalEvenLessGood:
-    case PseudoMeterVerticalBar:
-    case PseudoMeterVerticalOptimum:
-    case PseudoMeterVerticalSuboptimal:
-    case PseudoMeterVerticalEvenLessGood:
+    case PseudoMeterBar:
+    case PseudoMeterOptimum:
+    case PseudoMeterSuboptimal:
+    case PseudoMeterEvenLessGood:
         ASSERT_NOT_REACHED();
         return NOPSEUDO;
 #endif
@@ -211,6 +203,7 @@ PseudoId CSSSelector::pseudoId(PseudoType type)
     case PseudoNthLastOfType:
     case PseudoLink:
     case PseudoVisited:
+    case PseudoAny:
     case PseudoAnyLink:
     case PseudoAutofill:
     case PseudoHover:
@@ -265,6 +258,7 @@ static HashMap<AtomicStringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap(
 {
     DEFINE_STATIC_LOCAL(AtomicString, active, ("active"));
     DEFINE_STATIC_LOCAL(AtomicString, after, ("after"));
+    DEFINE_STATIC_LOCAL(AtomicString, any, ("-webkit-any("));
     DEFINE_STATIC_LOCAL(AtomicString, anyLink, ("-webkit-any-link"));
     DEFINE_STATIC_LOCAL(AtomicString, autofill, ("-webkit-autofill"));
     DEFINE_STATIC_LOCAL(AtomicString, before, ("before"));
@@ -310,14 +304,10 @@ static HashMap<AtomicStringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap(
     DEFINE_STATIC_LOCAL(AtomicString, optional, ("optional"));
     DEFINE_STATIC_LOCAL(AtomicString, outerSpinButton, ("-webkit-outer-spin-button"));
 #if ENABLE(METER_TAG)
-    DEFINE_STATIC_LOCAL(AtomicString, meterHorizontalBar, ("-webkit-meter-horizontal-bar"));
-    DEFINE_STATIC_LOCAL(AtomicString, meterHorizontalOptimumValue, ("-webkit-meter-horizontal-optimum-value"));
-    DEFINE_STATIC_LOCAL(AtomicString, meterHorizontalSuboptimalValue, ("-webkit-meter-horizontal-suboptimal-value"));
-    DEFINE_STATIC_LOCAL(AtomicString, meterHorizontalEvenLessGoodValue, ("-webkit-meter-horizontal-even-less-good-value"));
-    DEFINE_STATIC_LOCAL(AtomicString, meterVerticalBar, ("-webkit-meter-vertical-bar"));
-    DEFINE_STATIC_LOCAL(AtomicString, meterVerticalOptimumValue, ("-webkit-meter-vertical-optimum-value"));
-    DEFINE_STATIC_LOCAL(AtomicString, meterVerticalSuboptimalValue, ("-webkit-meter-vertical-suboptimal-value"));
-    DEFINE_STATIC_LOCAL(AtomicString, meterVerticalEvenLessGoodValue, ("-webkit-meter-vertical-even-less-good-value"));
+    DEFINE_STATIC_LOCAL(AtomicString, meterBar, ("-webkit-meter-bar"));
+    DEFINE_STATIC_LOCAL(AtomicString, meterOptimumValue, ("-webkit-meter-optimum-value"));
+    DEFINE_STATIC_LOCAL(AtomicString, meterSuboptimalValue, ("-webkit-meter-suboptimal-value"));
+    DEFINE_STATIC_LOCAL(AtomicString, meterEvenLessGoodValue, ("-webkit-meter-even-less-good-value"));
 #endif
 
     DEFINE_STATIC_LOCAL(AtomicString, required, ("required"));
@@ -364,6 +354,7 @@ static HashMap<AtomicStringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap(
         nameToPseudoType->set(active.impl(), CSSSelector::PseudoActive);
         nameToPseudoType->set(after.impl(), CSSSelector::PseudoAfter);
         nameToPseudoType->set(anyLink.impl(), CSSSelector::PseudoAnyLink);
+        nameToPseudoType->set(any.impl(), CSSSelector::PseudoAny);
         nameToPseudoType->set(autofill.impl(), CSSSelector::PseudoAutofill);
         nameToPseudoType->set(before.impl(), CSSSelector::PseudoBefore);
         nameToPseudoType->set(checked.impl(), CSSSelector::PseudoChecked);
@@ -407,14 +398,10 @@ static HashMap<AtomicStringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap(
         nameToPseudoType->set(nthLastOfType.impl(), CSSSelector::PseudoNthLastOfType);
         nameToPseudoType->set(outerSpinButton.impl(), CSSSelector::PseudoOuterSpinButton);
 #if ENABLE(METER_TAG)
-        nameToPseudoType->set(meterHorizontalBar.impl(), CSSSelector::PseudoMeterHorizontalBar);
-        nameToPseudoType->set(meterHorizontalOptimumValue.impl(), CSSSelector::PseudoMeterHorizontalOptimum);
-        nameToPseudoType->set(meterHorizontalSuboptimalValue.impl(), CSSSelector::PseudoMeterHorizontalSuboptimal);
-        nameToPseudoType->set(meterHorizontalEvenLessGoodValue.impl(), CSSSelector::PseudoMeterHorizontalEvenLessGood);
-        nameToPseudoType->set(meterVerticalBar.impl(), CSSSelector::PseudoMeterVerticalBar);
-        nameToPseudoType->set(meterVerticalOptimumValue.impl(), CSSSelector::PseudoMeterVerticalOptimum);
-        nameToPseudoType->set(meterVerticalSuboptimalValue.impl(), CSSSelector::PseudoMeterVerticalSuboptimal);
-        nameToPseudoType->set(meterVerticalEvenLessGoodValue.impl(), CSSSelector::PseudoMeterVerticalEvenLessGood);
+        nameToPseudoType->set(meterBar.impl(), CSSSelector::PseudoMeterBar);
+        nameToPseudoType->set(meterOptimumValue.impl(), CSSSelector::PseudoMeterOptimum);
+        nameToPseudoType->set(meterSuboptimalValue.impl(), CSSSelector::PseudoMeterSuboptimal);
+        nameToPseudoType->set(meterEvenLessGoodValue.impl(), CSSSelector::PseudoMeterEvenLessGood);
 #endif
         nameToPseudoType->set(root.impl(), CSSSelector::PseudoRoot);
         nameToPseudoType->set(windowInactive.impl(), CSSSelector::PseudoWindowInactive);
@@ -490,14 +477,10 @@ void CSSSelector::extractPseudoType() const
     case PseudoInputSpeechButton:
 #endif
     case PseudoInnerSpinButton:
-    case PseudoMeterHorizontalBar:
-    case PseudoMeterHorizontalOptimum:
-    case PseudoMeterHorizontalSuboptimal:
-    case PseudoMeterHorizontalEvenLessGood:
-    case PseudoMeterVerticalBar:
-    case PseudoMeterVerticalOptimum:
-    case PseudoMeterVerticalSuboptimal:
-    case PseudoMeterVerticalEvenLessGood:
+    case PseudoMeterBar:
+    case PseudoMeterOptimum:
+    case PseudoMeterSuboptimal:
+    case PseudoMeterEvenLessGood:
     case PseudoOuterSpinButton:
     case PseudoResizer:
     case PseudoScrollbar:
@@ -527,6 +510,7 @@ void CSSSelector::extractPseudoType() const
     case PseudoNthLastOfType:
     case PseudoLink:
     case PseudoVisited:
+    case PseudoAny:
     case PseudoAnyLink:
     case PseudoAutofill:
     case PseudoHover:
@@ -638,17 +622,33 @@ String CSSSelector::selectorText() const
         } else if (cs->m_match == CSSSelector::PseudoClass || cs->m_match == CSSSelector::PagePseudoClass) {
             str += ":";
             str += cs->value();
-            if (cs->pseudoType() == PseudoNot) {
-                if (CSSSelector* subSel = cs->simpleSelector())
-                    str += subSel->selectorText();
+
+            switch (cs->pseudoType()) {
+            case PseudoNot:
+                ASSERT(cs->selectorList());
+                str += cs->selectorList()->first()->selectorText();
                 str += ")";
-            } else if (cs->pseudoType() == PseudoLang
-                    || cs->pseudoType() == PseudoNthChild
-                    || cs->pseudoType() == PseudoNthLastChild
-                    || cs->pseudoType() == PseudoNthOfType
-                    || cs->pseudoType() == PseudoNthLastOfType) {
+                break;
+            case PseudoLang:
+            case PseudoNthChild:
+            case PseudoNthLastChild:
+            case PseudoNthOfType:
+            case PseudoNthLastOfType:
                 str += cs->argument();
                 str += ")";
+                break;
+            case PseudoAny: {
+                CSSSelector* firstSubSelector = cs->selectorList()->first();
+                for (CSSSelector* subSelector = firstSubSelector; subSelector; subSelector = CSSSelectorList::next(subSelector)) {
+                    if (subSelector != firstSubSelector)
+                        str += ",";
+                    str += subSelector->selectorText();
+                }
+                str += ")";
+                break;
+            }
+            default:
+                break;
             }
         } else if (cs->m_match == CSSSelector::PseudoElement) {
             str += "::";
@@ -736,11 +736,11 @@ void CSSSelector::setArgument(const AtomicString& value)
     createRareData(); 
     m_data.m_rareData->m_argument = value; 
 }
-
-void CSSSelector::setSimpleSelector(PassOwnPtr<CSSSelector> value)
+    
+void CSSSelector::setSelectorList(PassOwnPtr<CSSSelectorList> selectorList)
 {
     createRareData(); 
-    m_data.m_rareData->m_simpleSelector = value; 
+    m_data.m_rareData->m_selectorList = selectorList;
 }
 
 bool CSSSelector::parseNth()
@@ -761,7 +761,7 @@ bool CSSSelector::matchNth(int count)
 
 bool CSSSelector::isSimple() const
 {
-    if (simpleSelector() || tagHistory() || matchesPseudoElement())
+    if (selectorList() || tagHistory() || matchesPseudoElement())
         return false;
 
     int numConditions = 0;
@@ -784,6 +784,21 @@ bool CSSSelector::isSimple() const
     return numConditions <= 1;
 }
 
+CSSSelector::RareData::RareData(PassRefPtr<AtomicStringImpl> value)
+    : m_value(value.leakRef())
+    , m_a(0)
+    , m_b(0)
+    , m_attribute(anyQName())
+    , m_argument(nullAtom)
+{
+}
+
+CSSSelector::RareData::~RareData()
+{
+    if (m_value)
+        m_value->deref();
+}
+    
 // a helper function for parsing nth-arguments
 bool CSSSelector::RareData::parseNth()
 {

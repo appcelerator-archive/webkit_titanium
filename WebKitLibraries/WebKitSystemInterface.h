@@ -15,6 +15,8 @@
 extern "C" {
 #endif
 
+typedef struct _CFURLResponse* CFURLResponseRef;
+
 typedef enum {
     WKCertificateParseResultSucceeded  = 0,
     WKCertificateParseResultFailed     = 1,
@@ -70,6 +72,7 @@ void WKAdvanceDefaultButtonPulseAnimation(NSButtonCell *button);
 
 NSString *WKMouseMovedNotification(void);
 NSString *WKWindowWillOrderOnScreenNotification(void);
+NSString *WKWindowWillOrderOffScreenNotification(void);
 void WKSetNSWindowShouldPostEventNotifications(NSWindow *window, BOOL post);
 
 CFTypeID WKGetAXTextMarkerTypeID(void);
@@ -238,6 +241,13 @@ CFURLStorageSessionRef WKCreatePrivateStorageSession(CFStringRef);
 NSURLRequest *WKCopyRequestWithStorageSession(CFURLStorageSessionRef, NSURLRequest*);
 NSCachedURLResponse *WKCachedResponseForRequest(CFURLStorageSessionRef, NSURLRequest*);
 
+typedef struct OpaqueCFHTTPCookieStorage* CFHTTPCookieStorageRef;
+CFHTTPCookieStorageRef WKCopyHTTPCookieStorage(CFURLStorageSessionRef);
+unsigned WKGetHTTPCookieAcceptPolicy(CFHTTPCookieStorageRef);
+NSArray *WKHTTPCookiesForURL(CFHTTPCookieStorageRef, NSURL *);
+void WKSetHTTPCookiesForURL(CFHTTPCookieStorageRef, NSArray *, NSURL *, NSURL *);
+void WKDeleteHTTPCookie(CFHTTPCookieStorageRef, NSHTTPCookie *);
+
 void WKSetVisibleApplicationName(CFStringRef);
 
 typedef enum {
@@ -348,7 +358,16 @@ void WKSetCONNECTProxyForStream(CFReadStreamRef, CFStringRef proxyHost, CFNumber
 void WKSetCONNECTProxyAuthorizationForStream(CFReadStreamRef, CFStringRef proxyAuthorizationString);
 CFHTTPMessageRef WKCopyCONNECTProxyResponse(CFReadStreamRef, CFURLRef responseURL);
 
-BOOL WKIsLatchingWheelEvent(NSEvent *);
+#if defined(BUILDING_ON_TIGER) || defined(BUILDING_ON_LEOPARD) || defined(BUILDING_ON_SNOW_LEOPARD)
+typedef enum {
+    WKEventPhaseNone = 0,
+    WKEventPhaseBegan = 1,
+    WKEventPhaseChanged = 2,
+    WKEventPhaseEnded = 3,
+} WKEventPhase;
+
+int WKGetNSEventMomentumPhase(NSEvent *);
+#endif
 
 #ifndef BUILDING_ON_TIGER
 void WKWindowSetAlpha(NSWindow *window, float alphaValue);
@@ -379,6 +398,12 @@ CFIndex WKGetHyphenationLocationBeforeIndex(CFStringRef string, CFIndex index);
 CFArrayRef WKCFURLCacheCopyAllHostNamesInPersistentStore(void);
 void WKCFURLCacheDeleteHostNamesInPersistentStore(CFArrayRef hostArray);    
 
+CFStringRef WKGetCFURLResponseMIMEType(CFURLResponseRef);
+CFURLRef WKGetCFURLResponseURL(CFURLResponseRef);
+CFHTTPMessageRef WKGetCFURLResponseHTTPResponse(CFURLResponseRef);
+CFStringRef WKCopyCFURLResponseSuggestedFilename(CFURLResponseRef);
+void WKSetCFURLResponseMIMEType(CFURLResponseRef, CFStringRef mimeType);
+
 #if !defined(BUILDING_ON_TIGER) && !defined(BUILDING_ON_LEOPARD) && !defined(BUILDING_ON_SNOW_LEOPARD)
 typedef enum {
     WKSandboxExtensionTypeReadOnly,
@@ -397,10 +422,13 @@ const char* WKSandboxExtensionGetSerializedFormat(WKSandboxExtensionRef sandboxE
 WKSandboxExtensionRef WKSandboxExtensionCreateFromSerializedFormat(const char* serializationFormat, size_t length);
 
 typedef struct __WKScrollbarPainter *WKScrollbarPainterRef;
+typedef struct __WKScrollbarPainterController *WKScrollbarPainterControllerRef;
+
 WKScrollbarPainterRef WKMakeScrollbarPainter(int controlSize, bool isHorizontal);
 WKScrollbarPainterRef WKMakeScrollbarReplacementPainter(WKScrollbarPainterRef oldPainter, int newStyle, int controlSize, bool isHorizontal);
 void WKScrollbarPainterSetDelegate(WKScrollbarPainterRef, id scrollbarPainterDelegate);
 void WKScrollbarPainterPaint(WKScrollbarPainterRef, bool enabled, double value, CGFloat proportion, CGRect frameRect);
+void WKScrollbarPainterForceFlashScrollers(WKScrollbarPainterControllerRef);
 int WKScrollbarThickness(int controlSize);
 int WKScrollbarMinimumThumbLength(WKScrollbarPainterRef);
 int WKScrollbarMinimumTotalLengthNeededForThumb(WKScrollbarPainterRef);
@@ -411,7 +439,6 @@ void WKSetScrollbarPainterTrackAlpha(WKScrollbarPainterRef, CGFloat);
 bool WKScrollbarPainterIsHorizontal(WKScrollbarPainterRef);
 void WKScrollbarPainterSetOverlayState(WKScrollbarPainterRef, int overlayScrollerState);
 
-typedef struct __WKScrollbarPainterController *WKScrollbarPainterControllerRef;
 WKScrollbarPainterControllerRef WKMakeScrollbarPainterController(id painterControllerDelegate);
 void WKSetPainterForPainterController(WKScrollbarPainterControllerRef, WKScrollbarPainterRef, bool isHorizontal);
 WKScrollbarPainterRef WKVerticalScrollbarPainterForController(WKScrollbarPainterControllerRef);
@@ -429,6 +456,10 @@ void WKContentAreaDidShow(WKScrollbarPainterControllerRef);
 void WKContentAreaDidHide(WKScrollbarPainterControllerRef);
 
 bool WKScrollbarPainterUsesOverlayScrollers(void);
+
+NSRange WKExtractWordDefinitionTokenRangeFromContextualString(NSString *contextString, NSRange range, NSDictionary **options);
+void WKShowWordDefinitionWindow(NSAttributedString *term, NSPoint screenPoint, NSDictionary *options);
+void WKHideWordDefinitionWindow(void);
 
 #endif
 

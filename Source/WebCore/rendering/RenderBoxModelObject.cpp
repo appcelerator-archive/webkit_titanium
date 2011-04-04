@@ -303,7 +303,7 @@ void RenderBoxModelObject::styleWillChange(StyleDifference diff, const RenderSty
                 repaint();
         }
         
-        if (diff == StyleDifferenceLayout) {
+        if (diff == StyleDifferenceLayout || diff == StyleDifferenceSimplifiedLayout) {
             // When a layout hint happens, we go ahead and do a repaint of the layer, since the layer could
             // end up being destroyed.
             if (hasLayer()) {
@@ -346,8 +346,10 @@ void RenderBoxModelObject::styleDidChange(StyleDifference diff, const RenderStyl
             m_layer = new (renderArena()) RenderLayer(this);
             setHasLayer(true);
             m_layer->insertOnlyThisLayer();
-            if (parent() && !needsLayout() && containingBlock())
+            if (parent() && !needsLayout() && containingBlock()) {
+                m_layer->setNeedsFullRepaint();
                 m_layer->updateLayerPositions();
+            }
         }
     } else if (layer() && layer()->parent()) {
         setHasTransform(false); // Either a transform wasn't specified or the object doesn't support transforms, so just null out the bit.
@@ -371,6 +373,7 @@ void RenderBoxModelObject::updateBoxModelInfoFromStyle()
     setHasBoxDecorations(hasBackground() || style()->hasBorder() || style()->hasAppearance() || style()->boxShadow());
     setInline(style()->isDisplayInlineType());
     setRelPositioned(style()->position() == RelativePosition);
+    setHorizontalWritingMode(style()->isHorizontalWritingMode());
 }
 
 int RenderBoxModelObject::relativePositionOffsetX() const
@@ -625,9 +628,10 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
         // Now add the text to the clip.  We do this by painting using a special paint phase that signals to
         // InlineTextBoxes that they should just add their contents to the clip.
         PaintInfo info(maskImageContext, maskRect, PaintPhaseTextClip, true, 0, 0);
-        if (box)
-            box->paint(info, tx - box->x(), ty - box->y());
-        else {
+        if (box) {
+            RootInlineBox* root = box->root();
+            box->paint(info, tx - box->x(), ty - box->y(), root->lineTop(), root->lineBottom());
+        } else {
             int x = isBox() ? toRenderBox(this)->x() : 0;
             int y = isBox() ? toRenderBox(this)->y() : 0;
             paint(info, tx - x, ty - y);
@@ -1658,9 +1662,7 @@ void RenderBoxModelObject::paintBoxShadow(GraphicsContext* context, int tx, int 
                 if (!rectToClipOut.isEmpty())
                     context->clipOutRoundedRect(rectToClipOut);
 
-                if (shadowSpread < 0)
-                    fillRect.expandRadii(shadowSpread);
-
+                fillRect.expandRadii(shadowSpread);
                 context->fillRoundedRect(fillRect, Color::black, s->colorSpace());
             } else {
                 IntRect rectToClipOut = border.rect();
@@ -1728,15 +1730,13 @@ void RenderBoxModelObject::paintBoxShadow(GraphicsContext* context, int tx, int 
             context->translate(extraOffset.width(), extraOffset.height());
             shadowOffset -= extraOffset;
 
-            if (hasBorderRadius && shadowSpread > 0)
-                border.shrinkRadii(shadowSpread);
-            
             if (shadow->isWebkitBoxShadow())
                 context->setLegacyShadow(shadowOffset, shadowBlur, shadowColor, s->colorSpace());
             else
                 context->setShadow(shadowOffset, shadowBlur, shadowColor, s->colorSpace());
 
             RoundedIntRect roundedHole(holeRect, border.radii());
+            roundedHole.shrinkRadii(shadowSpread);
             context->fillRectWithRoundedHole(outerRect, roundedHole, fillColor, s->colorSpace());
 
             context->restore();

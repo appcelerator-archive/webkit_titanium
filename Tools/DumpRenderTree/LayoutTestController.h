@@ -50,6 +50,7 @@ public:
     const std::string& redirectionDestinationForURL(std::string);
     void clearAllApplicationCaches();
     void clearAllDatabases();
+    void clearApplicationCacheForOrigin(JSStringRef name);
     void clearBackForwardList();
     void clearPersistentUserStyleSheet();
     bool callShouldCloseOnWebView();
@@ -62,12 +63,14 @@ public:
     void displayInvalidatedRegion();
     void execCommand(JSStringRef name, JSStringRef value);
     bool findString(JSContextRef, JSStringRef, JSObjectRef optionsArray);
+    JSValueRef originsWithApplicationCache(JSContextRef);
     bool isCommandEnabled(JSStringRef name);
     void keepWebHistory();
     JSValueRef computedStyleIncludingVisitedInfo(JSContextRef, JSValueRef);
     JSValueRef nodesFromRect(JSContextRef, JSValueRef, int x, int y, unsigned top, unsigned right, unsigned bottom, unsigned left, bool ignoreClipping);
     void notifyDone();
     int numberOfPages(float pageWidthInPixels, float pageHeightInPixels);
+    int numberOfPendingGeolocationPermissionRequests();
     void overridePreference(JSStringRef key, JSStringRef value);
     int pageNumberForElementById(JSStringRef id, float pageWidthInPixels, float pageHeightInPixels);
     JSRetainPtr<JSStringRef> pageProperty(const char* propertyName, int pageNumber) const;
@@ -89,6 +92,7 @@ public:
     void setAppCacheMaximumSize(unsigned long long quota);
     void setApplicationCacheOriginQuota(unsigned long long quota);
     void setAuthorAndUserStylesEnabled(bool);
+    void setAutofilled(JSContextRef, JSValueRef nodeObject, bool autofilled);
     void setCacheModel(int);
     void setCustomPolicyDelegate(bool setDelegate, bool permissive);
     void setDatabaseQuota(unsigned long long quota);
@@ -118,6 +122,7 @@ public:
     void setSpatialNavigationEnabled(bool enable);
     void setScrollbarPolicy(JSStringRef orientation, JSStringRef policy);
     void setEditingBehavior(const char* editingBehavior);
+    JSValueRef shadowRoot(JSContextRef, JSValueRef);
 
     void waitForPolicyDelegate();
     size_t webHistoryItemCount();
@@ -291,6 +296,7 @@ public:
     void abortModal();
 
     bool hasSpellingMarker(int from, int length);
+    bool hasGrammarMarker(int from, int length);
 
     void dumpConfigurationForViewport(int deviceDPI, int deviceWidth, int deviceHeight, int availableWidth, int availableHeight);
 
@@ -307,6 +313,12 @@ public:
     JSRetainPtr<JSStringRef> layerTreeAsText() const;
 
     JSRetainPtr<JSStringRef> markerTextForListItem(JSContextRef context, JSValueRef nodeObject) const;
+
+    JSValueRef originsWithLocalStorage(JSContextRef);
+    void deleteAllLocalStorage();
+    void deleteLocalStorageForOrigin(JSStringRef originIdentifier);
+    void observeStorageTrackerNotifications(unsigned number);
+    void syncLocalStorage();
 
     void setShouldPaintBrokenImage(bool);
     bool shouldPaintBrokenImage() const { return m_shouldPaintBrokenImage; }

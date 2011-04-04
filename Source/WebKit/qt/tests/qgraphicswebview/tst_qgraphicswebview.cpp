@@ -21,9 +21,14 @@
 #include <QtTest/QtTest>
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsView>
+#include <QStyleOptionGraphicsItem>
 #include <qgraphicswebview.h>
 #include <qwebpage.h>
 #include <qwebframe.h>
+
+#if defined(ENABLE_WEBGL) && ENABLE_WEBGL
+#include <QGLWidget>
+#endif
 
 class tst_QGraphicsWebView : public QObject
 {
@@ -38,6 +43,17 @@ private slots:
     void widgetsRenderingThroughCache();
     void setPalette_data();
     void setPalette();
+    void renderHints();
+#if defined(ENABLE_TILED_BACKING_STORE) && ENABLE_TILED_BACKING_STORE
+    void bug56929();
+#endif
+#if defined(ENABLE_WEBGL) && ENABLE_WEBGL
+    void webglSoftwareFallbackVerticalOrientation();
+    void webglSoftwareFallbackHorizontalOrientation();
+
+private:
+    void compareCanvasToImage(const QUrl&, const QImage&);
+#endif
 };
 
 void tst_QGraphicsWebView::qgraphicswebview()
@@ -178,6 +194,38 @@ void tst_QGraphicsWebView::widgetsRenderingThroughCache()
     QCOMPARE(referencePixmap.toImage(), viewWithTiling.toImage());
 }
 
+#if defined(ENABLE_TILED_BACKING_STORE) && ENABLE_TILED_BACKING_STORE
+void tst_QGraphicsWebView::bug56929()
+{
+    // When rendering from tiles sychronous layout should not be triggered
+    // and scrollbars should be in sync with the size of the document in the displayed state.
+
+    QGraphicsWebView* webView = new QGraphicsWebView();
+    webView->setGeometry(QRectF(0.0, 0.0, 100.0, 100.0));
+    QGraphicsView view(new QGraphicsScene());
+    view.scene()->setParent(&view);
+    view.scene()->addItem(webView);
+    webView->settings()->setAttribute(QWebSettings::TiledBackingStoreEnabled, true);
+    QUrl url("qrc:///resources/56929.html");
+    webView->load(url);
+    QVERIFY(waitForSignal(webView, SIGNAL(loadFinished(bool))));
+    QStyleOptionGraphicsItem option;
+    option.exposedRect = webView->geometry();
+    QImage img(option.exposedRect.width(), option.exposedRect.height(), QImage::Format_ARGB32_Premultiplied);
+    QPainter painter(&img);
+    // This will not paint anything as the tiles are not ready, yet.
+    webView->paint(&painter, &option);
+    QApplication::processEvents();
+    webView->paint(&painter, &option);
+    QCOMPARE(img.pixel(option.exposedRect.width() - 2, option.exposedRect.height() / 2), qRgba(255, 255, 255, 255));
+    painter.fillRect(option.exposedRect, Qt::black);
+    QCOMPARE(img.pixel(option.exposedRect.width() - 2, option.exposedRect.height() / 2), qRgba(0, 0, 0, 255));
+    webView->page()->mainFrame()->evaluateJavaScript(QString("resizeDiv();"));
+    webView->paint(&painter, &option);
+    QCOMPARE(img.pixel(option.exposedRect.width() - 2, option.exposedRect.height() / 2), qRgba(255, 255, 255, 255));
+}
+#endif
+
 void tst_QGraphicsWebView::microFocusCoordinates()
 {
     QWebPage* page = new QWebPage;
@@ -191,9 +239,9 @@ void tst_QGraphicsWebView::microFocusCoordinates()
 
     page->mainFrame()->setHtml("<html><body>" \
         "<input type='text' id='input1' style='font--family: serif' value='' maxlength='20'/><br>" \
-        "<canvas id='canvas1' width='500' height='500'/>" \
+        "<canvas id='canvas1' width='500' height='500'></canvas>" \
         "<input type='password'/><br>" \
-        "<canvas id='canvas2' width='500' height='500'/>" \
+        "<canvas id='canvas2' width='500' height='500'></canvas>" \
         "</body></html>");
 
     page->mainFrame()->setFocus();
@@ -408,6 +456,146 @@ void tst_QGraphicsWebView::setPalette()
 
     QVERIFY(img1 != img2);
 }
+
+void tst_QGraphicsWebView::renderHints()
+{
+    QGraphicsWebView webView;
+
+    // default is only text antialiasing + smooth pixmap transform
+    QVERIFY(!(webView.renderHints() & QPainter::Antialiasing));
+    QVERIFY(webView.renderHints() & QPainter::TextAntialiasing);
+    QVERIFY(webView.renderHints() & QPainter::SmoothPixmapTransform);
+    QVERIFY(!(webView.renderHints() & QPainter::HighQualityAntialiasing));
+
+    webView.setRenderHint(QPainter::Antialiasing, true);
+    QVERIFY(webView.renderHints() & QPainter::Antialiasing);
+    QVERIFY(webView.renderHints() & QPainter::TextAntialiasing);
+    QVERIFY(webView.renderHints() & QPainter::SmoothPixmapTransform);
+    QVERIFY(!(webView.renderHints() & QPainter::HighQualityAntialiasing));
+
+    webView.setRenderHint(QPainter::Antialiasing, false);
+    QVERIFY(!(webView.renderHints() & QPainter::Antialiasing));
+    QVERIFY(webView.renderHints() & QPainter::TextAntialiasing);
+    QVERIFY(webView.renderHints() & QPainter::SmoothPixmapTransform);
+    QVERIFY(!(webView.renderHints() & QPainter::HighQualityAntialiasing));
+
+    webView.setRenderHint(QPainter::SmoothPixmapTransform, true);
+    QVERIFY(!(webView.renderHints() & QPainter::Antialiasing));
+    QVERIFY(webView.renderHints() & QPainter::TextAntialiasing);
+    QVERIFY(webView.renderHints() & QPainter::SmoothPixmapTransform);
+    QVERIFY(!(webView.renderHints() & QPainter::HighQualityAntialiasing));
+
+    webView.setRenderHint(QPainter::SmoothPixmapTransform, false);
+    QVERIFY(webView.renderHints() & QPainter::TextAntialiasing);
+    QVERIFY(!(webView.renderHints() & QPainter::SmoothPixmapTransform));
+    QVERIFY(!(webView.renderHints() & QPainter::HighQualityAntialiasing));
+}
+
+class GraphicsView : public QGraphicsView {
+public:
+    GraphicsView();
+    QGraphicsWebView* m_webView;
+};
+
+#if defined(ENABLE_WEBGL) && ENABLE_WEBGL
+bool compareImagesFuzzyPixelCount(const QImage& image1, const QImage& image2, qreal tolerance = 0.05)
+{
+    if (image1.size() != image2.size())
+        return false;
+
+    unsigned diffPixelCount = 0;
+    for (int row = 0; row < image1.size().width(); ++row) {
+        for (int column = 0; column < image1.size().height(); ++column)
+            if (image1.pixel(row, column) != image2.pixel(row, column))
+                ++diffPixelCount;
+    }
+
+    if (diffPixelCount > (image1.size().width() * image1.size().height()) * tolerance)
+        return false;
+
+    return true;
+}
+
+GraphicsView::GraphicsView()
+{
+    QGraphicsScene* const scene = new QGraphicsScene(this);
+    setScene(scene);
+
+    m_webView = new QGraphicsWebView;
+    scene->addItem(m_webView);
+
+    m_webView->page()->settings()->setAttribute(QWebSettings::WebGLEnabled, true);
+    m_webView->setResizesToContents(true);
+
+    setFrameShape(QFrame::NoFrame);
+    setViewport(new QGLWidget);
+}
+
+void tst_QGraphicsWebView::webglSoftwareFallbackVerticalOrientation()
+{
+    QSize canvasSize(100, 100);
+    QImage reference(canvasSize, QImage::Format_ARGB32);
+    reference.fill(0xFF00FF00);
+    { // Reference.
+        QPainter painter(&reference);
+        QPolygonF triangleUp;
+        triangleUp << QPointF(0, canvasSize.height())
+                   << QPointF(canvasSize.width(), canvasSize.height())
+                   << QPointF(canvasSize.width() / 2.0, canvasSize.height() / 2.0);
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(Qt::red);
+        painter.drawPolygon(triangleUp);
+    }
+
+    compareCanvasToImage(QUrl(QLatin1String("qrc:///resources/pointing_up.html")), reference);
+}
+
+void tst_QGraphicsWebView::webglSoftwareFallbackHorizontalOrientation()
+{
+    QSize canvasSize(100, 100);
+    QImage reference(canvasSize, QImage::Format_ARGB32);
+    reference.fill(0xFF00FF00);
+    { // Reference.
+        QPainter painter(&reference);
+        QPolygonF triangleUp;
+        triangleUp << QPointF(0, 0)
+                   << QPointF(0, canvasSize.height())
+                   << QPointF(canvasSize.width() / 2.0, canvasSize.height() / 2.0);
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(Qt::red);
+        painter.drawPolygon(triangleUp);
+    }
+
+    compareCanvasToImage(QUrl(QLatin1String("qrc:///resources/pointing_right.html")), reference);
+}
+
+void tst_QGraphicsWebView::compareCanvasToImage(const QUrl& url, const QImage& reference)
+{
+    GraphicsView view;
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    QGraphicsWebView* const graphicsWebView = view.m_webView;
+    graphicsWebView->load(url);
+    QVERIFY(waitForSignal(graphicsWebView, SIGNAL(loadFinished(bool))));
+    { // Force a render, to create the accelerated compositing tree.
+        QPixmap pixmap(view.size());
+        QPainter painter(&pixmap);
+        view.render(&painter);
+    }
+    QApplication::syncX();
+
+    const QSize imageSize = reference.size();
+
+    QImage target(imageSize, QImage::Format_ARGB32);
+    { // Web page content.
+        QPainter painter(&target);
+        QRectF renderRect(0, 0, imageSize.width(), imageSize.height());
+        view.scene()->render(&painter, renderRect, renderRect);
+    }
+    QVERIFY(compareImagesFuzzyPixelCount(target, reference, 0.01));
+}
+#endif
 
 QTEST_MAIN(tst_QGraphicsWebView)
 

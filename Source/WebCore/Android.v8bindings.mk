@@ -45,6 +45,7 @@ LOCAL_SRC_FILES += \
 	bindings/v8/IDBBindingUtilities.cpp \
 	bindings/v8/MainThreadDOMData.cpp \
 	bindings/v8/NPV8Object.cpp \
+	bindings/v8/RetainedDOMInfo.cpp \
 	bindings/v8/RuntimeEnabledFeatures.cpp \
 	bindings/v8/ScheduledAction.cpp \
 	bindings/v8/ScopedDOMDataStore.cpp \
@@ -164,6 +165,7 @@ LOCAL_SRC_FILES += \
 	bindings/v8/custom/V8StyleSheetCustom.cpp \
 	bindings/v8/custom/V8StyleSheetListCustom.cpp \
 	bindings/v8/custom/V8TreeWalkerCustom.cpp \
+	bindings/v8/custom/V8WebKitAnimationCustom.cpp \
 	bindings/v8/custom/V8WebKitCSSMatrixConstructor.cpp \
 	bindings/v8/custom/V8WebKitPointConstructor.cpp \
 	bindings/v8/custom/V8WorkerContextCustom.cpp \
@@ -172,12 +174,12 @@ LOCAL_SRC_FILES += \
 	bindings/v8/custom/V8XMLHttpRequestCustom.cpp
 
 LOCAL_SRC_FILES += \
-	bridge/jni/JNIBridge.cpp \
 	bridge/jni/JNIUtility.cpp \
+	bridge/jni/JavaMethodJobject.cpp \
 	bridge/jni/JobjectWrapper.cpp \
-	bridge/jni/v8/JNIBridgeV8.cpp \
 	bridge/jni/v8/JNIUtilityPrivate.cpp \
-	bridge/jni/v8/JavaClassV8.cpp \
+	bridge/jni/v8/JavaClassJobjectV8.cpp \
+	bridge/jni/v8/JavaFieldJobjectV8.cpp \
 	bridge/jni/v8/JavaInstanceV8.cpp \
 	bridge/jni/v8/JavaNPObject.cpp \
 	bridge/jni/v8/JobjectWrapper.cpp

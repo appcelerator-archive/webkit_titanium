@@ -41,6 +41,7 @@ namespace WebCore {
 
 class Event;
 class HTMLSourceElement;
+class MediaControls;
 class MediaError;
 class KURL;
 class TimeRanges;
@@ -163,7 +164,7 @@ public:
 
     bool hasSingleSecurityOrigin() const { return !m_player || m_player->hasSingleSecurityOrigin(); }
     
-    bool isFullscreen() const { return m_isFullscreen; }
+    bool isFullscreen() const;
     void enterFullscreen();
     void exitFullscreen();
 
@@ -171,31 +172,34 @@ public:
     bool closedCaptionsVisible() const;
     void setClosedCaptionsVisible(bool);
 
+    MediaControls* mediaControls();
+
     bool processingUserGesture() const;
 
     void sourceWillBeRemoved(HTMLSourceElement*);
     void sourceWasAdded(HTMLSourceElement*);
 
-    // Media cache management.
-    void getSitesInMediaCache(Vector<String>&);
-    void clearMediaCache();
-    void clearMediaCacheForSite(const String&);
-
     void privateBrowsingStateDidChange();
 
     // Restrictions to change default behaviors.
-    enum BehaviorRestrictions {
+    enum BehaviorRestrictionFlags {
         NoRestrictions = 0,
         RequireUserGestureForLoadRestriction = 1 << 0,
         RequireUserGestureForRateChangeRestriction = 1 << 1,
         RequireUserGestureForFullScreenRestriction = 1 << 2
     };
-
+    typedef unsigned BehaviorRestrictions;
+    
     bool requireUserGestureForLoad() const { return m_restrictions & RequireUserGestureForLoadRestriction; }
     bool requireUserGestureForRateChange() const { return m_restrictions & RequireUserGestureForRateChangeRestriction; }
     bool requireUserGestureForFullScreen() const { return m_restrictions & RequireUserGestureForFullScreenRestriction; }
 
     void setBehaviorRestrictions(BehaviorRestrictions restrictions) { m_restrictions = restrictions; }
+
+    // Media cache management.
+    static void getSitesInMediaCache(Vector<String>&);
+    static void clearMediaCache();
+    static void clearMediaCacheForSite(const String&);
 
 protected:
     HTMLMediaElement(const QualifiedName&, Document*);
@@ -318,6 +322,8 @@ private:
 
     void invalidateCachedTime();
     void refreshCachedTime() const;
+
+    bool hasMediaControls() const;
 
     Timer<HTMLMediaElement> m_loadTimer;
     Timer<HTMLMediaElement> m_asyncEventTimer;

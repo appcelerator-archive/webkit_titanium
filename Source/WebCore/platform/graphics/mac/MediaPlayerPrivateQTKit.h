@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -54,6 +54,8 @@ class WebCoreMovieObserver;
 #endif
 
 namespace WebCore {
+    
+class ApplicationCacheResource;
 
 class MediaPlayerPrivateQTKit : public MediaPlayerPrivateInterface {
 public:
@@ -139,6 +141,7 @@ private:
 
     void createQTMovie(const String& url);
     void createQTMovie(NSURL *, NSDictionary *movieAttributes);
+    void createQTMovie(ApplicationCacheResource*);
 
     enum MediaRenderingMode { MediaRenderingNone, MediaRenderingMovieView, MediaRenderingSoftwareRenderer, MediaRenderingMovieLayer };
     MediaRenderingMode currentRenderingMode() const;
@@ -177,6 +180,10 @@ private:
 
     virtual double maximumDurationToCacheMediaTime() const { return 5; }
 
+    virtual void setPrivateBrowsingMode(bool);
+    
+    NSMutableDictionary* commonMovieAttributes();
+
     MediaPlayer* m_player;
     RetainPtr<QTMovie> m_qtMovie;
     RetainPtr<QTMovieView> m_qtMovieView;
@@ -203,11 +210,13 @@ private:
     bool m_videoFrameHasDrawn;
     bool m_delayingLoad;
     bool m_isAllowedToRender;
+    bool m_privateBrowsing;
 #if DRAW_FRAME_RATE
     int  m_frameCountWhilePlaying;
     double m_timeStartedPlaying;
     double m_timeStoppedPlaying;
 #endif
+    mutable FloatSize m_cachedNaturalSize;
 };
 
 }

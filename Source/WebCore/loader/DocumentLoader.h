@@ -31,10 +31,12 @@
 
 #include "DocumentLoadTiming.h"
 #include "DocumentWriter.h"
+#include "IconDatabaseBase.h"
 #include "NavigationAction.h"
 #include "ResourceError.h"
 #include "ResourceRequest.h"
 #include "ResourceResponse.h"
+#include "StringWithDirection.h"
 #include "SubstituteData.h"
 #include "Timer.h"
 #include <wtf/HashSet.h>
@@ -120,7 +122,7 @@ namespace WebCore {
         bool wasOnloadHandled() { return m_wasOnloadHandled; }
         bool isLoadingInAPISense() const;
         void setPrimaryLoadComplete(bool);
-        void setTitle(const String&);
+        void setTitle(const StringWithDirection&);
         void setIconURL(const String&);
         const String& overrideEncoding() const { return m_overrideEncoding; }
 
@@ -167,7 +169,7 @@ namespace WebCore {
         const ResourceRequest& lastCheckedRequest()  { return m_lastCheckedRequest; }
 
         void stopRecordingResponses();
-        const String& title() const { return m_pageTitle; }
+        const StringWithDirection& title() const { return m_pageTitle; }
         const String& iconURL() const { return m_pageIconURL; }
 
         KURL urlForHistory() const;
@@ -182,7 +184,7 @@ namespace WebCore {
         String clientRedirectDestinationForHistory() const { return urlForHistory(); }
         void setClientRedirectSourceForHistory(const String& clientedirectSourceForHistory) { m_clientRedirectSourceForHistory = clientedirectSourceForHistory; }
         
-        String serverRedirectSourceForHistory() const { return urlForHistory() == url() ? String() : urlForHistory(); } // null if no server redirect occurred.
+        String serverRedirectSourceForHistory() const { return urlForHistory() == url() ? String() : urlForHistory().string(); } // null if no server redirect occurred.
         String serverRedirectDestinationForHistory() const { return url(); }
 
         bool didCreateGlobalHistoryEntry() const { return m_didCreateGlobalHistoryEntry; }
@@ -193,7 +195,13 @@ namespace WebCore {
         bool startLoadingMainResource(unsigned long identifier);
         void cancelMainResourceLoad(const ResourceError&);
         
+        // Support iconDatabase in synchronous mode.
         void iconLoadDecisionAvailable();
+        
+        // Support iconDatabase in asynchronous mode.
+        void continueIconLoadWithDecision(IconLoadDecision);
+        void getIconLoadDecisionForIconURL(const String&);
+        void getIconDataForIconURL(const String&);
         
         bool isLoadingMainResource() const;
         bool isLoadingSubresources() const;
@@ -291,7 +299,7 @@ namespace WebCore {
         bool m_isClientRedirect;
         bool m_wasOnloadHandled;
 
-        String m_pageTitle;
+        StringWithDirection m_pageTitle;
         String m_pageIconURL;
 
         String m_overrideEncoding;
@@ -326,6 +334,9 @@ namespace WebCore {
         bool m_didCreateGlobalHistoryEntry;
 
         DocumentLoadTiming m_documentLoadTiming;
+    
+        RefPtr<IconLoadDecisionCallback> m_iconLoadDecisionCallback;
+        RefPtr<IconDataCallback> m_iconDataCallback;
 
 #if ENABLE(OFFLINE_WEB_APPLICATIONS)
         friend class ApplicationCacheHost;  // for substitute resource delivery

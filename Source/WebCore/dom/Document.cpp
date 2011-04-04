@@ -29,10 +29,10 @@
 
 #include "AXObjectCache.h"
 #include "AnimationController.h"
-#include "AsyncScriptRunner.h"
 #include "Attr.h"
 #include "Attribute.h"
 #include "CDATASection.h"
+#include "CSSPrimitiveValueCache.h"
 #include "CSSStyleSelector.h"
 #include "CSSStyleSheet.h"
 #include "CSSValueKeywords.h"
@@ -42,6 +42,7 @@
 #include "ChromeClient.h"
 #include "Comment.h"
 #include "Console.h"
+#include "ContentSecurityPolicy.h"
 #include "CookieJar.h"
 #include "CustomEvent.h"
 #include "DateComponents.h"
@@ -118,6 +119,7 @@
 #include "RegisteredEventListener.h"
 #include "RenderArena.h"
 #include "RenderLayer.h"
+#include "RenderLayerBacking.h"
 #include "RenderTextControl.h"
 #include "RenderView.h"
 #include "RenderWidget.h"
@@ -126,6 +128,7 @@
 #include "ScriptController.h"
 #include "ScriptElement.h"
 #include "ScriptEventListener.h"
+#include "ScriptRunner.h"
 #include "SecurityOrigin.h"
 #include "SegmentedString.h"
 #include "SelectionController.h"
@@ -317,7 +320,7 @@ static Widget* widgetForNode(Node* focusedNode)
 static bool acceptsEditingFocus(Node* node)
 {
     ASSERT(node);
-    ASSERT(node->isContentEditable());
+    ASSERT(node->rendererIsEditable());
 
     Node* root = node->rootEditableElement();
     Frame* frame = node->document()->frame();
@@ -342,7 +345,7 @@ static bool disableRangeMutation(Page* page)
 
 static HashSet<Document*>* documentsThatNeedStyleRecalc = 0;
 
-class DocumentWeakReference : public ThreadSafeShared<DocumentWeakReference> {
+class DocumentWeakReference : public ThreadSafeRefCounted<DocumentWeakReference> {
 public:
     static PassRefPtr<DocumentWeakReference> create(Document* document)
     {
@@ -371,11 +374,13 @@ private:
     Document* m_document;
 };
 
+uint64_t Document::s_globalTreeVersion = 0;
+
 Document::Document(Frame* frame, const KURL& url, bool isXHTML, bool isHTML)
     : ContainerNode(0)
     , m_compatibilityMode(NoQuirksMode)
     , m_compatibilityModeLocked(false)
-    , m_domTreeVersion(0)
+    , m_domTreeVersion(++s_globalTreeVersion)
     , m_styleSheets(StyleSheetList::create(this))
     , m_readyState(Complete)
     , m_styleRecalcTimer(this, &Document::styleRecalcTimerFired)
@@ -384,14 +389,12 @@ Document::Document(Frame* frame, const KURL& url, bool isXHTML, bool isHTML)
     , m_containsValidityStyleRules(false)
     , m_updateFocusAppearanceRestoresSelection(false)
     , m_ignoreDestructiveWriteCount(0)
-    , m_title("")
-    , m_rawTitle("")
     , m_titleSetExplicitly(false)
     , m_updateFocusAppearanceTimer(this, &Document::updateFocusAppearanceTimerFired)
     , m_startTime(currentTime())
     , m_overMinimumLayoutThreshold(false)
     , m_extraLayoutDelay(0)
-    , m_asyncScriptRunner(AsyncScriptRunner::create(this))
+    , m_scriptRunner(ScriptRunner::create(this))
     , m_xmlVersion("1.0")
     , m_xmlStandalone(false)
     , m_savedRenderer(0)
@@ -541,6 +544,11 @@ void Document::removedLastRef()
 
         m_cssCanvasElements.clear();
 
+#if ENABLE(REQUEST_ANIMATION_FRAME)
+        // FIXME: consider using ActiveDOMObject.
+        m_scriptedAnimationController = 0;
+#endif
+
 #ifndef NDEBUG
         m_inRemovedLastRefFunction = false;
 #endif
@@ -562,7 +570,7 @@ Document::~Document()
     ASSERT(m_ranges.isEmpty());
     ASSERT(!m_styleRecalcTimer.isActive());
 
-    m_asyncScriptRunner.clear();
+    m_scriptRunner.clear();
 
     removeAllEventListeners();
 
@@ -1261,8 +1269,9 @@ Element* Document::getElementByAccessKey(const String& key) const
  *  2. Trim leading and trailing spaces
  *  3. Collapse internal whitespace.
  */
-static inline String canonicalizedTitle(Document* document, const String& title)
+static inline StringWithDirection canonicalizedTitle(Document* document, const StringWithDirection& titleWithDirection)
 {
+    const String& title = titleWithDirection.string();
     const UChar* characters = title.characters();
     unsigned length = title.length();
     unsigned i;
@@ -1278,7 +1287,7 @@ static inline String canonicalizedTitle(Document* document, const String& title)
     }
 
     if (i == length)
-        return "";
+        return StringWithDirection();
 
     // Replace control characters with spaces, and backslashes with currency symbols, and collapse whitespace.
     bool previousCharWasWS = false;
@@ -1303,53 +1312,62 @@ static inline String canonicalizedTitle(Document* document, const String& title)
     }
 
     if (!builderIndex && buffer[builderIndex] == ' ')
-        return "";
+        return StringWithDirection();
 
     buffer.shrink(builderIndex + 1);
 
     // Replace the backslashes with currency symbols if the encoding requires it.
     document->displayBufferModifiedByEncoding(buffer.characters(), buffer.length());
     
-    return String::adopt(buffer);
+    return StringWithDirection(String::adopt(buffer), titleWithDirection.direction());
 }
 
-void Document::updateTitle()
+void Document::updateTitle(const StringWithDirection& title)
 {
+    if (m_rawTitle == title)
+        return;
+
+    m_rawTitle = title;
     m_title = canonicalizedTitle(this, m_rawTitle);
     if (Frame* f = frame())
         f->loader()->setTitle(m_title);
 }
 
-void Document::setTitle(const String& title, Element* titleElement)
+void Document::setTitle(const String& title)
 {
-    if (!titleElement) {
-        // Title set by JavaScript -- overrides any title elements.
-        m_titleSetExplicitly = true;
-        if (!isHTMLDocument())
-            m_titleElement = 0;
-        else if (!m_titleElement) {
-            if (HTMLElement* headElement = head()) {
-                m_titleElement = createElement(titleTag, false);
-                ExceptionCode ec = 0;
-                headElement->appendChild(m_titleElement, ec);
-                ASSERT(!ec);
-            }
+    // Title set by JavaScript -- overrides any title elements.
+    m_titleSetExplicitly = true;
+    if (!isHTMLDocument())
+        m_titleElement = 0;
+    else if (!m_titleElement) {
+        if (HTMLElement* headElement = head()) {
+            m_titleElement = createElement(titleTag, false);
+            ExceptionCode ec = 0;
+            headElement->appendChild(m_titleElement, ec);
+            ASSERT(!ec);
         }
-    } else if (titleElement != m_titleElement) {
+    }
+
+    // The DOM API has no method of specifying direction, so assume LTR.
+    updateTitle(StringWithDirection(title, LTR));
+
+    if (m_titleElement) {
+        ASSERT(m_titleElement->hasTagName(titleTag));
+        if (m_titleElement->hasTagName(titleTag))
+            static_cast<HTMLTitleElement*>(m_titleElement.get())->setText(title);
+    }
+}
+
+void Document::setTitleElement(const StringWithDirection& title, Element* titleElement)
+{
+    if (titleElement != m_titleElement) {
         if (m_titleElement || m_titleSetExplicitly)
             // Only allow the first title element to change the title -- others have no effect.
             return;
         m_titleElement = titleElement;
     }
 
-    if (m_rawTitle == title)
-        return;
-
-    m_rawTitle = title;
-    updateTitle();
-
-    if (m_titleSetExplicitly && m_titleElement && m_titleElement->hasTagName(titleTag) && !titleElement)
-        static_cast<HTMLTitleElement*>(m_titleElement.get())->setText(m_title);
+    updateTitle(title);
 }
 
 void Document::removeTitle(Element* titleElement)
@@ -1365,15 +1383,13 @@ void Document::removeTitle(Element* titleElement)
         for (Node* e = headElement->firstChild(); e; e = e->nextSibling())
             if (e->hasTagName(titleTag)) {
                 HTMLTitleElement* titleElement = static_cast<HTMLTitleElement*>(e);
-                setTitle(titleElement->text(), titleElement);
+                setTitleElement(titleElement->textWithDirection(), titleElement);
                 break;
             }
     }
 
-    if (!m_titleElement && !m_rawTitle.isEmpty()) {
-        m_rawTitle = "";
-        updateTitle();
-    }
+    if (!m_titleElement)
+        updateTitle(StringWithDirection());
 }
 
 String Document::nodeName() const
@@ -1698,6 +1714,13 @@ void Document::pageSizeAndMarginsInPixels(int pageIndex, IntSize& pageSize, int&
     marginLeft = style->marginLeft().isAuto() ? marginLeft : style->marginLeft().calcValue(width);
 }
 
+PassRefPtr<CSSPrimitiveValueCache> Document::cssPrimitiveValueCache() const
+{
+    if (!m_cssPrimitiveValueCache)
+        m_cssPrimitiveValueCache = CSSPrimitiveValueCache::create();
+    return m_cssPrimitiveValueCache;
+}
+
 void Document::createStyleSelector()
 {
     bool matchAuthorAndUserStyles = true;
@@ -1744,7 +1767,12 @@ void Document::detach()
 
     clearAXObjectCache();
     stopActiveDOMObjects();
-    
+
+#if ENABLE(REQUEST_ANIMATION_FRAME)
+    // FIXME: consider using ActiveDOMObject.
+    m_scriptedAnimationController = 0;
+#endif
+
     RenderObject* render = renderer();
 
     // Send out documentWillBecomeInactive() notifications to registered elements,
@@ -2045,7 +2073,8 @@ void Document::explicitClose()
 
     // This code calls implicitClose() if all loading has completed.
     loader()->writer()->endIfNotLoadingMainResource();
-    m_frame->loader()->checkCompleted();
+    if (m_frame)
+        m_frame->loader()->checkCompleted();
 }
 
 void Document::implicitClose()
@@ -3921,7 +3950,7 @@ void Document::setInPageCache(bool flag)
         ASSERT(!m_savedRenderer);
         m_savedRenderer = renderer();
         if (FrameView* v = view())
-            v->resetScrollbars();
+            v->resetScrollbarsAndClearContentsSize();
         m_styleRecalcTimer.stop();
     } else {
         ASSERT(!renderer() || renderer() == m_savedRenderer);
@@ -4413,7 +4442,7 @@ void FormElementKey::deref() const
 
 unsigned FormElementKeyHash::hash(const FormElementKey& key)
 {
-    return WTF::StringHasher::createBlobHash<sizeof(FormElementKey)>(&key);
+    return StringHasher::hashMemory<sizeof(FormElementKey)>(&key);
 }
 
 void Document::setIconURL(const String& iconURL, const String& type)
@@ -4478,7 +4507,7 @@ void Document::initSecurityContext()
     // loading URL with a fresh content security policy.
     m_cookieURL = m_url;
     ScriptExecutionContext::setSecurityOrigin(SecurityOrigin::create(m_url, m_frame->loader()->sandboxFlags()));
-    m_contentSecurityPolicy = ContentSecurityPolicy::create();
+    m_contentSecurityPolicy = ContentSecurityPolicy::create(securityOrigin());
 
     if (SecurityOrigin::allowSubstituteDataAccessToLocal()) {
         // If this document was loaded with substituteData, then the document can
@@ -4837,6 +4866,20 @@ bool Document::isXHTMLMPDocument() const
 #endif
 
 #if ENABLE(FULLSCREEN_API)
+bool Document::fullScreenIsAllowedForElement(Element* element) const
+{
+    ASSERT(element);
+    while (HTMLFrameOwnerElement* ownerElement = element->document()->ownerElement()) {
+        if (!ownerElement->hasTagName(frameTag) && !ownerElement->hasTagName(iframeTag))
+            continue;
+
+        if (!static_cast<HTMLFrameElementBase*>(ownerElement)->allowFullScreen())
+            return false;
+        element = ownerElement;
+    }
+    return true;
+}
+
 void Document::webkitRequestFullScreenForElement(Element* element, unsigned short flags)
 {
     if (!page() || !page()->settings()->fullScreenEnabled())
@@ -4845,7 +4888,13 @@ void Document::webkitRequestFullScreenForElement(Element* element, unsigned shor
     if (!element)
         element = documentElement();
     
-    if (!page()->chrome()->client()->supportsFullScreenForElement(element))
+    if (!fullScreenIsAllowedForElement(element))
+        return;
+    
+    if (!ScriptController::processingUserGesture())
+        return;
+    
+    if (!page()->chrome()->client()->supportsFullScreenForElement(element, flags & Element::ALLOW_KEYBOARD_INPUT))
         return;
     
     m_areKeysEnabledInFullScreen = flags & Element::ALLOW_KEYBOARD_INPUT;
@@ -4873,23 +4922,40 @@ void Document::webkitWillEnterFullScreenForElement(Element* element)
 
     recalcStyle(Force);
     
-    if (m_fullScreenRenderer)
+    if (m_fullScreenRenderer) {
         m_fullScreenRenderer->setAnimating(true);
+#if USE(ACCELERATED_COMPOSITING)
+        view()->updateCompositingLayers();
+        ASSERT(m_fullScreenRenderer->layer()->backing());
+        page()->chrome()->client()->setRootFullScreenLayer(m_fullScreenRenderer->layer()->backing()->graphicsLayer());
+#endif
+    }
 }
     
 void Document::webkitDidEnterFullScreenForElement(Element*)
 {
-    if (m_fullScreenRenderer)
+    if (m_fullScreenRenderer) {
         m_fullScreenRenderer->setAnimating(false);
+#if USE(ACCELERATED_COMPOSITING)
+        view()->updateCompositingLayers();
+        ASSERT(!m_fullScreenRenderer->layer()->backing());
+        page()->chrome()->client()->setRootFullScreenLayer(0);
+#endif
+    }
     m_fullScreenChangeDelayTimer.startOneShot(0);
 }
 
 void Document::webkitWillExitFullScreenForElement(Element*)
 {
-    if (m_fullScreenRenderer)
+    if (m_fullScreenRenderer) {
         m_fullScreenRenderer->setAnimating(true);
-
-    recalcStyle(Force);
+        m_fullScreenRenderer->setAnimating(true);
+#if USE(ACCELERATED_COMPOSITING)
+        view()->updateCompositingLayers();
+        ASSERT(m_fullScreenRenderer->layer()->backing());
+        page()->chrome()->client()->setRootFullScreenLayer(m_fullScreenRenderer->layer()->backing()->graphicsLayer());
+#endif
+    }
 }
 
 void Document::webkitDidExitFullScreenForElement(Element*)
@@ -4904,6 +4970,9 @@ void Document::webkitDidExitFullScreenForElement(Element*)
         m_fullScreenElement->detach();
     
     setFullScreenRenderer(0);
+#if USE(ACCELERATED_COMPOSITING)
+    page()->chrome()->client()->setRootFullScreenLayer(0);
+#endif
     recalcStyle(Force);
     
     m_fullScreenChangeDelayTimer.startOneShot(0);
@@ -4911,6 +4980,11 @@ void Document::webkitDidExitFullScreenForElement(Element*)
     
 void Document::setFullScreenRenderer(RenderFullScreen* renderer)
 {
+    if (renderer == m_fullScreenRenderer)
+        return;
+
+    if (m_fullScreenRenderer)
+        m_fullScreenRenderer->destroy();
     m_fullScreenRenderer = renderer;
     
     // This notification can come in after the page has been destroyed.
@@ -4931,6 +5005,7 @@ void Document::setFullScreenRendererSize(const IntSize& size)
         newStyle->setTop(Length(0, WebCore::Fixed));
         newStyle->setLeft(Length(0, WebCore::Fixed));
         m_fullScreenRenderer->setStyle(newStyle);
+        updateLayout();
     }
 }
     

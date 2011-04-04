@@ -134,6 +134,7 @@ fast/replaced/border-radius-clip.html
 fast/overflow/scrollbar-restored-and-then-locked.html
 
 # Mac port doesn't put text/html on the pasteboard for app compatibility: https://bugs.webkit.org/show_bug.cgi?id=19893
+editing/pasteboard/onpaste-text-html-types.html
 editing/pasteboard/onpaste-text-html.html
 fast/events/ondrop-text-html.html
 
@@ -181,6 +182,8 @@ fast/dom/Window/window-properties-device-orientation.html
 # Link prefetch is disabled by default
 fast/dom/HTMLLinkElement/link-and-subresource-test.html
 fast/dom/HTMLLinkElement/prefetch.html
+fast/dom/HTMLLinkElement/prefetch-beforeload.html
+fast/dom/HTMLLinkElement/prefetch-onerror.html
 fast/dom/HTMLLinkElement/prefetch-onload.html
 http/tests/misc/prefetch-purpose.html
 
@@ -198,12 +201,6 @@ fast/images/large-size-image-crash.html
 
 # Directory upload is not enabled.
 fast/forms/input-file-directory-upload.html
-
-# The feature was disabled due to a compatibility issue.
-# https://bugs.webkit.org/show_bug.cgi?id=40520
-fast/forms/interactive-validation-lost-focusable.html
-fast/forms/interactive-validation-prevented.html
-fast/forms/interactive-validation-attach-assertion.html
 
 # Web Timing is not enabled.
 # https://bugs.webkit.org/show_bug.cgi?id=42434
@@ -231,6 +228,8 @@ animations/play-state.html
 
 # https://bugs.webkit.org/show_bug.cgi?id=43332
 inspector/debugger/dom-breakpoints.html
+inspector/debugger/event-listener-breakpoints.html
+inspector/debugger/xhr-breakpoints.html
 
 # https://bugs.webkit.org/show_bug.cgi?id=40300
 inspector/debugger/live-edit.html
@@ -259,6 +258,7 @@ http/tests/media/video-buffered.html
 
 # FileSystem API is not supported.
 fast/filesystem
+http/tests/filesystem
 http/tests/security/filesystem-iframe-from-remote.html
 
 # https://bugs.webkit.org/show_bug.cgi?id=46223
@@ -301,3 +301,17 @@ media/video-controls-in-media-document.html
 # Non-premultiplied-alpha currently broken on mac.
 # https://bugs.webkit.org/show_bug.cgi?id=55509
 compositing/webgl/webgl-nonpremultiplied-blend.html
+
+# DataTransferItems is not yet implemented.
+editing/pasteboard/data-transfer-items.html
+
+# Need to implement WebGeolocationRequest::cancelPermissionRequest on mac.
+# https://bugs.webkit.org/show_bug.cgi?id=55944
+fast/dom/Geolocation/page-reload-cancel-permission-requests.html
+
+# https://bugs.webkit.org/show_bug.cgi?id=56685
+webarchive/test-link-rel-icon.html
+
+# https://bugs.webkit.org/show_bug.cgi?id=56691
+http/tests/inspector/network/network-size-chunked.html
+http/tests/inspector/network/network-size-sync.html

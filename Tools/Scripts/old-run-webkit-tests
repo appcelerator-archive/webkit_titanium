@@ -49,6 +49,7 @@
 use strict;
 use warnings;
 
+use CGI;
 use Config;
 use Cwd;
 use Data::Dumper;
@@ -139,7 +140,7 @@ my $ignoreMetrics = 0;
 my $webSocketPort = 8880;
 # wss is disabled until all platforms support pyOpenSSL.
 # my $webSocketSecurePort = 9323;
-my $ignoreTests = '';
+my @ignoreTests;
 my $iterations = 1;
 my $launchSafari = 1;
 my $mergeDepth;
@@ -187,6 +188,7 @@ $testHTTP = 0 if (isWx());
 my $perlInterpreter = "perl";
 
 my $expectedTag = "expected";
+my $mismatchTag = "mismatch";
 my $actualTag = "actual";
 my $prettyDiffTag = "pretty-diff";
 my $diffsTag = "diffs";
@@ -329,7 +331,7 @@ my $getOptionsResult = GetOptions(
     'http!' => \$testHTTP,
     'wait-for-httpd!' => \$shouldWaitForHTTPD,
     'ignore-metrics!' => \$ignoreMetrics,
-    'ignore-tests|i=s' => \$ignoreTests,
+    'ignore-tests|i=s' => \@ignoreTests,
     'iterations=i' => \$iterations,
     'launch-safari!' => \$launchSafari,
     'leaks|l' => \$shouldCheckLeaks,
@@ -544,6 +546,9 @@ if (!$hasAcceleratedCompositing) {
     # compositing is enabled.
     $ignoredFiles{'svg/custom/use-on-symbol-inside-pattern.svg'} = 1;
 
+    # This test has an iframe that is put in a layer only in compositing mode.
+    $ignoredFiles{'media/media-document-audio-repaint.html'} = 1;
+
     if (isAppleWebKit()) {
         # In Apple's ports, the default controls for <video> contain a "full
         # screen" button only if accelerated compositing is enabled.
@@ -594,7 +599,7 @@ if (!checkWebCoreFeatureSupport("XHTMLMP", 0)) {
     $ignoredDirectories{'fast/xhtmlmp'} = 1;
 }
 
-processIgnoreTests($ignoreTests, "ignore-tests") if $ignoreTests;
+processIgnoreTests(join(',', @ignoreTests), "ignore-tests") if @ignoreTests;
 if (!$ignoreSkipped) {
     if (!$skippedOnly || @ARGV == 0) {
         readSkippedFiles("");
@@ -1152,6 +1157,9 @@ print HTML htmlForResultsSection(@{$tests{webProcessCrash}}, "Tests that caused 
 print HTML htmlForResultsSection(@{$tests{error}}, "Tests that had stderr output", \&linksForErrorTest);
 print HTML htmlForResultsSection(@{$tests{new}}, "Tests that had no expected results (probably new)", \&linksForNewTest);
 
+print HTML "<p>httpd access log: <a href=\"access_log.txt\">access_log.txt</a></p>\n";
+print HTML "<p>httpd error log: <a href=\"error_log.txt\">error_log.txt</a></p>\n";
+
 print HTML "</body>\n";
 print HTML "</html>\n";
 close HTML;
@@ -1246,12 +1254,7 @@ sub countAndPrintLeaks($$$)
             "getVMInitArgs", # <rdar://problem/7714444> leak in Java
             "Java_java_lang_System_initProperties", # <rdar://problem/7714465> leak in Java
             "glrCompExecuteKernel", # <rdar://problem/7815391> leak in graphics driver while using OpenGL
-        );
-    }
-
-    if (isDarwin() && !isTiger() && !isLeopard() && !isSnowLeopard()) {
-        push @callStacksToExclude, (
-            "CGGradientCreateWithColorComponents", # leak in CoreGraphics, <rdar://problem/7888492>
+            "NSNumberFormatter getObjectValue:forString:errorDescription:", # <rdar://problem/7149350> Leak in NSNumberFormatter
         );
     }
 
@@ -1461,6 +1464,7 @@ sub openDumpTool()
         }
 
         $CLEAN_ENV{HOME} = $ENV{'HOME'};
+        $CLEAN_ENV{LANG} = $ENV{'LANG'};
 
         if (defined $ENV{'LD_LIBRARY_PATH'}) {
             $CLEAN_ENV{LD_LIBRARY_PATH} = $ENV{'LD_LIBRARY_PATH'};
@@ -1678,7 +1682,14 @@ sub expectedDirectoryForTest($;$;$)
     my ($base, $isText, $expectedExtension) = @_;
 
     my @directories = @platformResultHierarchy;
-    push @directories, map { catdir($platformBaseDirectory, $_) } qw(mac-snowleopard mac) if isAppleWinWebKit();
+
+    my @extraPlatforms = ();
+    if (isAppleWinWebKit()) {
+        push @extraPlatforms, "mac-wk2" if $platform eq "win-wk2";
+        push @extraPlatforms, qw(mac-snowleopard mac);
+    }
+  
+    push @directories, map { catdir($platformBaseDirectory, $_) } @extraPlatforms;
     push @directories, $expectedDirectory;
 
     # If we already have expected results, just return their location.
@@ -2045,7 +2056,7 @@ sub linksForErrorTest
 
     my $crashLogText = "crash log";
     if (my $crashLocation = crashLocation($base)) {
-        $crashLogText .= " (<code>" . $crashLocation . "</code>)";
+        $crashLogText .= " (<code>" . CGI::escapeHTML($crashLocation) . "</code>)";
     }
 
     push @links, @{linksForExpectedAndActualResults($base)};
@@ -2445,6 +2456,16 @@ sub readSkippedFiles($)
 
 my @testsFound;
 
+sub isUsedInReftest
+{
+    my $filename = $_;
+    if ($filename =~ /-$expectedTag(-$mismatchTag)?\.html$/) {
+        return 1;
+    }
+    my $base = stripExtension($filename);
+    return (-f "$base-$expectedTag.html" || -f "$base-$expectedTag-$mismatchTag.html");
+}
+
 sub directoryFilter
 {
     return () if exists $ignoredLocalDirectories{basename($File::Find::dir)};
@@ -2456,7 +2477,8 @@ sub fileFilter
 {
     my $filename = $_;
     if ($filename =~ /\.([^.]+)$/) {
-        if (exists $supportedFileExtensions{$1}) {
+        my $extension = $1;
+        if (exists $supportedFileExtensions{$extension} && !isUsedInReftest($filename)) {
             my $path = File::Spec->abs2rel(catfile($File::Find::dir, $filename), $testDirectory);
             push @testsFound, $path if !exists $ignoredFiles{$path};
         }

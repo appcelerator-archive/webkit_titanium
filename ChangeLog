@@ -1,3 +1,201 @@
+2011-03-31  Xan Lopez  <xlopez@igalia.com>
+
+        Reviewed by Martin Robinson.
+
+        [GTK] Link explicitly with XRender on Linux/Unix
+        https://bugs.webkit.org/show_bug.cgi?id=57558
+
+        Some linkers, like GNU Gold, require explicit linkage of all the
+        libraries used instead of relying on our dependencies to bring
+        them in. In this case, the build fails because we use XRender in
+        the plugin code but don't link directly to it.
+
+        * configure.ac: check for XRender on UNIX.
+
+2011-03-31  Vamshikrishna.Yellenki  <vamshi@motorola.com> and Alejandro G. Castro  <alex@igalia.com>
+
+        Reviewed by Martin Robinson.
+
+        Implement MiniBrowser for Gtk port.
+        https://bugs.webkit.org/show_bug.cgi?id=48512
+
+        Initial implementation of the Gtk MiniBrowser.
+
+        * GNUmakefile.am:
+
+2011-03-30  Csaba Osztrogonác  <ossy@webkit.org>
+
+        [Qt] Typo fix, remove an accidentally added line.
+
+        * Source/WebKit.pri:
+
+2011-03-30  Csaba Osztrogonác  <ossy@webkit.org>
+
+        [Qt] Rollout r82240 and r82232, because they broke 2 plugin tests.
+
+        * Source/WebKit.pri:
+
+2011-03-29  Csaba Osztrogonác  <ossy@webkit.org>
+
+        Rubber-stamped by Andreas Kling.
+
+        [Qt] Remove modular references after support for the flag was removed.
+        https://bugs.webkit.org/show_bug.cgi?id=57018
+
+        Symbian buildfix after r82232.
+
+        * Source/WebKit.pri: Readd uitools option.
+
+2011-03-29  Kristian Amlie  <kristian.amlie@nokia.com>
+
+        Reviewed by Andreas Kling.
+
+        Removed modular references after support for the flag was removed.
+
+        Support was removed because the Qt Modularization project decided we
+        don't need it. It's better to base decisions on the available
+        information, as demonstrated in the patch by checking
+        QT.phonon.includes.
+
+        In addition, remove the reference to uitools. It has been moved to
+        QtKernel now, and therefore is always available.
+
+        [Qt] Remove modular references after support for the flag was removed.
+        https://bugs.webkit.org/show_bug.cgi?id=57018
+
+        * Source/WebKit.pri:
+
+2011-03-28  Benjamin Poulain  <benjamin.poulain@nokia.com>
+
+        Reviewed by Andreas Kling.
+
+        [Qt] QtWebKit will not compile with QT_ASCII_CAST_WARNINGS enabled
+        https://bugs.webkit.org/show_bug.cgi?id=57087
+
+        Enable QT_ASCII_CAST_WARNINGS by default in webkit.pri to catch the errors early on.
+
+        * Source/WebKit.pri:
+
+2011-03-26  Adam Barth  <abarth@webkit.org>
+
+        Reviewed by Eric Seidel.
+
+        We shouldn't bother running GYP if the generated files are newer than the GYP files
+        https://bugs.webkit.org/show_bug.cgi?id=57146
+
+        In the common case, this check will avoid any overhead from processing
+        the GYP files.  Another approach to doing this is to add the feature to
+        GYP directly, but GYP's approach to this problem is to compute the
+        output in its entirety and compare it byte-for-byte against the output
+        file.  In the future, it might make sense to add this approach as an
+        alternative approach for GYP itself.
+
+        I also removed JavaScriptGlue from the script because we're not really
+        going to change JavaScriptGlue over to GYP.  We were using
+        JavaScriptGlue as a learning experience.
+
+        * Source/gyp/configure:
+
+2011-03-25  Kevin Ollivier  <kevino@theolliviers.com>
+
+        [wx] Build fix, don't use the new FPD implementation yet, until we can merge ours with it.
+
+        * wscript:
+
+2011-03-23  George Guo  <George.Guo@nokia.com>
+
+        Reviewed by Darin Adler.
+
+        Webkit warning: converting to 'unsigned int' from 'double'
+        https://bugs.webkit.org/show_bug.cgi?id=56865
+
+        With -Werr enabled, this cause the build failure on RedHat Linux. 
+        Add a cast helped.  
+
+        * Source/JavaScriptCore/runtime/TimeoutChecker.cpp:
+        (JSC::getCPUTime):
+
+2011-03-23  Adam Barth  <abarth@webkit.org>
+
+        Reviewed by Eric Seidel.
+
+        GYP build should default to Production configuration
+        https://bugs.webkit.org/show_bug.cgi?id=56899
+
+        * Source/gyp/common.gypi:
+
+2011-03-22  Adam Barth  <abarth@webkit.org>
+
+        Reviewed by Eric Seidel.
+
+        gyp/configure shouldn&apos;t require GYP to be in your path
+        https://bugs.webkit.org/show_bug.cgi?id=56873
+
+        Now that GYP is on Source/ThirdParty/gyp, we can just use that copy
+        instead of requiring GYP to be in the user's path.
+
+        * Source/gyp/configure:
+
+2011-03-22  Adam Barth  <abarth@webkit.org>
+
+        Reviewed by Eric Seidel.
+
+        Add GYP to Source/ThirdParty
+        https://bugs.webkit.org/show_bug.cgi?id=56870
+
+        We probably don't need all the test files, but it seems cleaner to just
+        check in the whole GYP tree.  GYP is BSD licensed, so it is compatible
+        with the WebKit license.
+
+        * Source/ThirdParty/gyp: Added.
+
+2011-03-21  Alejandro G. Castro  <alex@igalia.com>
+
+        Reviewed by Martin Robinson.
+
+        [GTK] 1.3.13 release bump
+        https://bugs.webkit.org/show_bug.cgi?id=56795
+
+        Version bump for 1.3.13 and updated NEWS file with release notes.
+
+        * configure.ac:
+
+2011-03-21  Ryuan Choi  <ryuan.choi@samsung.com>
+
+        Reviewed by Antonio Gomes.
+
+        [CMAKE] Add exception handling when PORT was missing.
+        https://bugs.webkit.org/show_bug.cgi?id=56728
+
+        * Source/CMakeLists.txt:
+
+2011-03-10  Viatcheslav Ostapenko  <ostapenko.viatcheslav@nokia.com>
+
+        Reviewed by Laszlo Gombos.
+
+        [Qt] Text layout is broken on Symbian
+        https://bugs.webkit.org/show_bug.cgi?id=56046
+
+        Change integers included into bitfields to be signed by default on RVCT
+        compiler as a lot of other compilers do (gcc, msvc, winsc).
+        There are a lot of places in webkit where integers included in bitfield
+        are assumed to be signed.
+
+        * Source/WebKit.pri:
+
+2011-03-10  Alejandro G. Castro  <alex@igalia.com>
+
+        Unreviewed, fixed Efl compilation after r80744.
+
+        * Source/cmake/OptionsEfl.cmake:
+
+2011-03-10  Martin Robinson  <mrobinson@igalia.com>
+
+        Fixed the help message for WebGL support on GTK+ to reflect the fact that
+        it's turned off by default and is experimental.
+
+        * configure.ac: Fix WebGL help message.
+
 2011-03-04  Dimitri Glazkov  <dglazkov@chromium.org>
 
         Reviewed by Adam Barth.

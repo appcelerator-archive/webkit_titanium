@@ -5,7 +5,7 @@ RuntimeAgent.evaluate("testObject","test",false)
 
 request:
 {
-    seq : <number>
+    id : <number>
     domain : "Runtime"
     command : "evaluate"
     arguments : {
@@ -17,66 +17,52 @@ request:
 
 response:
 {
-    seq : <number>
+    requestId : <number>
     body : {
         result : {
-            objectId : {
-                injectedScriptId : <number>
-                id : <number>
-                groupName : "test"
-            }
+            objectId : <string>
+            hasChildren : true
             type : "object"
             description : "TestObject"
-            hasChildren : true
         }
     }
 }
 
 -----------------------------------------------------------
-RuntimeAgent.evaluateOn({"injectedScriptId":<number>,"id":<number>,"groupName":"test"},"this.assignedByEvaluateOn = \"evaluateOn function works fine\";")
+RuntimeAgent.evaluateOn(<string>,"this.assignedByEvaluateOn = \"evaluateOn function works fine\";")
 
 request:
 {
-    seq : <number>
+    id : <number>
     domain : "Runtime"
     command : "evaluateOn"
     arguments : {
-        objectId : {
-            injectedScriptId : <number>
-            id : <number>
-            groupName : "test"
-        }
+        objectId : <string>
         expression : "this.assignedByEvaluateOn = "evaluateOn function works fine";"
     }
 }
 
 response:
 {
-    seq : <number>
+    requestId : <number>
     body : {
         result : {
-            objectId : null
             type : "undefined"
             description : "undefined"
-            hasChildren : false
         }
     }
 }
 
 -----------------------------------------------------------
-RuntimeAgent.setPropertyValue({"injectedScriptId":<number>,"id":<number>,"groupName":"test"},"assignedBySetPropertyValue","true")
+RuntimeAgent.setPropertyValue(<string>,"assignedBySetPropertyValue","true")
 
 request:
 {
-    seq : <number>
+    id : <number>
     domain : "Runtime"
     command : "setPropertyValue"
     arguments : {
-        objectId : {
-            injectedScriptId : <number>
-            id : <number>
-            groupName : "test"
-        }
+        objectId : <string>
         propertyName : "assignedBySetPropertyValue"
         expression : "true"
     }
@@ -84,26 +70,19 @@ request:
 
 response:
 {
-    seq : <number>
-    body : {
-        result : true
-    }
+    requestId : <number>
 }
 
 -----------------------------------------------------------
-RuntimeAgent.setPropertyValue({"injectedScriptId":<number>,"id":<number>,"groupName":"test"},"removedBySetPropertyValue","")
+RuntimeAgent.setPropertyValue(<string>,"removedBySetPropertyValue","")
 
 request:
 {
-    seq : <number>
+    id : <number>
     domain : "Runtime"
     command : "setPropertyValue"
     arguments : {
-        objectId : {
-            injectedScriptId : <number>
-            id : <number>
-            groupName : "test"
-        }
+        objectId : <string>
         propertyName : "removedBySetPropertyValue"
         expression : ""
     }
@@ -111,65 +90,49 @@ request:
 
 response:
 {
-    seq : <number>
-    body : {
-        result : true
-    }
+    requestId : <number>
 }
 
 -----------------------------------------------------------
-RuntimeAgent.getProperties({"injectedScriptId":<number>,"id":<number>,"groupName":"test"},false,false)
+RuntimeAgent.getProperties(<string>,false)
 
 request:
 {
-    seq : <number>
+    id : <number>
     domain : "Runtime"
     command : "getProperties"
     arguments : {
-        objectId : {
-            injectedScriptId : <number>
-            id : <number>
-            groupName : "test"
-        }
+        objectId : <string>
         ignoreHasOwnProperty : false
-        abbreviate : false
     }
 }
 
 response:
 {
-    seq : <number>
+    requestId : <number>
     body : {
         result : {
             0 : {
                 name : "assignedByEvaluateOn"
                 value : {
-                    objectId : null
                     type : "string"
                     description : "evaluateOn function works fine"
-                    hasChildren : false
                 }
             }
             1 : {
                 name : "assignedBySetPropertyValue"
                 value : {
-                    objectId : null
                     type : "boolean"
                     description : "true"
-                    hasChildren : false
                 }
             }
             2 : {
                 name : "__proto__"
                 value : {
-                    objectId : {
-                        injectedScriptId : <number>
-                        id : <number>
-                        groupName : "test"
-                    }
+                    objectId : <string>
+                    hasChildren : true
                     type : "object"
                     description : "TestObject"
-                    hasChildren : true
                 }
             }
         }
@@ -177,44 +140,39 @@ response:
 }
 
 -----------------------------------------------------------
-RuntimeAgent.releaseObject({"injectedScriptId":<number>,"id":<number>,"groupName":"test"})
+RuntimeAgent.releaseObject(<string>)
 
 request:
 {
-    seq : <number>
+    id : <number>
     domain : "Runtime"
     command : "releaseObject"
     arguments : {
-        objectId : {
-            injectedScriptId : <number>
-            id : <number>
-            groupName : "test"
-        }
+        objectId : <string>
     }
 }
 
 response:
 {
-    seq : <number>
+    requestId : <number>
 }
 
 -----------------------------------------------------------
-RuntimeAgent.releaseObjectGroup(<number>,"test")
+RuntimeAgent.releaseObjectGroup("test")
 
 request:
 {
-    seq : <number>
+    id : <number>
     domain : "Runtime"
     command : "releaseObjectGroup"
     arguments : {
-        injectedScriptId : <number>
         objectGroup : "test"
     }
 }
 
 response:
 {
-    seq : <number>
+    requestId : <number>
 }
 
 ===========================================================

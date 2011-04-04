@@ -32,12 +32,12 @@
 #include "CollectionType.h"
 #include "Color.h"
 #include "ContainerNode.h"
-#include "ContentSecurityPolicy.h"
 #include "DOMTimeStamp.h"
 #include "DocumentOrderedMap.h"
 #include "DocumentTiming.h"
 #include "QualifiedName.h"
 #include "ScriptExecutionContext.h"
+#include "StringWithDirection.h"
 #include "Timer.h"
 #include "ViewportArguments.h"
 #include <wtf/FixedArray.h>
@@ -51,19 +51,20 @@
 
 namespace WebCore {
 
-class AsyncScriptRunner;
-class Attr;
 class AXObjectCache;
+class Attr;
 class CDATASection;
+class CSSPrimitiveValueCache;
+class CSSStyleDeclaration;
+class CSSStyleSelector;
+class CSSStyleSheet;
 class CachedCSSStyleSheet;
 class CachedResourceLoader;
 class CachedScript;
 class CanvasRenderingContext;
 class CharacterData;
-class CSSStyleDeclaration;
-class CSSStyleSelector;
-class CSSStyleSheet;
 class Comment;
+class ContentSecurityPolicy;
 class DOMImplementation;
 class DOMSelection;
 class DOMWindow;
@@ -114,6 +115,7 @@ class RenderView;
 class RenderFullScreen;
 class ScriptableDocumentParser;
 class ScriptElementData;
+class ScriptRunner;
 class SecurityOrigin;
 class SerializedScriptValue;
 class SegmentedString;
@@ -433,6 +435,8 @@ public:
     void setShouldProcessNoscriptElement(bool shouldDo) { m_shouldProcessNoScriptElement = shouldDo; }
 #endif
     virtual bool isFrameSet() const { return false; }
+    
+    PassRefPtr<CSSPrimitiveValueCache> cssPrimitiveValueCache() const;
     
     CSSStyleSelector* styleSelectorIfExists() const { return m_styleSelector.get(); }
 
@@ -808,8 +812,11 @@ public:
     // Returns 0 if this is the top level document.
     HTMLFrameOwnerElement* ownerElement() const;
 
-    String title() const { return m_title; }
-    void setTitle(const String&, Element* titleElement = 0);
+    // Used by DOM bindings; no direction known.
+    String title() const { return m_title.string(); }
+    void setTitle(const String&);
+
+    void setTitleElement(const StringWithDirection&, Element* titleElement);
     void removeTitle(Element* titleElement);
 
     String cookie(ExceptionCode&) const;
@@ -897,7 +904,7 @@ public:
 
     int docID() const { return m_docID; }
     
-    AsyncScriptRunner* asyncScriptRunner() { return m_asyncScriptRunner.get(); }
+    ScriptRunner* scriptRunner() { return m_scriptRunner.get(); }
 
 #if ENABLE(XSLT)
     void applyXSLTransform(ProcessingInstruction* pi);
@@ -908,8 +915,8 @@ public:
     TransformSource* transformSource() const { return m_transformSource.get(); }
 #endif
 
-    void incDOMTreeVersion() { ++m_domTreeVersion; }
-    unsigned domTreeVersion() const { return m_domTreeVersion; }
+    void incDOMTreeVersion() { m_domTreeVersion = ++s_globalTreeVersion; }
+    uint64_t domTreeVersion() const { return m_domTreeVersion; }
 
     void setDocType(PassRefPtr<DocumentType>);
 
@@ -1090,6 +1097,7 @@ public:
     void setFullScreenRendererBackgroundColor(Color);
     
     void fullScreenChangeDelayTimerFired(Timer<Document>*);
+    bool fullScreenIsAllowedForElement(Element*) const;
 #endif
 
     // Used to allow element that loads data without going through a FrameLoader to delay the 'load' event.
@@ -1153,7 +1161,7 @@ private:
 
     String encoding() const;
 
-    void updateTitle();
+    void updateTitle(const StringWithDirection&);
     void updateFocusAppearanceTimerFired(Timer<Document>*);
     void updateBaseURL();
 
@@ -1168,6 +1176,8 @@ private:
     OwnPtr<CSSStyleSelector> m_styleSelector;
     bool m_didCalculateStyleSelector;
     bool m_hasDirtyStyleSelector;
+    
+    mutable RefPtr<CSSPrimitiveValueCache> m_cssPrimitiveValueCache;
 
     Frame* m_frame;
     DocumentLoader* m_documentLoader;
@@ -1232,7 +1242,8 @@ private:
     RefPtr<Node> m_activeNode;
     mutable RefPtr<Element> m_documentElement;
 
-    unsigned m_domTreeVersion;
+    uint64_t m_domTreeVersion;
+    static uint64_t s_globalTreeVersion;
     
     HashSet<NodeIterator*> m_nodeIterators;
     HashSet<Range*> m_ranges;
@@ -1287,8 +1298,8 @@ private:
     // http://www.whatwg.org/specs/web-apps/current-work/#ignore-destructive-writes-counter
     unsigned m_ignoreDestructiveWriteCount;
 
-    String m_title;
-    String m_rawTitle;
+    StringWithDirection m_title;
+    StringWithDirection m_rawTitle;
     bool m_titleSetExplicitly;
     RefPtr<Element> m_titleElement;
 
@@ -1310,7 +1321,7 @@ private:
     // points during the lifetime of the Document.
     int m_extraLayoutDelay;
     
-    OwnPtr<AsyncScriptRunner> m_asyncScriptRunner;
+    OwnPtr<ScriptRunner> m_scriptRunner;
 
 #if ENABLE(XSLT)
     OwnPtr<TransformSource> m_transformSource;

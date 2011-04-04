@@ -932,13 +932,6 @@ void Range::insertNode(PassRefPtr<Node> prpNewNode, ExceptionCode& ec)
         return;
     }
 
-    // WRONG_DOCUMENT_ERR: Raised if newParent and the container of the start of the Range were
-    // not created from the same document.
-    if (newNode->document() != m_start.container()->document()) {
-        ec = WRONG_DOCUMENT_ERR;
-        return;
-    }
-
     // HIERARCHY_REQUEST_ERR: Raised if the container of the start of the Range is of a type that
     // does not allow children of the type of newNode or if newNode is an ancestor of the container.
 
@@ -1423,13 +1416,6 @@ void Range::surroundContents(PassRefPtr<Node> passNewParent, ExceptionCode& ec)
         return;
     }
 
-    // WRONG_DOCUMENT_ERR: Raised if newParent and the container of the start of the Range were
-    // not created from the same document.
-    if (newParent->document() != m_start.container()->document()) {
-        ec = WRONG_DOCUMENT_ERR;
-        return;
-    }
-
     // Raise a HIERARCHY_REQUEST_ERR if m_start.container() doesn't accept children like newParent.
     Node* parentOfNewParent = m_start.container();
 
@@ -1634,7 +1620,7 @@ void Range::textRects(Vector<IntRect>& rects, bool useSelectionHeight)
     }
 }
 
-void Range::textQuads(Vector<FloatQuad>& quads, bool useSelectionHeight)
+void Range::textQuads(Vector<FloatQuad>& quads, bool useSelectionHeight) const
 {
     Node* startContainer = m_start.container();
     Node* endContainer = m_end.container();
@@ -1907,16 +1893,24 @@ PassRefPtr<ClientRect> Range::getBoundingClientRect() const
     return rect.isEmpty() ? 0 : ClientRect::create(rect);
 }
 
-static void adjustFloatQuadsForScrollAndAbsoluteZoom(Vector<FloatQuad>& quads, Document* document, RenderObject* renderer)
+static void adjustFloatQuadsForScrollAndAbsoluteZoomAndPageScale(Vector<FloatQuad>& quads, Document* document, RenderObject* renderer)
 {
     FrameView* view = document->view();
     if (!view)
         return;
 
+    float pageScale = 1;
+    if (Page* page = document->page()) {
+        if (Frame* frame = page->mainFrame())
+            pageScale = frame->pageScaleFactor();
+    }
+
     IntRect visibleContentRect = view->visibleContentRect();
     for (size_t i = 0; i < quads.size(); ++i) {
         quads[i].move(-visibleContentRect.x(), -visibleContentRect.y());
         adjustFloatQuadForAbsoluteZoom(quads[i], renderer);
+        if (pageScale != 1)
+            adjustFloatQuadForPageScale(quads[i], pageScale);
     }
 }
 
@@ -1938,7 +1932,7 @@ void Range::getBorderAndTextQuads(Vector<FloatQuad>& quads) const
                 if (RenderBoxModelObject* renderBoxModelObject = static_cast<Element*>(node)->renderBoxModelObject()) {
                     Vector<FloatQuad> elementQuads;
                     renderBoxModelObject->absoluteQuads(elementQuads);
-                    adjustFloatQuadsForScrollAndAbsoluteZoom(elementQuads, m_ownerDocument.get(), renderBoxModelObject);
+                    adjustFloatQuadsForScrollAndAbsoluteZoomAndPageScale(elementQuads, m_ownerDocument.get(), renderBoxModelObject);
 
                     quads.append(elementQuads);
                 }
@@ -1951,7 +1945,7 @@ void Range::getBorderAndTextQuads(Vector<FloatQuad>& quads) const
                 
                 Vector<FloatQuad> textQuads;
                 renderText->absoluteQuadsForRange(textQuads, startOffset, endOffset);
-                adjustFloatQuadsForScrollAndAbsoluteZoom(textQuads, m_ownerDocument.get(), renderText);
+                adjustFloatQuadsForScrollAndAbsoluteZoomAndPageScale(textQuads, m_ownerDocument.get(), renderText);
 
                 quads.append(textQuads);
             }

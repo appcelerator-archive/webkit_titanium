@@ -222,8 +222,8 @@ void HTMLMediaElement::attributeChanged(Attribute* attr, bool preserveDecls)
             detach();
             attach();
         }
-        if (renderer())
-            renderer()->updateFromElement();
+        if (hasMediaControls())
+            mediaControls()->reset();
 #else
         if (m_player)
             m_player->setControls(controls());
@@ -896,6 +896,7 @@ void HTMLMediaElement::setNetworkState(MediaPlayer::NetworkState state)
         if (m_networkState > NETWORK_IDLE) {
             m_progressEventTimer.stop();
             scheduleEvent(eventNames().suspendEvent);
+            setShouldDelayLoadEvent(false);
         }
         m_networkState = NETWORK_IDLE;
     }
@@ -1027,6 +1028,7 @@ void HTMLMediaElement::progressEventTimerFired(Timer<HTMLMediaElement>*)
         if (timedelta > 3.0 && !m_sentStalledEvent) {
             scheduleEvent(eventNames().stalledEvent);
             m_sentStalledEvent = true;
+            setShouldDelayLoadEvent(false);
         }
     } else {
         scheduleEvent(eventNames().progressEvent);
@@ -1300,7 +1302,7 @@ void HTMLMediaElement::setDefaultPlaybackRate(float rate)
 
 float HTMLMediaElement::playbackRate() const
 {
-    return m_player ? m_player->rate() : 0;
+    return m_playbackRate;
 }
 
 void HTMLMediaElement::setPlaybackRate(float rate)
@@ -1409,8 +1411,6 @@ void HTMLMediaElement::playInternal()
         ExceptionCode unused;
         seek(0, unused);
     }
-    
-    setPlaybackRate(defaultPlaybackRate());
     
     if (m_paused) {
         m_paused = false;
@@ -1525,8 +1525,8 @@ void HTMLMediaElement::setMuted(bool muted)
         if (!processingMediaPlayerCallback()) {
             if (m_player) {
                 m_player->setMuted(m_muted);
-                if (renderer())
-                    renderer()->updateFromElement();
+                if (hasMediaControls())
+                    mediaControls()->changedMute();
             }
         }
         scheduleEvent(eventNames().volumechangeEvent);
@@ -1539,9 +1539,10 @@ void HTMLMediaElement::togglePlayState()
 
     // We can safely call the internal play/pause methods, which don't check restrictions, because
     // this method is only called from the built-in media controller
-    if (canPlay())
+    if (canPlay()) {
+        setPlaybackRate(defaultPlaybackRate());
         playInternal();
-    else 
+    } else 
         pauseInternal();
 }
 
@@ -1593,7 +1594,9 @@ void HTMLMediaElement::playbackProgressTimerFired(Timer<HTMLMediaElement>*)
         return;
 
     scheduleTimeupdateEvent(true);
-    
+    if (hasMediaControls())
+        mediaControls()->playbackProgressed();
+
     // FIXME: deal with cue ranges here
 }
 
@@ -1918,7 +1921,7 @@ void HTMLMediaElement::mediaPlayerPlaybackStateChanged(MediaPlayer*)
 {
     LOG(Media, "HTMLMediaElement::mediaPlayerPlaybackStateChanged");
 
-    if (!m_player)
+    if (!m_player || m_pausedInternal)
         return;
 
     beginProcessingMediaPlayerCallback();
@@ -2100,9 +2103,9 @@ void HTMLMediaElement::updateVolume()
         m_player->setMuted(m_muted);
         m_player->setVolume(m_volume * volumeMultiplier);
     }
-    
-    if (renderer())
-        renderer()->updateFromElement();
+
+    if (hasMediaControls())
+        mediaControls()->changedVolume();
 }
 
 void HTMLMediaElement::updatePlayState()
@@ -2115,6 +2118,8 @@ void HTMLMediaElement::updatePlayState()
             m_player->pause();
         refreshCachedTime();
         m_playbackProgressTimer.stop();
+        if (hasMediaControls())
+            mediaControls()->playbackStopped();
         return;
     }
     
@@ -2138,6 +2143,8 @@ void HTMLMediaElement::updatePlayState()
             m_player->play();
         }
 
+        if (hasMediaControls())
+            mediaControls()->playbackStarted();
         startPlaybackProgressTimer();
         m_playing = true;
 
@@ -2154,6 +2161,9 @@ void HTMLMediaElement::updatePlayState()
 
         if (couldPlayIfEnoughData())
             m_player->prepareToPlay();
+
+        if (hasMediaControls())
+            mediaControls()->playbackStopped();
     }
     
     if (renderer())
@@ -2302,8 +2312,8 @@ void HTMLMediaElement::defaultEventHandler(Event* event)
     if (widget)
         widget->handleEvent(event);
 #else
-    if (renderer() && renderer()->isMedia())
-        toRenderMedia(renderer())->controls()->forwardEvent(event);
+    if (hasMediaControls())
+        mediaControls()->forwardEvent(event);
     if (event->defaultHandled())
         return;
     HTMLElement::defaultEventHandler(event);
@@ -2422,6 +2432,19 @@ void HTMLMediaElement::updateWidget(PluginCreationOption)
 
 #endif // ENABLE(PLUGIN_PROXY_FOR_VIDEO)
 
+bool HTMLMediaElement::isFullscreen() const
+{
+    if (m_isFullscreen)
+        return true;
+    
+#if ENABLE(FULLSCREEN_API)
+    if (document()->webkitIsFullScreen() && document()->webkitCurrentFullScreenElement() == this)
+        return true;
+#endif
+    
+    return false;
+}
+
 void HTMLMediaElement::enterFullscreen()
 {
     LOG(Media, "HTMLMediaElement::enterFullscreen");
@@ -2479,8 +2502,8 @@ void HTMLMediaElement::setClosedCaptionsVisible(bool closedCaptionVisible)
 
     m_closedCaptionsVisible = closedCaptionVisible;
     m_player->setClosedCaptionsVisible(closedCaptionVisible);
-    if (renderer())
-        renderer()->updateFromElement();
+    if (hasMediaControls())
+        mediaControls()->changedClosedCaptionsVisibility();
 }
 
 void HTMLMediaElement::setWebkitClosedCaptionsVisible(bool visible)
@@ -2546,20 +2569,17 @@ void HTMLMediaElement::setShouldDelayLoadEvent(bool shouldDelay)
 
 void HTMLMediaElement::getSitesInMediaCache(Vector<String>& sites)
 {
-    if (m_player)
-        m_player->getSitesInMediaCache(sites);
+    MediaPlayer::getSitesInMediaCache(sites);
 }
 
 void HTMLMediaElement::clearMediaCache()
 {
-    if (m_player)
-        m_player->clearMediaCache();
+    MediaPlayer::clearMediaCache();
 }
 
 void HTMLMediaElement::clearMediaCacheForSite(const String& site)
 {
-    if (m_player)
-        m_player->clearMediaCacheForSite(site);
+    MediaPlayer::clearMediaCacheForSite(site);
 }
 
 void HTMLMediaElement::privateBrowsingStateDidChange()
@@ -2569,7 +2589,19 @@ void HTMLMediaElement::privateBrowsingStateDidChange()
 
     Settings* settings = document()->settings();
     bool privateMode = !settings || settings->privateBrowsingEnabled();
+    LOG(Media, "HTMLMediaElement::privateBrowsingStateDidChange(%s)", boolString(privateMode));
     m_player->setPrivateBrowsingMode(privateMode);
+}
+
+MediaControls* HTMLMediaElement::mediaControls()
+{
+    ASSERT(renderer());
+    return toRenderMedia(renderer())->controls();
+}
+
+bool HTMLMediaElement::hasMediaControls() const
+{
+    return renderer() && renderer()->isMedia();
 }
 
 }

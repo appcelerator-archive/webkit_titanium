@@ -21,6 +21,7 @@ mac: CONFIG += build_all
 WEBKIT2_GENERATED_HEADERS = \
     $$WEBKIT2_GENERATED_SOURCES_DIR/AuthenticationManagerMessages.h \
     $$WEBKIT2_GENERATED_SOURCES_DIR/DownloadProxyMessages.h \
+    $$WEBKIT2_GENERATED_SOURCES_DIR/NPObjectMessageReceiverMessages.h \
     $$WEBKIT2_GENERATED_SOURCES_DIR/PluginControllerProxyMessages.h \
     $$WEBKIT2_GENERATED_SOURCES_DIR/PluginProcessMessages.h \
     $$WEBKIT2_GENERATED_SOURCES_DIR/PluginProcessProxyMessages.h \
@@ -32,12 +33,18 @@ WEBKIT2_GENERATED_HEADERS = \
     $$WEBKIT2_GENERATED_SOURCES_DIR/WebCookieManagerProxyMessages.h \
     $$WEBKIT2_GENERATED_SOURCES_DIR/WebDatabaseManagerMessages.h \
     $$WEBKIT2_GENERATED_SOURCES_DIR/WebDatabaseManagerProxyMessages.h \
+    $$WEBKIT2_GENERATED_SOURCES_DIR/WebFullScreenManagerMessages.h \
+    $$WEBKIT2_GENERATED_SOURCES_DIR/WebFullScreenManagerProxyMessages.h \
     $$WEBKIT2_GENERATED_SOURCES_DIR/WebGeolocationManagerMessages.h \
     $$WEBKIT2_GENERATED_SOURCES_DIR/WebGeolocationManagerProxyMessages.h \
+    $$WEBKIT2_GENERATED_SOURCES_DIR/WebIconDatabaseMessages.h \
+    $$WEBKIT2_GENERATED_SOURCES_DIR/WebIconDatabaseProxyMessages.h \
     $$WEBKIT2_GENERATED_SOURCES_DIR/WebInspectorMessages.h \
     $$WEBKIT2_GENERATED_SOURCES_DIR/WebInspectorProxyMessages.h \
     $$WEBKIT2_GENERATED_SOURCES_DIR/WebKeyValueStorageManagerMessages.h \
     $$WEBKIT2_GENERATED_SOURCES_DIR/WebKeyValueStorageManagerProxyMessages.h \
+    $$WEBKIT2_GENERATED_SOURCES_DIR/WebMediaCacheManagerMessages.h \
+    $$WEBKIT2_GENERATED_SOURCES_DIR/WebMediaCacheManagerProxyMessages.h \
     $$WEBKIT2_GENERATED_SOURCES_DIR/WebPageMessages.h \
     $$WEBKIT2_GENERATED_SOURCES_DIR/WebPageProxyMessages.h \
     $$WEBKIT2_GENERATED_SOURCES_DIR/WebProcessConnectionMessages.h \
@@ -49,6 +56,7 @@ WEBKIT2_GENERATED_HEADERS = \
 WEBKIT2_GENERATED_SOURCES = \
     $$WEBKIT2_GENERATED_SOURCES_DIR/AuthenticationManagerMessageReceiver.cpp \
     $$WEBKIT2_GENERATED_SOURCES_DIR/DownloadProxyMessageReceiver.cpp \
+    $$WEBKIT2_GENERATED_SOURCES_DIR/NPObjectMessageReceiverMessageReceiver.cpp \
     $$WEBKIT2_GENERATED_SOURCES_DIR/PluginControllerProxyMessageReceiver.cpp \
     $$WEBKIT2_GENERATED_SOURCES_DIR/PluginProcessMessageReceiver.cpp \
     $$WEBKIT2_GENERATED_SOURCES_DIR/PluginProcessProxyMessageReceiver.cpp \
@@ -60,12 +68,18 @@ WEBKIT2_GENERATED_SOURCES = \
     $$WEBKIT2_GENERATED_SOURCES_DIR/WebCookieManagerProxyMessageReceiver.cpp \
     $$WEBKIT2_GENERATED_SOURCES_DIR/WebDatabaseManagerMessageReceiver.cpp \
     $$WEBKIT2_GENERATED_SOURCES_DIR/WebDatabaseManagerProxyMessageReceiver.cpp \
+    $$WEBKIT2_GENERATED_SOURCES_DIR/WebFullScreenManagerMessageReceiver.cpp \
+    $$WEBKIT2_GENERATED_SOURCES_DIR/WebFullScreenManagerProxyMessageReceiver.cpp \
     $$WEBKIT2_GENERATED_SOURCES_DIR/WebGeolocationManagerMessageReceiver.cpp \
     $$WEBKIT2_GENERATED_SOURCES_DIR/WebGeolocationManagerProxyMessageReceiver.cpp \
+    $$WEBKIT2_GENERATED_SOURCES_DIR/WebIconDatabaseMessageReceiver.cpp \
+    $$WEBKIT2_GENERATED_SOURCES_DIR/WebIconDatabaseProxyMessageReceiver.cpp \
     $$WEBKIT2_GENERATED_SOURCES_DIR/WebInspectorMessageReceiver.cpp \
     $$WEBKIT2_GENERATED_SOURCES_DIR/WebInspectorProxyMessageReceiver.cpp \
     $$WEBKIT2_GENERATED_SOURCES_DIR/WebKeyValueStorageManagerMessageReceiver.cpp \
     $$WEBKIT2_GENERATED_SOURCES_DIR/WebKeyValueStorageManagerProxyMessageReceiver.cpp \
+    $$WEBKIT2_GENERATED_SOURCES_DIR/WebMediaCacheManagerMessageReceiver.cpp \
+    $$WEBKIT2_GENERATED_SOURCES_DIR/WebMediaCacheManagerProxyMessageReceiver.cpp \
     $$WEBKIT2_GENERATED_SOURCES_DIR/WebPageMessageReceiver.cpp \
     $$WEBKIT2_GENERATED_SOURCES_DIR/WebPageProxyMessageReceiver.cpp \
     $$WEBKIT2_GENERATED_SOURCES_DIR/WebProcessConnectionMessageReceiver.cpp \
@@ -139,6 +153,13 @@ HEADERS += \
     Shared/WebURLResponse.h \
     Shared/WebUserContentURLPattern.h \
     Shared/Plugins/Netscape/NetscapePluginModule.h \
+    Shared/Plugins/NPRemoteObjectMap.h \
+    Shared/Plugins/NPIdentifierData.h \
+    Shared/Plugins/NPObjectMessageReceiver.h \
+    Shared/Plugins/NPObjectProxy.h \
+    Shared/Plugins/NPVariantData.h \
+    Shared/Plugins/PluginProcessCreationParameters.h \
+    Shared/Plugins/PluginQuirks.h \
     Shared/qt/PlatformCertificateInfo.h \
     Shared/qt/UpdateChunk.h \
     Shared/qt/WebEventFactoryQt.h \
@@ -157,6 +178,8 @@ HEADERS += \
     UIProcess/Launcher/ThreadLauncher.h \
     UIProcess/PageClient.h \
     UIProcess/Plugins/PluginInfoStore.h \
+    UIProcess/Plugins/PluginProcessProxy.h \
+    UIProcess/Plugins/PluginProcessManager.h \
     UIProcess/ProcessModel.h \
     UIProcess/ResponsivenessTimer.h \
     UIProcess/TextChecker.h \
@@ -179,12 +202,15 @@ HEADERS += \
     UIProcess/WebFrameListenerProxy.h \
     UIProcess/WebFramePolicyListenerProxy.h \
     UIProcess/WebFrameProxy.h \
+    UIProcess/WebFullScreenManagerProxy.h \
     UIProcess/WebGeolocationManagerProxy.h \
     UIProcess/WebGeolocationProvider.h \
     UIProcess/WebHistoryClient.h \
+    UIProcess/WebIconDatabase.h \
     UIProcess/WebInspectorProxy.h \
     UIProcess/WebKeyValueStorageManagerProxy.h \
     UIProcess/WebLoaderClient.h \
+    UIProcess/WebMediaCacheManagerProxy.h \
     UIProcess/WebNavigationData.h \
     UIProcess/WebOpenPanelResultListenerProxy.h \
     UIProcess/WebPageContextMenuClient.h \
@@ -203,8 +229,10 @@ HEADERS += \
     WebProcess/Cookies/WebCookieManager.h \
     WebProcess/Downloads/Download.h \
     WebProcess/Downloads/DownloadManager.h \
+    WebProcess/FullScreen/WebFullScreenManager.h \
     WebProcess/Geolocation/GeolocationPermissionRequestManager.h \
     WebProcess/Geolocation/WebGeolocationManager.h \
+    WebProcess/IconDatabase/WebIconDatabaseProxy.h \
     WebProcess/InjectedBundle/DOM/InjectedBundleNodeHandle.h \
     WebProcess/InjectedBundle/DOM/InjectedBundleRangeHandle.h \
     WebProcess/InjectedBundle/InjectedBundle.h \
@@ -218,6 +246,7 @@ HEADERS += \
     WebProcess/InjectedBundle/InjectedBundleScriptWorld.h \
     WebProcess/InjectedBundle/InjectedBundleUserMessageCoders.h \
     WebProcess/KeyValueStorage/WebKeyValueStorageManager.h \
+    WebProcess/MediaCache/WebMediaCacheManager.h \
     WebProcess/ResourceCache/WebResourceCacheManager.h \
     WebProcess/Plugins/Netscape/JSNPMethod.h \
     WebProcess/Plugins/Netscape/JSNPObject.h \
@@ -230,6 +259,9 @@ HEADERS += \
     WebProcess/Plugins/Plugin.h \
     WebProcess/Plugins/PluginController.h \
     WebProcess/Plugins/PluginView.h \
+    WebProcess/Plugins/PluginProxy.h \
+    WebProcess/Plugins/PluginProcessConnection.h \
+    WebProcess/Plugins/PluginProcessConnectionManager.h \
     WebProcess/WebCoreSupport/WebChromeClient.h \
     WebProcess/WebCoreSupport/WebContextMenuClient.h \
     WebProcess/WebCoreSupport/WebDatabaseManager.h \
@@ -276,8 +308,15 @@ SOURCES += \
     Platform/qt/SharedMemoryQt.cpp \
     Platform/qt/WorkQueueQt.cpp \
     Shared/Plugins/Netscape/NetscapePluginModule.cpp \
+    Shared/Plugins/Netscape/NetscapePluginModuleNone.cpp \
     Shared/Plugins/Netscape/x11/NetscapePluginModuleX11.cpp \
     Shared/ShareableBitmap.cpp \
+    Shared/Plugins/NPRemoteObjectMap.cpp \
+    Shared/Plugins/NPIdentifierData.cpp \
+    Shared/Plugins/NPObjectMessageReceiver.cpp \
+    Shared/Plugins/NPObjectProxy.cpp \
+    Shared/Plugins/NPVariantData.cpp \
+    Shared/Plugins/PluginProcessCreationParameters.cpp \
     Shared/ChildProcess.cpp \
     Shared/DictionaryPopupInfo.cpp \
     Shared/FontInfo.cpp \
@@ -335,8 +374,11 @@ SOURCES += \
     UIProcess/Launcher/qt/ProcessLauncherQt.cpp \
     UIProcess/Launcher/qt/ThreadLauncherQt.cpp \
     UIProcess/Plugins/PluginInfoStore.cpp \
+    UIProcess/Plugins/PluginProcessProxy.cpp \
+    UIProcess/Plugins/PluginProcessManager.cpp \
     UIProcess/Plugins/WebPluginSiteDataManager.cpp \
     UIProcess/Plugins/qt/PluginInfoStoreQt.cpp \
+    UIProcess/Plugins/qt/PluginProcessProxyQt.cpp \
     UIProcess/ResponsivenessTimer.cpp \
     UIProcess/TiledDrawingAreaProxy.cpp \
     UIProcess/VisitedLinkProvider.cpp \
@@ -357,12 +399,15 @@ SOURCES += \
     UIProcess/WebFrameListenerProxy.cpp \
     UIProcess/WebFramePolicyListenerProxy.cpp \
     UIProcess/WebFrameProxy.cpp \
+    UIProcess/WebFullScreenManagerProxy.cpp \
     UIProcess/WebGeolocationManagerProxy.cpp \
     UIProcess/WebGeolocationProvider.cpp \
     UIProcess/WebHistoryClient.cpp \
+    UIProcess/WebIconDatabase.cpp \
     UIProcess/WebInspectorProxy.cpp \
     UIProcess/WebKeyValueStorageManagerProxy.cpp \
     UIProcess/WebLoaderClient.cpp \
+    UIProcess/WebMediaCacheManagerProxy.cpp \
     UIProcess/WebNavigationData.cpp \
     UIProcess/WebOpenPanelResultListenerProxy.cpp \
     UIProcess/WebPageContextMenuClient.cpp \
@@ -387,11 +432,14 @@ SOURCES += \
     WebProcess/ApplicationCache/WebApplicationCacheManager.cpp \
     WebProcess/Authentication/AuthenticationManager.cpp \
     WebProcess/Cookies/WebCookieManager.cpp \
+    WebProcess/Cookies/qt/WebCookieManagerQt.cpp \
     WebProcess/Downloads/Download.cpp \
     WebProcess/Downloads/DownloadManager.cpp \
+    WebProcess/Downloads/qt/DownloadQt.cpp \
+    WebProcess/FullScreen/WebFullScreenManager.cpp \
     WebProcess/Geolocation/GeolocationPermissionRequestManager.cpp \
     WebProcess/Geolocation/WebGeolocationManager.cpp \
-    WebProcess/Downloads/qt/DownloadQt.cpp \
+    WebProcess/IconDatabase/WebIconDatabaseProxy.cpp \
     WebProcess/InjectedBundle/DOM/InjectedBundleNodeHandle.cpp \
     WebProcess/InjectedBundle/DOM/InjectedBundleRangeHandle.cpp \
     WebProcess/InjectedBundle/InjectedBundle.cpp \
@@ -410,6 +458,7 @@ SOURCES += \
     WebProcess/InjectedBundle/InjectedBundleScriptWorld.cpp \
     WebProcess/InjectedBundle/qt/InjectedBundleQt.cpp \
     WebProcess/KeyValueStorage/WebKeyValueStorageManager.cpp \
+    WebProcess/MediaCache/WebMediaCacheManager.cpp \
     WebProcess/ResourceCache/WebResourceCacheManager.cpp \
     WebProcess/Plugins/Netscape/JSNPMethod.cpp \
     WebProcess/Plugins/Netscape/JSNPObject.cpp \
@@ -418,10 +467,15 @@ SOURCES += \
     WebProcess/Plugins/Netscape/NPRuntimeUtilities.cpp \
     WebProcess/Plugins/Netscape/NetscapeBrowserFuncs.cpp \
     WebProcess/Plugins/Netscape/NetscapePlugin.cpp \
+    WebProcess/Plugins/Netscape/NetscapePluginNone.cpp \
     WebProcess/Plugins/Netscape/NetscapePluginStream.cpp \
-    WebProcess/Plugins/Netscape/qt/NetscapePluginQt.cpp \
+    WebProcess/Plugins/Netscape/x11/NetscapePluginX11.cpp \
+    WebProcess/Plugins/Netscape/qt/PluginProxyQt.cpp \
     WebProcess/Plugins/Plugin.cpp \
     WebProcess/Plugins/PluginView.cpp \
+    WebProcess/Plugins/PluginProxy.cpp \
+    WebProcess/Plugins/PluginProcessConnection.cpp \
+    WebProcess/Plugins/PluginProcessConnectionManager.cpp \
     WebProcess/WebCoreSupport/WebChromeClient.cpp \
     WebProcess/WebCoreSupport/WebContextMenuClient.cpp \
     WebProcess/WebCoreSupport/WebDatabaseManager.cpp \

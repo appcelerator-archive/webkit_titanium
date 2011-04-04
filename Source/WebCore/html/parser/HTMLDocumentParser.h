@@ -108,8 +108,9 @@ private:
     // HTMLScriptRunnerHost
     virtual void watchForLoad(CachedResource*);
     virtual void stopWatchingForLoad(CachedResource*);
-    virtual bool shouldLoadExternalScriptFromSrc(const AtomicString&);
     virtual HTMLInputStream& inputStream() { return m_input; }
+    virtual bool hasPreloadScanner() const { return m_preloadScanner.get(); }
+    virtual void appendCurrentInputStreamToPreloadScannerAndScan();
 
     // CachedResourceClient
     virtual void notifyFinished(CachedResource*);

@@ -101,14 +101,16 @@ typedef struct WKPageLoaderClient WKPageLoaderClient;
 // Policy Client.
 typedef void (*WKPageDecidePolicyForNavigationActionCallback)(WKPageRef page, WKFrameRef frame, WKFrameNavigationType navigationType, WKEventModifiers modifiers, WKEventMouseButton mouseButton, WKURLRequestRef request, WKFramePolicyListenerRef listener, WKTypeRef userData, const void* clientInfo);
 typedef void (*WKPageDecidePolicyForNewWindowActionCallback)(WKPageRef page, WKFrameRef frame, WKFrameNavigationType navigationType, WKEventModifiers modifiers, WKEventMouseButton mouseButton, WKURLRequestRef request, WKStringRef frameName, WKFramePolicyListenerRef listener, WKTypeRef userData, const void* clientInfo);
-typedef void (*WKPageDecidePolicyForMIMETypeCallback)(WKPageRef page, WKFrameRef frame, WKStringRef MIMEType, WKURLRequestRef request, WKFramePolicyListenerRef listener, WKTypeRef userData, const void* clientInfo);
+typedef void (*WKPageDecidePolicyForResponseCallback)(WKPageRef page, WKFrameRef frame, WKURLResponseRef response, WKURLRequestRef request, WKFramePolicyListenerRef listener, WKTypeRef userData, const void* clientInfo);
+typedef void (*WKPageUnableToImplementPolicyCallback)(WKPageRef page, WKFrameRef frame, WKErrorRef error, WKTypeRef userData, const void* clientInfo);
 
 struct WKPagePolicyClient {
     int                                                                 version;
     const void *                                                        clientInfo;
     WKPageDecidePolicyForNavigationActionCallback                       decidePolicyForNavigationAction;
     WKPageDecidePolicyForNewWindowActionCallback                        decidePolicyForNewWindowAction;
-    WKPageDecidePolicyForMIMETypeCallback                               decidePolicyForMIMEType;
+    WKPageDecidePolicyForResponseCallback                               decidePolicyForResponse;
+    WKPageUnableToImplementPolicyCallback                               unableToImplementPolicy;
 };
 typedef struct WKPagePolicyClient WKPagePolicyClient;
 
@@ -171,6 +173,7 @@ typedef void (*WKPageDrawHeaderCallback)(WKPageRef page, WKFrameRef frame, WKRec
 typedef void (*WKPageDrawFooterCallback)(WKPageRef page, WKFrameRef frame, WKRect rect, const void* clientInfo);
 typedef void (*WKPagePrintFrameCallback)(WKPageRef page, WKFrameRef frame, const void* clientInfo);
 typedef void (*WKPageDidCompleteRubberBandForMainFrameCallback)(WKPageRef page, WKSize initialOverhang, const void* clientInfo);
+typedef void (*WKPageSaveDataToFileInDownloadsFolderCallback)(WKPageRef page, WKStringRef suggestedFilename, WKStringRef mimeType, WKURLRef originatingURL, WKDataRef data, const void* clientInfo);
 
 struct WKPageUIClient {
     int                                                                 version;
@@ -208,6 +211,7 @@ struct WKPageUIClient {
     WKPagePrintFrameCallback                                            printFrame;
     WKPageCallback                                                      runModal;
     WKPageDidCompleteRubberBandForMainFrameCallback                     didCompleteRubberBandForMainFrame;
+    WKPageSaveDataToFileInDownloadsFolderCallback                       saveDataToFileInDownloadsFolder;
 };
 typedef struct WKPageUIClient WKPageUIClient;
 

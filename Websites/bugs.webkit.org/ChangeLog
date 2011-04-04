@@ -1,3 +1,56 @@
+2011-03-15  David Levin  <levin@chromium.org>
+
+        Reviewed by Adam Barth.
+
+        Links from code reviews to trac are incorrect for files in Source/WebKit.
+        https://bugs.webkit.org/show_bug.cgi?id=56404
+
+        * PrettyPatch/PrettyPatch.rb: Remove WebKit from the list of top level
+          directories since it is now under Source.
+
+2011-03-10  Caio Marcelo de Oliveira Filho  <caio.oliveira@openbossa.org>
+
+        Reviewed by Adam Roben.
+
+        Formatted Diff for attachment 23920 is mangled
+        https://bugs.webkit.org/show_bug.cgi?id=21222
+
+        The mangled diff files mentioned in the bug were using Mac line
+        ending and this was causing problems for String#each_line. Now we
+        normalize the line endings in patch data before processing it.
+
+        * PrettyPatch/PrettyPatch.rb:
+
+2011-03-10  Caio Marcelo de Oliveira Filho  <caio.oliveira@openbossa.org>
+
+        Reviewed by Adam Roben.
+
+        PrettyPatch displays last two lines of a git-format-patch diff strangely
+        https://bugs.webkit.org/show_bug.cgi?id=29317
+
+        If the diff section has full range information, we parse only enough to cover the
+        range. This avoids incorrectly showing trailing lines (like git signature) as part
+        of the patch.
+
+        * PrettyPatch/PrettyPatch.rb:
+
+2011-03-10  Adam Roben  <aroben@apple.com>
+
+        Don't search for intra-line diffs in really long lines
+
+        Doing so can lead to hangs (or at least really slow execution).
+
+        Fixes <http://webkit.org/b/56109> run-webkit-tests sometimes times out on Windows XP Debug
+        (Tests) after fast/text/large-text-composed-char-dos.html fails (due to PrettyPatch
+        hanging?)
+
+        Reviewed by David Kilzer.
+
+        * PrettyPatch/PrettyPatch.rb:
+        (PrettyPatch.MAXIMUM_INTRALINE_DIFF_LINE_LENGTH): Added this new constant.
+        (PrettyPatch.DiffSection.initialize): Don't bother looking for intra-line diffs in lines
+        longer than the maximum length.
+
 2011-02-25  Ojan Vafai  <ojan@chromium.org>
 
         Reviewed by Adam Barth.

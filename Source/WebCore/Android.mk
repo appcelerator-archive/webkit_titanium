@@ -50,6 +50,7 @@ LOCAL_SRC_FILES := \
 	css/CSSParser.cpp \
 	css/CSSParserValues.cpp \
 	css/CSSPrimitiveValue.cpp \
+	css/CSSPrimitiveValueCache.cpp \
 	css/CSSProperty.cpp \
 	css/CSSPropertyLonghand.cpp \
 	css/CSSReflectValue.cpp \
@@ -94,7 +95,6 @@ LOCAL_SRC_FILES := $(LOCAL_SRC_FILES) \
 	css/WebKitCSSTransformValue.cpp \
 	\
 	dom/ActiveDOMObject.cpp \
-	dom/AsyncScriptRunner.cpp \
 	dom/Attr.cpp \
 	dom/Attribute.cpp \
 	dom/BeforeTextInsertedEvent.cpp \
@@ -113,6 +113,7 @@ LOCAL_SRC_FILES := $(LOCAL_SRC_FILES) \
 	dom/ContainerNode.cpp \
 	dom/DOMImplementation.cpp \
 	dom/DOMStringList.cpp \
+	dom/DataTransferItem.cpp \
 	dom/DecodedDataDocumentParser.cpp \
 	dom/DeviceMotionController.cpp \
 	dom/DeviceMotionData.cpp \
@@ -130,6 +131,7 @@ LOCAL_SRC_FILES := $(LOCAL_SRC_FILES) \
 	dom/ErrorEvent.cpp \
 	dom/Event.cpp \
 	dom/EventContext.cpp \
+	dom/EventDispatcher.cpp \
 	dom/EventNames.cpp \
 	dom/EventTarget.cpp \
 	dom/EventQueue.cpp \
@@ -170,11 +172,13 @@ LOCAL_SRC_FILES := $(LOCAL_SRC_FILES) \
 	dom/ScriptableDocumentParser.cpp \
 	dom/ScriptElement.cpp \
 	dom/ScriptExecutionContext.cpp \
+	dom/ScriptRunner.cpp \
 	dom/SelectElement.cpp \
 	dom/SelectorNodeList.cpp \
 	dom/SpaceSplitString.cpp \
 	dom/StaticHashSetNodeList.cpp \
 	dom/StaticNodeList.cpp \
+	dom/StringCallback.cpp \
 	dom/StyleElement.cpp \
 	dom/StyledElement.cpp \
 	dom/TagNodeList.cpp \
@@ -400,6 +404,7 @@ LOCAL_SRC_FILES := $(LOCAL_SRC_FILES) \
 	loader/cache/MemoryCache.cpp \
 	\
 	loader/icon/IconDatabase.cpp \
+	loader/icon/IconDatabaseBase.cpp \
 	loader/icon/IconFetcher.cpp \
 	loader/icon/IconLoader.cpp \
 	loader/icon/IconRecord.cpp \
@@ -446,6 +451,8 @@ LOCAL_SRC_FILES := $(LOCAL_SRC_FILES) \
 	page/SpeechInputResult.cpp \
 	page/SuspendableTimer.cpp \
 	page/UserContentURLPattern.cpp \
+	page/WebKitAnimation.cpp \
+	page/WebKitAnimationList.cpp \
 	page/WindowFeatures.cpp \
 	page/WorkerNavigator.cpp \
 	\
@@ -461,6 +468,7 @@ LOCAL_SRC_FILES := $(LOCAL_SRC_FILES) \
 	platform/Arena.cpp \
 	platform/ContentType.cpp \
 	platform/CrossThreadCopier.cpp \
+	platform/DefaultLocalizationStrategy.cpp \
 	platform/DragData.cpp \
 	platform/DragImage.cpp \
 	platform/FileChooser.cpp \

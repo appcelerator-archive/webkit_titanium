@@ -78,8 +78,11 @@ VPATH = \
     WebProcess/ApplicationCache \
     WebProcess/Authentication \
     WebProcess/Cookies \
+    WebProcess/FullScreen \
     WebProcess/Geolocation \
+    WebProcess/IconDatabase \
     WebProcess/KeyValueStorage \
+    WebProcess/MediaCache \
     WebProcess/Plugins \
     WebProcess/ResourceCache \
     WebProcess/WebCoreSupport \
@@ -87,7 +90,8 @@ VPATH = \
     WebProcess \
     UIProcess \
     UIProcess/Downloads \
-    UIProcess/Plugins
+    UIProcess/Plugins \
+    Shared/Plugins
 
 MESSAGE_RECEIVERS = \
     AuthenticationManager.messages.in \
@@ -105,9 +109,15 @@ MESSAGE_RECEIVERS = \
     WebDatabaseManagerProxy.messages.in \
     WebGeolocationManager.messages.in \
     WebGeolocationManagerProxy.messages.in \
+    WebIconDatabase.messages.in \
+    WebIconDatabaseProxy.messages.in \
     WebInspectorProxy.messages.in \
     WebKeyValueStorageManager.messages.in \
     WebKeyValueStorageManagerProxy.messages.in \
+    WebMediaCacheManager.messages.in \
+    WebMediaCacheManagerProxy.messages.in \
+    WebFullScreenManager.messages.in \
+    WebFullScreenManagerProxy.messages.in \
     WebPage/WebInspector.messages.in \
     WebPage/WebPage.messages.in \
     WebPageProxy.messages.in \
@@ -115,7 +125,8 @@ MESSAGE_RECEIVERS = \
     WebProcessConnection.messages.in \
     WebProcessProxy.messages.in \
     WebResourceCacheManager.messages.in \
-    WebResourceCacheManagerProxy.messages.in
+    WebResourceCacheManagerProxy.messages.in \
+    NPObjectMessageReceiver.messages.in
 
 SCRIPTS = \
     $$PWD/Scripts/generate-message-receiver.py \

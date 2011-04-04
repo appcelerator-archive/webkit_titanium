@@ -56,7 +56,7 @@ contains(QT_CONFIG, opengl) {
     DEFINES += QT_CONFIGURED_WITH_OPENGL
 }
 
-# We copy the resource file to the build directory.
-# The copier is defined in Tools/MiniBrowser/DerivedSources.pro.
-RESOURCES += \
-    $$OUTPUT_DIR/MiniBrowser/qt/MiniBrowser.qrc
+DEFINES -= QT_ASCII_CAST_WARNINGS
+
+# Use the MiniBrowser.qrc file from the sources.
+RESOURCES += MiniBrowser.qrc

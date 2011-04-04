@@ -31,6 +31,16 @@
 #include <qwebelement.h>
 #include <qwebframe.h>
 
+#ifdef Q_OS_SYMBIAN
+#define VERIFY_INPUTMETHOD_HINTS(actual, expect) \
+    QVERIFY(actual & Qt::ImhNoAutoUppercase); \
+    QVERIFY(actual & Qt::ImhNoPredictiveText); \
+    QVERIFY(actual & expect);
+#else
+#define VERIFY_INPUTMETHOD_HINTS(actual, expect) \
+    QVERIFY(actual == expect);
+#endif
+
 class tst_QWebView : public QObject
 {
     Q_OBJECT
@@ -42,6 +52,7 @@ public slots:
     void cleanup();
 
 private slots:
+    void renderingAfterMaxAndBack();
     void renderHints();
     void getWebKitVersion();
 
@@ -207,9 +218,9 @@ void tst_QWebView::microFocusCoordinates()
 
     page->mainFrame()->setHtml("<html><body>" \
         "<input type='text' id='input1' style='font--family: serif' value='' maxlength='20'/><br>" \
-        "<canvas id='canvas1' width='500' height='500'/>" \
+        "<canvas id='canvas1' width='500' height='500'></canvas>" \
         "<input type='password'/><br>" \
-        "<canvas id='canvas2' width='500' height='500'/>" \
+        "<canvas id='canvas2' width='500' height='500'></canvas>" \
         "</body></html>");
 
     page->mainFrame()->setFocus();
@@ -252,37 +263,37 @@ void tst_QWebView::focusInputTypes()
     // 'password' field
     inputElement = mainFrame->documentElement().findFirst(QLatin1String("input[type=password]"));
     QTest::mouseClick(&webView, Qt::LeftButton, 0, inputElement.geometry().center());
-    QVERIFY(webView.inputMethodHints() == Qt::ImhHiddenText);
+    VERIFY_INPUTMETHOD_HINTS(webView.inputMethodHints(), Qt::ImhHiddenText);
     QVERIFY(webView.testAttribute(Qt::WA_InputMethodEnabled));
 
     // 'tel' field
     inputElement = mainFrame->documentElement().findFirst(QLatin1String("input[type=tel]"));
     QTest::mouseClick(&webView, Qt::LeftButton, 0, inputElement.geometry().center());
-    QVERIFY(webView.inputMethodHints() == Qt::ImhDialableCharactersOnly);
+    VERIFY_INPUTMETHOD_HINTS(webView.inputMethodHints(), Qt::ImhDialableCharactersOnly);
     QVERIFY(webView.testAttribute(Qt::WA_InputMethodEnabled));
 
     // 'number' field
     inputElement = mainFrame->documentElement().findFirst(QLatin1String("input[type=number]"));
     QTest::mouseClick(&webView, Qt::LeftButton, 0, inputElement.geometry().center());
-    QVERIFY(webView.inputMethodHints() == Qt::ImhDigitsOnly);
+    VERIFY_INPUTMETHOD_HINTS(webView.inputMethodHints(), Qt::ImhDigitsOnly);
     QVERIFY(webView.testAttribute(Qt::WA_InputMethodEnabled));
 
     // 'email' field
     inputElement = mainFrame->documentElement().findFirst(QLatin1String("input[type=email]"));
     QTest::mouseClick(&webView, Qt::LeftButton, 0, inputElement.geometry().center());
-    QVERIFY(webView.inputMethodHints() == Qt::ImhEmailCharactersOnly);
+    VERIFY_INPUTMETHOD_HINTS(webView.inputMethodHints(), Qt::ImhEmailCharactersOnly);
     QVERIFY(webView.testAttribute(Qt::WA_InputMethodEnabled));
 
     // 'url' field
     inputElement = mainFrame->documentElement().findFirst(QLatin1String("input[type=url]"));
     QTest::mouseClick(&webView, Qt::LeftButton, 0, inputElement.geometry().center());
-    QVERIFY(webView.inputMethodHints() == Qt::ImhUrlCharactersOnly);
+    VERIFY_INPUTMETHOD_HINTS(webView.inputMethodHints(), Qt::ImhUrlCharactersOnly);
     QVERIFY(webView.testAttribute(Qt::WA_InputMethodEnabled));
 
     // 'password' field
     inputElement = mainFrame->documentElement().findFirst(QLatin1String("input[type=password]"));
     QTest::mouseClick(&webView, Qt::LeftButton, 0, inputElement.geometry().center());
-    QVERIFY(webView.inputMethodHints() == Qt::ImhHiddenText);
+    VERIFY_INPUTMETHOD_HINTS(webView.inputMethodHints(), Qt::ImhHiddenText);
     QVERIFY(webView.testAttribute(Qt::WA_InputMethodEnabled));
 
     // 'text' type
@@ -299,13 +310,18 @@ void tst_QWebView::focusInputTypes()
     // 'password' field
     inputElement = mainFrame->documentElement().findFirst(QLatin1String("input[type=password]"));
     QTest::mouseClick(&webView, Qt::LeftButton, 0, inputElement.geometry().center());
-    QVERIFY(webView.inputMethodHints() == Qt::ImhHiddenText);
+    VERIFY_INPUTMETHOD_HINTS(webView.inputMethodHints(), Qt::ImhHiddenText);
     QVERIFY(webView.testAttribute(Qt::WA_InputMethodEnabled));
 
     // 'text area' field
     inputElement = mainFrame->documentElement().findFirst(QLatin1String("textarea"));
     QTest::mouseClick(&webView, Qt::LeftButton, 0, inputElement.geometry().center());
+#if defined(Q_OS_SYMBIAN)
+    QVERIFY(webView.inputMethodHints() & Qt::ImhNoAutoUppercase);
+    QVERIFY(webView.inputMethodHints() & Qt::ImhNoPredictiveText);
+#else
     QVERIFY(webView.inputMethodHints() == Qt::ImhNone);
+#endif
     QVERIFY(webView.testAttribute(Qt::WA_InputMethodEnabled));
 }
 
@@ -436,6 +452,63 @@ void tst_QWebView::setPalette()
     controlView.close();
 
     QVERIFY(img1 != img2);
+}
+
+void tst_QWebView::renderingAfterMaxAndBack()
+{
+    QUrl url = QUrl("data:text/html,<html><head></head>"
+                   "<body width=1024 height=768 bgcolor=red>"
+                   "</body>"
+                   "</html>");
+
+    QWebView view;
+    view.page()->mainFrame()->load(url);
+    QVERIFY(waitForSignal(&view, SIGNAL(loadFinished(bool))));
+    view.show();
+
+    view.page()->settings()->setMaximumPagesInCache(3);
+
+    QTest::qWaitForWindowShown(&view);
+
+    QPixmap reference(view.page()->viewportSize());
+    reference.fill(Qt::red);
+
+    QPixmap image(view.page()->viewportSize());
+    QPainter painter(&image);
+    view.page()->currentFrame()->render(&painter);
+
+    QCOMPARE(image, reference);
+
+    QUrl url2 = QUrl("data:text/html,<html><head></head>"
+                     "<body width=1024 height=768 bgcolor=blue>"
+                     "</body>"
+                     "</html>");
+    view.page()->mainFrame()->load(url2);
+
+    QVERIFY(waitForSignal(&view, SIGNAL(loadFinished(bool))));
+
+    view.showMaximized();
+
+    QTest::qWaitForWindowShown(&view);
+
+    QPixmap reference2(view.page()->viewportSize());
+    reference2.fill(Qt::blue);
+
+    QPixmap image2(view.page()->viewportSize());
+    QPainter painter2(&image2);
+    view.page()->currentFrame()->render(&painter2);
+
+    QCOMPARE(image2, reference2);
+
+    view.back();
+
+    QPixmap reference3(view.page()->viewportSize());
+    reference3.fill(Qt::red);
+    QPixmap image3(view.page()->viewportSize());
+    QPainter painter3(&image3);
+    view.page()->currentFrame()->render(&painter3);
+
+    QCOMPARE(image3, reference3);
 }
 
 QTEST_MAIN(tst_QWebView)

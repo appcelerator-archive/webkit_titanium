@@ -12,38 +12,49 @@ function test()
     function step1(node)
     {
         var containerId = node.id;
+        var documentId = node.ownerDocument.id;
 
         InspectorTest.runTestSuite([
             function testDocumentQuerySelector(next)
             {
-                DOMAgent.querySelector(containerId, "div.foo", true, dumpNodes.bind(null, next));
+                DOMAgent.querySelector(documentId, "div.foo", dumpNodes.bind(null, next));
             },
 
             function testDocumentQuerySelectorAll(next)
             {
-                DOMAgent.querySelectorAll(containerId, "div.foo", true, dumpNodes.bind(null, next));
+                DOMAgent.querySelectorAll(documentId, "div.foo", dumpNodes.bind(null, next));
             },
 
             function testQuerySelector(next)
             {
-                DOMAgent.querySelector(containerId, "div.foo", false, dumpNodes.bind(null, next));
+                DOMAgent.querySelector(containerId, "div.foo", dumpNodes.bind(null, next));
             },
 
             function testQuerySelectorAll(next)
             {
-                DOMAgent.querySelectorAll(containerId, "div.foo", false, dumpNodes.bind(null, next));
+                DOMAgent.querySelectorAll(containerId, "div.foo", dumpNodes.bind(null, next));
             }
         ]);
     }
 
-    function dumpNodes(next, nodeIds)
+    function dumpNodes(next, error, nodeIds)
     {
+        if (error) {
+            InspectorTest.addResult(error);
+            next();
+            return;
+        }
+
         if (!(nodeIds instanceof Array))
             nodeIds = [nodeIds];
 
         for (var i = 0; i < nodeIds.length; ++i) {
-            var node = WebInspector.domAgent.nodeForId(nodeIds[i]);
-            InspectorTest.addResult("node id: " + node.getAttribute("id"));
+            if (!nodeIds[i])
+                InspectorTest.addResult("no results");
+            else {
+                var node = WebInspector.domAgent.nodeForId(nodeIds[i]);
+                InspectorTest.addResult("node id: " + node.getAttribute("id"));
+            }
         }
         next();
     }

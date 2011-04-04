@@ -250,7 +250,6 @@ fast/css/resize-corner-tracking.html
 fast/css/resize-single-axis.html
 fast/css/universal-hover-quirk.html
 fast/css/user-drag-none.html
-fast/dom/Document/CaretRangeFromPoint/caretRangeFromPoint-in-zoom-and-scroll.html
 fast/dom/HTMLTableColElement/resize-table-using-col-width.html
 fast/dom/HTMLSelectElement/click-size-zero-no-crash.html
 fast/dom/Node/mutation-blur.html
@@ -1723,8 +1722,10 @@ fast/dom/Geolocation/disconnected-frame-already.html
 fast/dom/Geolocation/disconnected-frame-permission-denied.html
 fast/dom/Geolocation/disconnected-frame.html
 fast/dom/Geolocation/error.html
+fast/dom/Geolocation/iframe-reparent.html
 fast/dom/Geolocation/multiple-requests.html
 fast/dom/Geolocation/notimer-after-unload.html
+fast/dom/Geolocation/page-reload-cancel-permission-requests.html
 fast/dom/Geolocation/permission-denied-already-clear-watch.html
 fast/dom/Geolocation/permission-denied-already-error.html
 fast/dom/Geolocation/permission-denied-already-success.html
@@ -1953,6 +1954,7 @@ http/tests/appcache/update-cache.html
 
 # WebKitTestRunner needs layoutTestController.clearAllApplicationCaches
 http/tests/appcache/origin-quota.html
+http/tests/appcache/origins-with-appcache.html
 
 # WebKitTestRunner needs layoutTestController.callShouldCloseOnWebView
 fast/events/onbeforeunload-focused-iframe.html
@@ -2056,6 +2058,8 @@ fast/harness/show-modal-dialog.html
 
 # WebKit2 needs fullscreen support
 fullscreen/full-screen-css.html
+fullscreen/full-screen-iframe-allowed.html
+fullscreen/full-screen-iframe-not-allowed.html
 fullscreen/full-screen-remove-ancestor.html
 fullscreen/full-screen-remove.html
 fullscreen/full-screen-request.html

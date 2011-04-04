@@ -6,6 +6,7 @@
  *  Copyright (C) 2009, 2010 Gustavo Noronha Silva <gns@gnome.org>
  *  Copyright (C) Research In Motion Limited 2009. All rights reserved.
  *  Copyright (C) 2010 Igalia S.L.
+ *  Copyright (C) 2011 Apple Inc. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -65,6 +66,7 @@
 #include "webkiterror.h"
 #include "webkitglobals.h"
 #include "webkitglobalsprivate.h"
+#include "webkiticondatabase.h"
 #include "webkitnetworkrequest.h"
 #include "webkitnetworkrequestprivate.h"
 #include "webkitnetworkresponse.h"
@@ -458,7 +460,7 @@ void FrameLoaderClient::dispatchDidReceiveResponse(WebCore::DocumentLoader* load
     m_response = response;
 }
 
-void FrameLoaderClient::dispatchDecidePolicyForMIMEType(FramePolicyFunction policyFunction, const String& mimeType, const ResourceRequest& resourceRequest)
+void FrameLoaderClient::dispatchDecidePolicyForResponse(FramePolicyFunction policyFunction, const ResourceResponse& response, const ResourceRequest& resourceRequest)
 {
     ASSERT(policyFunction);
     if (!policyFunction)
@@ -476,6 +478,8 @@ void FrameLoaderClient::dispatchDecidePolicyForMIMEType(FramePolicyFunction poli
     if (m_policyDecision)
         g_object_unref(m_policyDecision);
     m_policyDecision = policyDecision;
+
+    String mimeType = response.mimeType();
 
     gboolean isHandled = false;
     g_signal_emit_by_name(page, "mime-type-policy-decision-requested", m_frame, request.get(), mimeType.utf8().data(), policyDecision, &isHandled);
@@ -708,9 +712,9 @@ PassRefPtr<Widget> FrameLoaderClient::createJavaAppletWidget(const IntSize& plug
     return FrameLoaderClient::createPlugin(pluginSize, element, baseURL, paramNames, paramValues, "application/x-java-applet", false);
 }
 
-ObjectContentType FrameLoaderClient::objectContentType(const KURL& url, const String& mimeType)
+ObjectContentType FrameLoaderClient::objectContentType(const KURL& url, const String& mimeType, bool shouldPreferPlugInsForImages)
 {
-    return FrameLoader::defaultObjectContentType(url, mimeType);
+    return FrameLoader::defaultObjectContentType(url, mimeType, shouldPreferPlugInsForImages);
 }
 
 String FrameLoaderClient::overrideMediaType() const
@@ -923,6 +927,10 @@ void FrameLoaderClient::dispatchDidReceiveIcon()
     if (m_loadingErrorPage)
         return;
 
+    const gchar* frameURI = webkit_web_frame_get_uri(m_frame);
+    WebKitIconDatabase* database = webkit_get_icon_database();
+    g_signal_emit_by_name(database, "icon-loaded", m_frame, frameURI);
+
     WebKitWebView* webView = getViewFromFrame(m_frame);
 
     // Avoid reporting favicons for non-main frames.
@@ -941,21 +949,22 @@ void FrameLoaderClient::dispatchDidStartProvisionalLoad()
     notifyStatus(m_frame, WEBKIT_LOAD_PROVISIONAL);
 }
 
-void FrameLoaderClient::dispatchDidReceiveTitle(const String& title)
+void FrameLoaderClient::dispatchDidReceiveTitle(const StringWithDirection& title)
 {
     if (m_loadingErrorPage)
         return;
 
     WebKitWebFramePrivate* priv = m_frame->priv;
     g_free(priv->title);
-    priv->title = g_strdup(title.utf8().data());
+    // FIXME: use direction of title.
+    priv->title = g_strdup(title.string().utf8().data());
 
     g_signal_emit_by_name(m_frame, "title-changed", priv->title);
     g_object_notify(G_OBJECT(m_frame), "title");
 
     WebKitWebView* webView = getViewFromFrame(m_frame);
     if (m_frame == webkit_web_view_get_main_frame(webView)) {
-        g_signal_emit_by_name(webView, "title-changed", m_frame, title.utf8().data());
+        g_signal_emit_by_name(webView, "title-changed", m_frame, title.string().utf8().data());
         g_object_notify(G_OBJECT(webView), "title");
     }
 }
@@ -1111,11 +1120,12 @@ void FrameLoaderClient::prepareForDataSourceReplacement()
     notImplemented();
 }
 
-void FrameLoaderClient::setTitle(const String& title, const KURL& url)
+void FrameLoaderClient::setTitle(const StringWithDirection& title, const KURL& url)
 {
     WebKitWebFramePrivate* frameData = m_frame->priv;
     g_free(frameData->title);
-    frameData->title = g_strdup(title.utf8().data());
+    // FIXME: use direction of title.
+    frameData->title = g_strdup(title.string().utf8().data());
 }
 
 void FrameLoaderClient::dispatchDidReceiveContentLength(WebCore::DocumentLoader*, unsigned long identifier, int lengthReceived)

@@ -54,6 +54,7 @@ struct WebProcessCreationParameters {
 
     String applicationCacheDirectory;
     String databaseDirectory;
+    String localStorageDirectory;
     Vector<String> urlSchemesRegistererdAsEmptyDocument;
     Vector<String> urlSchemesRegisteredAsSecure;
     Vector<String> urlSchemesForWhichDomainRelaxationIsForbidden;
@@ -68,6 +69,8 @@ struct WebProcessCreationParameters {
     bool clearApplicationCache;
 
     bool shouldAlwaysUseComplexTextCodePath;
+
+    bool iconDatabaseEnabled;
 
     String languageCode;
 
@@ -85,17 +88,20 @@ struct WebProcessCreationParameters {
     pid_t presenterApplicationPid;
 
     // FIXME: These should be merged with CFURLCache counterparts below.
-    CString nsURLCachePath;
+    String nsURLCachePath;
     uint64_t nsURLCacheMemoryCapacity;
     uint64_t nsURLCacheDiskCapacity;
 
     CoreIPC::MachPort acceleratedCompositingPort;
 
-    CString uiProcessBundleResourcePath;
+    String uiProcessBundleResourcePath;
+
 #elif PLATFORM(WIN)
     String cfURLCachePath;
     uint64_t cfURLCacheDiskCapacity;
     uint64_t cfURLCacheMemoryCapacity;
+
+    uint32_t initialHTTPCookieAcceptPolicy;
 
     bool shouldPaintNativeControls;
 #endif

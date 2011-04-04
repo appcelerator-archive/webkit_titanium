@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2006 Zack Rusin <zack@kde.org>
- * Copyright (C) 2006 Apple Computer, Inc.  All rights reserved.
+ * Copyright (C) 2006, 2011 Apple Inc. All rights reserved.
  * Copyright (C) 2007 Ryan Leavengood <leavengood@gmail.com> All rights reserved.
  *
  *
@@ -102,7 +102,7 @@ namespace WebCore {
         virtual void dispatchWillClose();
         virtual void dispatchDidReceiveIcon();
         virtual void dispatchDidStartProvisionalLoad();
-        virtual void dispatchDidReceiveTitle(const String& title);
+        virtual void dispatchDidReceiveTitle(const StringWithDirection& title);
         virtual void dispatchDidCommitLoad();
         virtual void dispatchDidFinishDocumentLoad();
         virtual void dispatchDidFinishLoad();
@@ -143,7 +143,7 @@ namespace WebCore {
         virtual void addHistoryItemForFragmentScroll();
         virtual void didFinishLoad();
         virtual void prepareForDataSourceReplacement();
-        virtual void setTitle(const String& title, const KURL&);
+        virtual void setTitle(const StringWithDirection&, const KURL&);
 
         virtual String userAgent(const KURL&);
 
@@ -206,8 +206,8 @@ namespace WebCore {
         virtual void dispatchDidFailProvisionalLoad(const ResourceError&);
         virtual void dispatchDidFailLoad(const ResourceError&);
         virtual Frame* dispatchCreatePage(const NavigationAction&);
-        virtual void dispatchDecidePolicyForMIMEType(FramePolicyFunction,
-                                                     const String&,
+        virtual void dispatchDecidePolicyForResponse(FramePolicyFunction,
+                                                     const ResourceResponse&,
                                                      const ResourceRequest&);
         virtual void dispatchDecidePolicyForNewWindowAction(FramePolicyFunction,
                                                             const NavigationAction&,
@@ -239,7 +239,7 @@ namespace WebCore {
                                                           const KURL& baseURL, const Vector<String>& paramNames,
                                                           const Vector<String>& paramValues);
 
-        virtual ObjectContentType objectContentType(const KURL& url, const String& mimeType);
+        virtual ObjectContentType objectContentType(const KURL&, const String& mimeType, bool shouldPreferPlugInsForImages);
         virtual String overrideMediaType() const;
 
         virtual void dispatchDidClearWindowObjectInWorld(DOMWrapperWorld*);

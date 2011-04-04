@@ -57,6 +57,7 @@ namespace JSC {
 
     class CodeBlock;
     class CommonIdentifiers;
+    class HandleStack;
     class IdentifierTable;
     class Interpreter;
     class JSGlobalObject;
@@ -128,7 +129,7 @@ namespace JSC {
 
 #if ENABLE(JSC_MULTIPLE_THREADS)
         // Will start tracking threads that use the heap, which is resource-heavy.
-        void makeUsableFromMultipleThreads() { heap.machineStackMarker().makeUsableFromMultipleThreads(); }
+        void makeUsableFromMultipleThreads() { heap.machineThreads().makeUsableFromMultipleThreads(); }
 #endif
 
         GlobalDataType globalDataType;
@@ -155,6 +156,10 @@ namespace JSC {
         RefPtr<Structure> getterSetterStructure;
         RefPtr<Structure> apiWrapperStructure;
         RefPtr<Structure> scopeChainNodeStructure;
+        RefPtr<Structure> executableStructure;
+        RefPtr<Structure> evalExecutableStructure;
+        RefPtr<Structure> programExecutableStructure;
+        RefPtr<Structure> functionExecutableStructure;
         RefPtr<Structure> dummyMarkableCellStructure;
 
         static void storeVPtrs();
@@ -199,15 +204,15 @@ namespace JSC {
         {
             return jitStubs->ctiStub(this, generator);
         }
-        PassRefPtr<NativeExecutable> getHostFunction(NativeFunction, ThunkGenerator);
+        NativeExecutable* getHostFunction(NativeFunction, ThunkGenerator);
 #endif
-        PassRefPtr<NativeExecutable> getHostFunction(NativeFunction);
+        NativeExecutable* getHostFunction(NativeFunction);
 
         TimeoutChecker timeoutChecker;
         Terminator terminator;
         Heap heap;
 
-        DeprecatedPtr<Unknown> exception;
+        JSValue exception;
 #if ENABLE(JIT)
         ReturnAddressPtr exceptionLocation;
 #endif
@@ -218,8 +223,6 @@ namespace JSC {
         JSGlobalObject* dynamicGlobalObject;
 
         HashSet<JSObject*> stringRecursionCheckVisitedObjects;
-
-        Stringifier* firstStringifierToMark;
 
         double cachedUTCOffset;
         DSTOffsetCache dstOffsetCache;
@@ -255,6 +258,7 @@ namespace JSC {
 #endif
         void dumpRegExpTrace();
         HandleSlot allocateGlobalHandle() { return heap.allocateGlobalHandle(); }
+        HandleSlot allocateLocalHandle() { return heap.allocateLocalHandle(); }
 
     private:
         JSGlobalData(GlobalDataType, ThreadStackType);

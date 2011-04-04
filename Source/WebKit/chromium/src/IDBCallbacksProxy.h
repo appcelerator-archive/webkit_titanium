@@ -50,9 +50,7 @@ public:
     virtual void onError(PassRefPtr<IDBDatabaseError>);
     virtual void onSuccess(PassRefPtr<IDBCursorBackendInterface>);
     virtual void onSuccess(PassRefPtr<IDBDatabaseBackendInterface>);
-    virtual void onSuccess(PassRefPtr<IDBIndexBackendInterface>);
     virtual void onSuccess(PassRefPtr<IDBKey>);
-    virtual void onSuccess(PassRefPtr<IDBObjectStoreBackendInterface>);
     virtual void onSuccess(PassRefPtr<IDBTransactionBackendInterface>);
     virtual void onSuccess(PassRefPtr<SerializedScriptValue>);
     virtual void onBlocked();

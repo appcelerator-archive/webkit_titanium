@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2006, 2007, 2008, 2009, 2011 Apple Inc. All rights reserved.
  * Copyright (C) Research In Motion Limited 2009. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,7 +53,6 @@
 #include "WebScriptWorld.h"
 #include "WebURLResponse.h"
 #include "WebView.h"
-#pragma warning( push, 0 )
 #include <WebCore/BString.h>
 #include <WebCore/MemoryCache.h>
 #include <WebCore/Document.h>
@@ -104,7 +103,6 @@
 #include <JavaScriptCore/JSObject.h>
 #include <JavaScriptCore/JSValue.h>
 #include <wtf/MathExtras.h>
-#pragma warning(pop)
 
 #if PLATFORM(CG)
 #include <CoreGraphics/CoreGraphics.h>
@@ -1029,7 +1027,7 @@ HRESULT STDMETHODCALLTYPE WebFrame::hasSpellingMarker(
     Frame* coreFrame = core(this);
     if (!coreFrame)
         return E_FAIL;
-    *result = coreFrame->editor()->selectionStartHasSpellingMarkerFor(from, length);
+    *result = coreFrame->editor()->selectionStartHasMarkerFor(DocumentMarker::Spelling, from, length);
     return S_OK;
 }
 
@@ -1764,7 +1762,7 @@ void WebFrame::receivedPolicyDecision(PolicyAction action)
     (coreFrame->loader()->policyChecker()->*function)(action);
 }
 
-void WebFrame::dispatchDecidePolicyForMIMEType(FramePolicyFunction function, const String& mimeType, const ResourceRequest& request)
+void WebFrame::dispatchDecidePolicyForResponse(FramePolicyFunction function, const ResourceResponse& response, const ResourceRequest& request)
 {
     Frame* coreFrame = core(this);
     ASSERT(coreFrame);
@@ -1775,7 +1773,7 @@ void WebFrame::dispatchDecidePolicyForMIMEType(FramePolicyFunction function, con
 
     COMPtr<IWebURLRequest> urlRequest(AdoptCOM, WebMutableURLRequest::createInstance(request));
 
-    if (SUCCEEDED(policyDelegate->decidePolicyForMIMEType(d->webView, BString(mimeType), urlRequest.get(), this, setUpPolicyListener(function).get())))
+    if (SUCCEEDED(policyDelegate->decidePolicyForMIMEType(d->webView, BString(response.mimeType()), urlRequest.get(), this, setUpPolicyListener(function).get())))
         return;
 
     (coreFrame->loader()->policyChecker()->*function)(PolicyUse);
@@ -1899,9 +1897,9 @@ PassRefPtr<Widget> WebFrame::createJavaAppletWidget(const IntSize& pluginSize, H
     return pluginView;
 }
 
-ObjectContentType WebFrame::objectContentType(const KURL& url, const String& mimeType)
+ObjectContentType WebFrame::objectContentType(const KURL& url, const String& mimeType, bool shouldPreferPlugInsForImages)
 {
-    return WebCore::FrameLoader::defaultObjectContentType(url, mimeType);
+    return WebCore::FrameLoader::defaultObjectContentType(url, mimeType, shouldPreferPlugInsForImages);
 }
 
 String WebFrame::overrideMediaType() const

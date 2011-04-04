@@ -48,14 +48,16 @@ PluginProcessProxy::PluginProcessProxy(PluginProcessManager* PluginProcessManage
     : m_pluginProcessManager(PluginProcessManager)
     , m_pluginInfo(pluginInfo)
     , m_numPendingConnectionRequests(0)
+#if PLATFORM(MAC)
+    , m_modalWindowIsShowing(false)
+    , m_fullscreenWindowIsShowing(false)
+#endif
 {
     ProcessLauncher::LaunchOptions launchOptions;
     launchOptions.processType = ProcessLauncher::PluginProcess;
 #if PLATFORM(MAC)
     launchOptions.architecture = pluginInfo.pluginArchitecture;
-
-    // FIXME: This shouldn't be true for all plug-ins.
-    launchOptions.executableHeap = true;
+    launchOptions.executableHeap = PluginProcessProxy::pluginNeedsExecutableHeap(pluginInfo);
 #endif
 
     m_processLauncher = ProcessLauncher::create(this, launchOptions);
@@ -145,6 +147,14 @@ void PluginProcessProxy::didReceiveMessage(CoreIPC::Connection* connection, Core
 
 void PluginProcessProxy::didClose(CoreIPC::Connection*)
 {
+#if PLATFORM(MAC)
+    if (m_modalWindowIsShowing)
+        endModal();
+
+    if (m_fullscreenWindowIsShowing)
+        exitFullscreen();
+#endif
+
     pluginProcessCrashedOrFailedToLaunch();
 }
 

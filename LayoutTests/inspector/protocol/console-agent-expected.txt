@@ -3,44 +3,39 @@ CONSOLE MESSAGE: line 1: test
 Protocol stability test. It is dumping request/response pairs of ConsoleAgent functions.
 
 -----------------------------------------------------------
-ConsoleAgent.setConsoleMessagesEnabled(false)
+ConsoleAgent.disable()
 
 request:
 {
-    seq : <number>
+    id : <number>
     domain : "Console"
-    command : "setConsoleMessagesEnabled"
+    command : "disable"
     arguments : {
-        enabled : false
     }
 }
 
 response:
 {
-    seq : <number>
-    body : {
-        newState : false
-    }
+    requestId : <number>
 }
 
 -----------------------------------------------------------
-ConsoleAgent.setConsoleMessagesEnabled(true)
+ConsoleAgent.enable()
 
 request:
 {
-    seq : <number>
+    id : <number>
     domain : "Console"
-    command : "setConsoleMessagesEnabled"
+    command : "enable"
     arguments : {
-        enabled : true
     }
 }
 
 response:
 {
-    seq : <number>
+    requestId : <number>
     body : {
-        newState : true
+        expiredMessagesCount : 0
     }
 }
 
@@ -49,7 +44,7 @@ RuntimeAgent.evaluate("console.info('test'); console.info('test')","test-group",
 
 request:
 {
-    seq : <number>
+    id : <number>
     domain : "Runtime"
     command : "evaluate"
     arguments : {
@@ -59,12 +54,12 @@ request:
     }
 }
 
-event ConsoleAgent.addConsoleMessage
+event ConsoleAgent.consoleMessage
 {
     type : "event"
     domain : "Console"
-    event : "addConsoleMessage"
-    body : {
+    event : "consoleMessage"
+    data : {
         messageObj : {
             source : 3
             type : 0
@@ -75,10 +70,8 @@ event ConsoleAgent.addConsoleMessage
             message : "test"
             parameters : {
                 0 : {
-                    objectId : null
                     type : "string"
                     description : "test"
-                    hasChildren : false
                 }
             }
             stackTrace : <object>
@@ -86,25 +79,23 @@ event ConsoleAgent.addConsoleMessage
     }
 }
 
-event ConsoleAgent.updateConsoleMessageRepeatCount
+event ConsoleAgent.consoleMessageRepeatCountUpdated
 {
     type : "event"
     domain : "Console"
-    event : "updateConsoleMessageRepeatCount"
-    body : {
+    event : "consoleMessageRepeatCountUpdated"
+    data : {
         count : 2
     }
 }
 
 response:
 {
-    seq : <number>
+    requestId : <number>
     body : {
         result : {
-            objectId : null
             type : "undefined"
             description : "undefined"
-            hasChildren : false
         }
     }
 }
@@ -114,7 +105,7 @@ ConsoleAgent.clearConsoleMessages()
 
 request:
 {
-    seq : <number>
+    id : <number>
     domain : "Console"
     command : "clearConsoleMessages"
     arguments : {
@@ -126,31 +117,13 @@ event ConsoleAgent.consoleMessagesCleared
     type : "event"
     domain : "Console"
     event : "consoleMessagesCleared"
-    body : {
+    data : {
     }
 }
 
 response:
 {
-    seq : <number>
-}
-
------------------------------------------------------------
-ConsoleAgent.setMonitoringXHREnabled(false)
-
-request:
-{
-    seq : <number>
-    domain : "Console"
-    command : "setMonitoringXHREnabled"
-    arguments : {
-        enabled : false
-    }
-}
-
-response:
-{
-    seq : <number>
+    requestId : <number>
 }
 
 -----------------------------------------------------------
@@ -158,7 +131,7 @@ ConsoleAgent.setMonitoringXHREnabled(true)
 
 request:
 {
-    seq : <number>
+    id : <number>
     domain : "Console"
     command : "setMonitoringXHREnabled"
     arguments : {
@@ -168,18 +141,55 @@ request:
 
 response:
 {
-    seq : <number>
+    requestId : <number>
+}
+
+-----------------------------------------------------------
+ConsoleAgent.setMonitoringXHREnabled(false)
+
+request:
+{
+    id : <number>
+    domain : "Console"
+    command : "setMonitoringXHREnabled"
+    arguments : {
+        enabled : false
+    }
+}
+
+response:
+{
+    requestId : <number>
+}
+
+-----------------------------------------------------------
+ConsoleAgent.addInspectedNode(<number>)
+
+request:
+{
+    id : <number>
+    domain : "Console"
+    command : "addInspectedNode"
+    arguments : {
+        nodeId : 1
+    }
+}
+
+response:
+{
+    requestId : <number>
 }
 
 ===========================================================
 Coverage for ConsoleAgent
 {
-    setConsoleMessagesEnabled : "checked"
+    enable : "checked"
+    disable : "checked"
     clearConsoleMessages : "checked"
     setMonitoringXHREnabled : "checked"
-    addConsoleMessage : "checked"
-    updateConsoleMessageExpiredCount : "not checked"
-    updateConsoleMessageRepeatCount : "checked"
+    addInspectedNode : "checked"
+    consoleMessage : "checked"
+    consoleMessageRepeatCountUpdated : "checked"
     consoleMessagesCleared : "checked"
 }
 

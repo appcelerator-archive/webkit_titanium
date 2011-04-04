@@ -33,6 +33,8 @@ platform/mac/accessibility/parent-of-table-row-is-table.html
 platform/mac/accessibility/aria-expanded-notifications.html
 platform/mac/accessibility/table-with-row-col-of-headers.html
 platform/mac/accessibility/table-with-zebra-rows.html
+platform/mac/accessibility/aria-table-with-colspan-cells.html
+platform/mac/accessibility/list-items-ignored.html
 
 # This test requires ogg codecs
 media/media-can-play-ogg.html
@@ -188,3 +190,32 @@ plugins/refcount-leaks.html
 # fast/text/font-size-zero.html failing on leopard debug bot
 # https://bugs.webkit.org/show_bug.cgi?id=50468
 fast/text/font-size-zero.html
+
+# fast/frames/iframe-plugin-load-remove-document-crash.html is crashing on the Leopard Release tester
+# https://bugs.webkit.org/show_bug.cgi?id=56525
+fast/frames/iframe-plugin-load-remove-document-crash.html
+
+# Crash in -[WebNetscapePluginDocumentView restorePortState:] when running plugins/destroy-on-setwindow.html on Leopard
+# https://bugs.webkit.org/show_bug.cgi?id=56165
+plugins/destroy-on-setwindow.html
+
+##########################################################
+# Tests below this point are failing only on some slaves.
+# http://webkit.org/b/56551 covers the general issue.
+##########################################################
+
+# java/lc3/JavaObject/JavaObjectToDouble-001.html is failing on some slaves
+# https://bugs.webkit.org/show_bug.cgi?id=56545
+java/lc3/JavaObject/JavaObjectToDouble-001.html
+
+# Failing on apple-macpro-5
+# http://webkit.org/b/56544
+svg/text/font-size-below-point-five.svg
+
+# Failing on apple-macpro-6
+# http://webkit.org/b/56564
+fast/preloader/script.html
+platform/mac/fast/loader/file-url-mimetypes-2.html
+http/tests/inspector/resource-har-conversion.html
+fast/preloader/document-write.html
+fast/preloader/document-write-2.html

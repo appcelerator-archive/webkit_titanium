@@ -32,6 +32,7 @@
 
 namespace WebCore {
 
+class RootInlineBox;
 class VisiblePosition;
 
 enum EWordSide { RightWordIfOnBoundary = false, LeftWordIfOnBoundary = true };
@@ -41,6 +42,8 @@ VisiblePosition startOfWord(const VisiblePosition &, EWordSide = RightWordIfOnBo
 VisiblePosition endOfWord(const VisiblePosition &, EWordSide = RightWordIfOnBoundary);
 VisiblePosition previousWordPosition(const VisiblePosition &);
 VisiblePosition nextWordPosition(const VisiblePosition &);
+VisiblePosition rightWordPosition(const VisiblePosition&);
+VisiblePosition leftWordPosition(const VisiblePosition&);
 
 // sentences
 VisiblePosition startOfSentence(const VisiblePosition &);
@@ -70,11 +73,11 @@ VisiblePosition previousParagraphPosition(const VisiblePosition &, int x);
 VisiblePosition nextParagraphPosition(const VisiblePosition &, int x);
 bool isStartOfParagraph(const VisiblePosition &, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 bool isEndOfParagraph(const VisiblePosition &, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
-bool inSameParagraph(const VisiblePosition &, const VisiblePosition &);
+bool inSameParagraph(const VisiblePosition &, const VisiblePosition &, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 
 // blocks (true paragraphs; line break elements don't break blocks)
-VisiblePosition startOfBlock(const VisiblePosition &);
-VisiblePosition endOfBlock(const VisiblePosition &);
+VisiblePosition startOfBlock(const VisiblePosition &, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
+VisiblePosition endOfBlock(const VisiblePosition &, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 bool inSameBlock(const VisiblePosition &, const VisiblePosition &);
 bool isStartOfBlock(const VisiblePosition &);
 bool isEndOfBlock(const VisiblePosition &);

@@ -41,8 +41,6 @@
 
 namespace WebCore {
 
-static GdkCursor* lastSetCursor;
-
 Widget::Widget(PlatformWidget widget)
 {
     init(widget);
@@ -60,26 +58,12 @@ void Widget::setFocus(bool focused)
         gtk_widget_grab_focus(platformWidget() ? platformWidget() : GTK_WIDGET(root()->hostWindow()->platformPageClient()));
 }
 
-static GdkWindow* gdkWindow(PlatformWidget widget)
-{
-    return widget ? gtk_widget_get_window(widget) : 0;
-}
-    
 void Widget::setCursor(const Cursor& cursor)
 {
-    GdkCursor* platformCursor = cursor.platformCursor().get();
-
-    // http://bugs.webkit.org/show_bug.cgi?id=16388
-    // [GTK] Widget::setCursor() gets called frequently
-    //
-    // gdk_window_set_cursor() in certain GDK backends seems to be an
-    // expensive operation, so avoid it if possible.
-
-    if (platformCursor == lastSetCursor)
+    ScrollView* view = root();
+    if (!view)
         return;
-
-    gdk_window_set_cursor(gdkWindow(platformWidget()) ? gdkWindow(platformWidget()) : gtk_widget_get_window(GTK_WIDGET(root()->hostWindow()->platformPageClient())), platformCursor);
-    lastSetCursor = platformCursor;
+    view->hostWindow()->setCursor(cursor);
 }
 
 void Widget::show()

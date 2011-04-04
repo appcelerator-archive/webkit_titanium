@@ -38,6 +38,7 @@
 #include <WebCore/GraphicsContext.h>
 #include <WebCore/Page.h>
 
+using namespace std;
 using namespace WebCore;
 
 namespace WebKit {
@@ -64,9 +65,16 @@ FindController::~FindController()
 
 void FindController::countStringMatches(const String& string, FindOptions options, unsigned maxMatchCount)
 {
-    unsigned matchCount = m_webPage->corePage()->markAllMatchesForText(string, core(options), false, maxMatchCount);
+    if (maxMatchCount == numeric_limits<unsigned>::max())
+        --maxMatchCount;
+    
+    unsigned matchCount = m_webPage->corePage()->markAllMatchesForText(string, core(options), false, maxMatchCount + 1);
     m_webPage->corePage()->unmarkAllTextMatches();
 
+    // Check if we have more matches than allowed.
+    if (matchCount > maxMatchCount)
+        matchCount = static_cast<unsigned>(kWKMoreThanMaximumMatchCount);
+    
     m_webPage->send(Messages::WebPageProxy::DidCountStringMatches(string, matchCount));
 }
 
@@ -102,6 +110,9 @@ void FindController::findString(const String& string, FindOptions options, unsig
         shouldShowOverlay = options & FindOptionsShowOverlay;
 
         if (shouldShowOverlay) {
+            if (maxMatchCount == numeric_limits<unsigned>::max())
+                --maxMatchCount;
+            
             unsigned matchCount = m_webPage->corePage()->markAllMatchesForText(string, core(options), false, maxMatchCount + 1);
 
             // Check if we have more matches than allowed.
@@ -153,6 +164,10 @@ bool FindController::updateFindIndicator(Frame* selectedFrame, bool isShowingOve
         return false;
 
     IntRect selectionRect = enclosingIntRect(selectedFrame->selection()->bounds());
+    
+    // Selection rect can be empty for matches that are currently obscured from view.
+    if (selectionRect.isEmpty())
+        return false;
 
     // We want the selection rect in window coordinates.
     IntRect selectionRectInWindowCoordinates = selectedFrame->view()->contentsToWindow(selectionRect);
@@ -161,7 +176,7 @@ bool FindController::updateFindIndicator(Frame* selectedFrame, bool isShowingOve
     selectedFrame->selection()->getClippedVisibleTextRectangles(textRects);
 
     // Create a backing store and paint the find indicator text into it.
-    RefPtr<ShareableBitmap> findIndicatorTextBackingStore = ShareableBitmap::createShareable(selectionRect.size());
+    RefPtr<ShareableBitmap> findIndicatorTextBackingStore = ShareableBitmap::createShareable(selectionRect.size(), ShareableBitmap::SupportsAlpha);
     if (!findIndicatorTextBackingStore)
         return false;
     
@@ -178,7 +193,7 @@ bool FindController::updateFindIndicator(Frame* selectedFrame, bool isShowingOve
     selectedFrame->view()->paint(graphicsContext.get(), paintRect);
     selectedFrame->view()->setPaintBehavior(PaintBehaviorNormal);
     
-    SharedMemory::Handle handle;
+    ShareableBitmap::Handle handle;
     if (!findIndicatorTextBackingStore->createHandle(handle))
         return false;
 
@@ -203,7 +218,7 @@ void FindController::hideFindIndicator()
     if (!m_isShowingFindIndicator)
         return;
 
-    SharedMemory::Handle handle;
+    ShareableBitmap::Handle handle;
     m_webPage->send(Messages::WebPageProxy::SetFindIndicator(FloatRect(), Vector<FloatRect>(), handle, false));
     m_isShowingFindIndicator = false;
 }

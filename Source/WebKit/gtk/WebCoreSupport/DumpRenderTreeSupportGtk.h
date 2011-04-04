@@ -53,7 +53,6 @@ public:
 
     static void setLinksIncludedInFocusChain(bool);
     static bool linksIncludedInFocusChain();
-    static void setIconDatabaseEnabled(bool);
     static void setSelectTrailingWhitespaceEnabled(bool);
     static bool selectTrailingWhitespaceEnabled();
 
@@ -61,6 +60,8 @@ public:
     static void dumpConfigurationForViewport(WebKitWebView* webView, gint deviceDPI, gint deviceWidth, gint deviceHeight, gint availableWidth, gint availableHeight);
 
     static void clearOpener(WebKitWebFrame*);
+
+    static JSValueRef shadowRoot(JSContextRef, JSValueRef);
 
     // FIXME: Move these to webkitwebframe.h once their API has been discussed.
     static GSList* getFrameChildren(WebKitWebFrame*);
@@ -85,6 +86,8 @@ public:
     static AtkObject* getFocusedAccessibleElement(WebKitWebFrame*);
     static AtkObject* getRootAccessibleElement(WebKitWebFrame*);
     static void layoutFrame(WebKitWebFrame*);
+    static void setAutofilled(JSContextRef, JSValueRef, bool);
+    static void setValueForUser(JSContextRef, JSValueRef, JSStringRef);
 
     // WebKitWebView
     static void executeCoreCommandByName(WebKitWebView*, const gchar* name, const gchar* value);

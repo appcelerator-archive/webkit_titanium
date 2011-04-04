@@ -7,14 +7,16 @@
 function test()
 {
     var testSuite = [
-        ["ConsoleAgent", "setConsoleMessagesEnabled", false],
-        ["ConsoleAgent", "setConsoleMessagesEnabled", true],
+        ["ConsoleAgent", "disable"],
+        ["ConsoleAgent", "enable"],
         ["RuntimeAgent", "evaluate", "console.info('test'); console.info('test')", "test-group", false],
         ["ConsoleAgent", "clearConsoleMessages"],
+        ["ConsoleAgent", "setMonitoringXHREnabled", true],
         ["ConsoleAgent", "setMonitoringXHREnabled", false],
-        ["ConsoleAgent", "setMonitoringXHREnabled", true]];
+        ["ConsoleAgent", "addInspectedNode", 1]
+    ];
 
-    InspectorTest.runProtocolTestSuite("ConsoleAgent", testSuite, ['seq', 'id', 'injectedScriptId', 'stackTrace']);
+    InspectorTest.runProtocolTestSuite("ConsoleAgent", testSuite, ['id', 'requestId', 'injectedScriptId', 'stackTrace']);
 }
 
 </script>

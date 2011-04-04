@@ -82,7 +82,8 @@ void WebDataSourceImpl::redirectChain(WebVector<WebURL>& result) const
 
 WebString WebDataSourceImpl::pageTitle() const
 {
-    return title();
+    // FIXME: use direction of title as well.
+    return title().string();
 }
 
 WebNavigationType WebDataSourceImpl::navigationType() const
@@ -174,7 +175,7 @@ WebDataSourceImpl::WebDataSourceImpl(const ResourceRequest& request, const Subst
         // frame, which results in a second data source being created.  We want
         // to wait to attach the WebPluginLoadObserver to that data source.
         if (!request.url().isEmpty()) {
-            ASSERT(m_nextPluginLoadObserver->url() == request.url());
+            ASSERT(m_nextPluginLoadObserver->url() == WebURL(request.url()));
             m_pluginLoadObserver.set(m_nextPluginLoadObserver);
             m_nextPluginLoadObserver = 0;
         }

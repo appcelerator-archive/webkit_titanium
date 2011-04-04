@@ -48,6 +48,7 @@ void (*wkDrawMediaUIPart)(int part, int themeStyle, CGContextRef context, CGRect
 void (*wkMeasureMediaUIPart)(int part, int themeStyle, CGRect *bounds, CGSize *naturalSize);
 BOOL (*wkMediaControllerThemeAvailable)(int themeStyle);
 NSString* (*wkGetPreferredExtensionForMIMEType)(NSString*);
+CFStringRef (*wkSignedPublicKeyAndChallengeString)(unsigned keySize, CFStringRef challenge, CFStringRef keyDescription);
 NSArray* (*wkGetExtensionsForMIMEType)(NSString*);
 NSString* (*wkGetMIMETypeForExtension)(NSString*);
 NSTimeInterval (*wkGetNSURLResponseCalculatedExpiration)(NSURLResponse *response);
@@ -94,7 +95,6 @@ void (*wkSetHTTPPipeliningPriority)(NSMutableURLRequest *, int priority);
 void (*wkSetCONNECTProxyForStream)(CFReadStreamRef, CFStringRef proxyHost, CFNumberRef proxyPort);
 void (*wkSetCONNECTProxyAuthorizationForStream)(CFReadStreamRef, CFStringRef proxyAuthorizationString);
 CFHTTPMessageRef (*wkCopyCONNECTProxyResponse)(CFReadStreamRef, CFURLRef responseURL);
-BOOL (*wkIsLatchingWheelEvent)(NSEvent *);
 
 #ifndef BUILDING_ON_TIGER
 void (*wkGetGlyphsForCharacters)(CGFontRef, const UniChar[], CGGlyph[], size_t);
@@ -119,6 +119,7 @@ BOOL (*wkSupportsMultipartXMixedReplace)(NSMutableURLRequest *);
 void* wkGetHyphenationLocationBeforeIndex;
 #else
 CFIndex (*wkGetHyphenationLocationBeforeIndex)(CFStringRef string, CFIndex index);
+int (*wkGetNSEventMomentumPhase)(NSEvent *);
 #endif
 
 CTLineRef (*wkCreateCTLineWithUniCharProvider)(const UniChar* (*provide)(CFIndex stringIndex, CFIndex* charCount, CFDictionaryRef* attributes, void*), void (*dispose)(const UniChar* chars, void*), void*);
@@ -132,6 +133,7 @@ WKScrollbarPainterRef (*wkMakeScrollbarPainter)(int controlSize, bool isHorizont
 WKScrollbarPainterRef (*wkMakeScrollbarReplacementPainter)(WKScrollbarPainterRef oldPainter, int newStyle, int controlSize, bool isHorizontal);
 void (*wkScrollbarPainterSetDelegate)(WKScrollbarPainterRef, id scrollbarPainterDelegate);
 void (*wkScrollbarPainterPaint)(WKScrollbarPainterRef, bool enabled, double value, CGFloat proportion, CGRect frameRect);
+void (*wkScrollbarPainterForceFlashScrollers)(WKScrollbarPainterControllerRef);
 int (*wkScrollbarThickness)(int controlSize);
 int (*wkScrollbarMinimumThumbLength)(WKScrollbarPainterRef);
 int (*wkScrollbarMinimumTotalLengthNeededForThumb)(WKScrollbarPainterRef);
@@ -174,3 +176,14 @@ AXUIElementRef (*wkCreateAXUIElementRef)(id element);
 
 CFURLStorageSessionRef (*wkCreatePrivateStorageSession)(CFStringRef);
 NSURLRequest* (*wkCopyRequestWithStorageSession)(CFURLStorageSessionRef, NSURLRequest*);
+CFHTTPCookieStorageRef (*wkCopyHTTPCookieStorage)(CFURLStorageSessionRef);
+unsigned (*wkGetHTTPCookieAcceptPolicy)(CFHTTPCookieStorageRef);
+NSArray *(*wkHTTPCookiesForURL)(CFHTTPCookieStorageRef, NSURL *);
+void (*wkSetHTTPCookiesForURL)(CFHTTPCookieStorageRef, NSArray *, NSURL *, NSURL *);
+void (*wkDeleteHTTPCookie)(CFHTTPCookieStorageRef, NSHTTPCookie *);
+
+CFStringRef (*wkGetCFURLResponseMIMEType)(CFURLResponseRef);
+CFURLRef (*wkGetCFURLResponseURL)(CFURLResponseRef);
+CFHTTPMessageRef (*wkGetCFURLResponseHTTPResponse)(CFURLResponseRef);
+CFStringRef (*wkCopyCFURLResponseSuggestedFilename)(CFURLResponseRef);
+void (*wkSetCFURLResponseMIMEType)(CFURLResponseRef, CFStringRef mimeType);

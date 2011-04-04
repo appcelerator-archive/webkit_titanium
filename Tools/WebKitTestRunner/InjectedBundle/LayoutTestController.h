@@ -74,6 +74,7 @@ public:
     void setCanOpenWindows(bool);
     void setCloseRemainingWindowsWhenComplete(bool value) { m_shouldCloseExtraWindows = value; }
     void setXSSAuditorEnabled(bool);
+    void setAllowUniversalAccessFromFileURLs(bool);
 
     // Special DOM functions.
     JSValueRef computedStyleIncludingVisitedInfo(JSValueRef element);
@@ -83,6 +84,7 @@ public:
     bool isCommandEnabled(JSStringRef name);
     JSRetainPtr<JSStringRef> markerTextForListItem(JSValueRef element);
     unsigned windowCount();
+    JSValueRef shadowRoot(JSValueRef element);
 
     // Repaint testing.
     void testRepaint() { m_testRepaint = true; }
@@ -104,6 +106,10 @@ public:
 
     // Text search testing.
     bool findString(JSStringRef, JSValueRef optionsArray);
+
+    // Local storage
+    void clearAllDatabases();
+    void setDatabaseQuota(uint64_t);
 
     enum WhatToDump { RenderTree, MainFrameText, AllFramesText };
     WhatToDump whatToDump() const { return m_whatToDump; }

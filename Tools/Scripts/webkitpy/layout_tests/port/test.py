@@ -50,6 +50,7 @@ class TestInstance:
         self.keyboard = False
         self.error = ''
         self.timeout = False
+        self.is_reftest = False
 
         # The values of each field are treated as raw byte strings. They
         # will be converted to unicode strings where appropriate using
@@ -78,6 +79,13 @@ class TestList:
             test.__dict__[key] = value
         self.tests[name] = test
 
+    def add_reftest(self, name, reference_name, same_image):
+        self.add(name, actual_checksum='xxx', actual_image='XXX', is_reftest=True)
+        if same_image:
+            self.add(reference_name, actual_checksum='xxx', actual_image='XXX', is_reftest=True)
+        else:
+            self.add(reference_name, actual_checksum='yyy', actual_image='YYY', is_reftest=True)
+
     def keys(self):
         return self.tests.keys()
 
@@ -104,7 +112,9 @@ def unit_test_list():
               actual_checksum='image_checksum_fail-checksum',
               actual_image='image_checksum_fail-png')
     tests.add('failures/expected/keyboard.html', keyboard=True)
-    tests.add('failures/expected/missing_check.html', expected_checksum=None)
+    tests.add('failures/expected/missing_check.html',
+              expected_checksum=None,
+              expected_image=None)
     tests.add('failures/expected/missing_image.html', expected_image=None)
     tests.add('failures/expected/missing_text.html', expected_text=None)
     tests.add('failures/expected/newlines_leading.html',
@@ -120,15 +130,29 @@ def unit_test_list():
               actual_checksum='text-image-checksum_fail-checksum')
     tests.add('failures/unexpected/timeout.html', timeout=True)
     tests.add('http/tests/passes/text.html')
+    tests.add('http/tests/passes/image.html')
     tests.add('http/tests/ssl/text.html')
     tests.add('passes/error.html', error='stuff going to stderr')
     tests.add('passes/image.html')
     tests.add('passes/platform_image.html')
+    tests.add('passes/checksum_in_image.html',
+              expected_checksum=None,
+              expected_image='tEXtchecksum\x00checksum_in_image-checksum')
 
     # Text output files contain "\r\n" on Windows.  This may be
     # helpfully filtered to "\r\r\n" by our Python/Cygwin tooling.
     tests.add('passes/text.html',
               expected_text='\nfoo\n\n', actual_text='\nfoo\r\n\r\r\n')
+
+    # For reftests.
+    tests.add_reftest('passes/reftest.html', 'passes/reftest-expected.html', same_image=True)
+    tests.add_reftest('passes/mismatch.html', 'passes/mismatch-expected-mismatch.html', same_image=False)
+    tests.add_reftest('failures/expected/reftest.html', 'failures/expected/reftest-expected.html', same_image=False)
+    tests.add_reftest('failures/expected/mismatch.html', 'failures/expected/mismatch-expected-mismatch.html', same_image=True)
+    tests.add_reftest('failures/unexpected/reftest.html', 'failures/unexpected/reftest-expected.html', same_image=False)
+    tests.add_reftest('failures/unexpected/mismatch.html', 'failures/unexpected/mismatch-expected-mismatch.html', same_image=True)
+    # FIXME: Add a reftest which crashes.
+
     tests.add('websocket/tests/passes/text.html')
     return tests
 
@@ -158,6 +182,8 @@ def unit_test_filesystem(files=None):
     # Add each test and the expected output, if any.
     for test in test_list.tests.values():
         add_file(files, test, '.html', '')
+        if test.is_reftest:
+            continue
         add_file(files, test, '-expected.txt', test.expected_text)
         add_file(files, test, '-expected.checksum', test.expected_checksum)
         add_file(files, test, '-expected.png', test.expected_image)
@@ -169,12 +195,14 @@ WONTFIX : failures/expected/crash.html = CRASH
 // This one actually passes because the checksums will match.
 WONTFIX : failures/expected/image.html = PASS
 WONTFIX : failures/expected/image_checksum.html = IMAGE
+WONTFIX : failures/expected/mismatch.html = IMAGE
 WONTFIX : failures/expected/missing_check.html = MISSING PASS
 WONTFIX : failures/expected/missing_image.html = MISSING PASS
 WONTFIX : failures/expected/missing_text.html = MISSING PASS
 WONTFIX : failures/expected/newlines_leading.html = TEXT
 WONTFIX : failures/expected/newlines_trailing.html = TEXT
 WONTFIX : failures/expected/newlines_with_excess_CR.html = TEXT
+WONTFIX : failures/expected/reftest.html = IMAGE
 WONTFIX : failures/expected/text.html = TEXT
 WONTFIX : failures/expected/timeout.html = TIMEOUT
 WONTFIX SKIP : failures/expected/hang.html = TIMEOUT
@@ -192,23 +220,40 @@ WONTFIX SKIP : failures/expected/exception.html = CRASH
 
 class TestPort(base.Port):
     """Test implementation of the Port interface."""
+    ALL_BASELINE_VARIANTS = (
+        'test-mac-snowleopard', 'test-mac-leopard',
+        'test-win-win7', 'test-win-vista', 'test-win-xp',
+        'test-linux',
+    )
 
     def __init__(self, port_name=None, user=None, filesystem=None, **kwargs):
-        if not filesystem:
-            filesystem = unit_test_filesystem()
+        if not port_name or port_name == 'test':
+            port_name = 'test-mac-leopard'
+        user = user or mocktool.MockUser()
+        filesystem = filesystem or unit_test_filesystem()
+        base.Port.__init__(self, port_name=port_name, filesystem=filesystem, user=user,
+                           **kwargs)
 
         assert filesystem._tests
         self._tests = filesystem._tests
 
-        if not user:
-            user = mocktool.MockUser()
+        self._operating_system = 'mac'
+        if port_name.startswith('test-win'):
+            self._operating_system = 'win'
+        elif port_name.startswith('test-linux'):
+            self._operating_system = 'linux'
 
-        if not port_name or port_name == 'test':
-            port_name = 'test-mac'
+        version_map = {
+            'test-win-xp': 'xp',
+            'test-win-win7': 'win7',
+            'test-win-vista': 'vista',
+            'test-mac-leopard': 'leopard',
+            'test-mac-snowleopard': 'snowleopard',
+            'test-linux': '',
+        }
+        self._version = version_map[port_name]
 
         self._expectations_path = LAYOUT_TEST_DIR + '/platform/test/test_expectations.txt'
-        base.Port.__init__(self, port_name=port_name, filesystem=filesystem, user=user,
-                           **kwargs)
 
     def _path_to_driver(self):
         # This routine shouldn't normally be called, but it is called by
@@ -220,7 +265,21 @@ class TestPort(base.Port):
         return self._filesystem.join(self.layout_tests_dir(), 'platform', self.name())
 
     def baseline_search_path(self):
-        return [self.baseline_path()]
+        search_paths = {
+            'test-mac-snowleopard': ['test-mac-snowleopard'],
+            'test-mac-leopard': ['test-mac-leopard', 'test-mac-snowleopard'],
+            'test-win-win7': ['test-win-win7'],
+            'test-win-vista': ['test-win-vista', 'test-win-win7'],
+            'test-win-xp': ['test-win-xp', 'test-win-vista', 'test-win-win7'],
+            'test-linux': ['test-linux', 'test-win-win7'],
+        }
+        return [self._webkit_baseline_path(d) for d in search_paths[self.name()]]
+
+    def default_child_processes(self):
+        return 1
+
+    def default_worker_model(self):
+        return 'inline'
 
     def check_build(self, needs_http):
         return True
@@ -269,24 +328,8 @@ class TestPort(base.Port):
     def path_to_test_expectations_file(self):
         return self._expectations_path
 
-    def test_platform_name(self):
-        name_map = {
-            'test-mac': 'mac',
-            'test-win': 'win',
-            'test-win-xp': 'win-xp',
-        }
-        return name_map[self._name]
-
-    def test_platform_names(self):
-        return ('mac', 'win', 'win-xp')
-
-    def test_platform_name_to_name(self, test_platform_name):
-        name_map = {
-            'mac': 'test-mac',
-            'win': 'test-win',
-            'win-xp': 'test-win-xp',
-        }
-        return name_map[test_platform_name]
+    def all_baseline_variants(self):
+        return self.ALL_BASELINE_VARIANTS
 
     # FIXME: These next two routines are copied from base.py with
     # the calls to path.abspath_to_uri() removed. We shouldn't have
@@ -346,19 +389,6 @@ class TestPort(base.Port):
 
         raise NotImplementedError('unknown url type: %s' % uri)
 
-    def version(self):
-        version_map = {
-            'test-win-xp': 'xp',
-            'test-win': 'win7',
-            'test-mac': 'leopard',
-        }
-        return version_map[self._name]
-
-    def test_configuration(self):
-        if not self._test_configuration:
-            self._test_configuration = TestTestConfiguration(self)
-        return self._test_configuration
-
 
 class TestDriver(base.Driver):
     """Test/Dummy implementation of the DumpRenderTree interface."""
@@ -392,10 +422,3 @@ class TestDriver(base.Driver):
 
     def stop(self):
         pass
-
-
-class TestTestConfiguration(base.TestConfiguration):
-    def all_systems(self):
-        return (('mac', 'leopard', 'x86'),
-                ('win', 'xp', 'x86'),
-                ('win', 'win7', 'x86'))

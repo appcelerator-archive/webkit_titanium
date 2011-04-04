@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2010, 2011 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,6 +29,7 @@
 #import "AccessibilityWebPageObject.h"
 #import "DataReference.h"
 #import "PluginView.h"
+#import "TextInputState.h"
 #import "WebCoreArgumentCoders.h"
 #import "WebEvent.h"
 #import "WebFrame.h"
@@ -46,11 +47,14 @@
 #import <WebCore/ScrollView.h>
 #import <WebCore/TextIterator.h>
 #import <WebCore/WindowsKeyboardCodes.h>
+#import <WebCore/visible_units.h>
 #import <WebKitSystemInterface.h>
 
 using namespace WebCore;
 
 namespace WebKit {
+
+static PassRefPtr<Range> convertToRange(Frame*, NSRange);
 
 void WebPage::platformInitialize()
 {
@@ -76,70 +80,129 @@ void WebPage::platformPreferencesDidChange(const WebPreferencesStore&)
 {
 }
 
-// FIXME: need to add support for input methods
-    
-bool WebPage::interceptEditingKeyboardEvent(KeyboardEvent* evt, bool shouldSaveCommand)
+typedef HashMap<String, String> SelectorNameMap;
+
+// Map selectors into Editor command names.
+// This is not needed for any selectors that have the same name as the Editor command.
+static const SelectorNameMap* createSelectorExceptionMap()
 {
-    Node* node = evt->target()->toNode();
+    SelectorNameMap* map = new HashMap<String, String>;
+
+    map->add("insertNewlineIgnoringFieldEditor:", "InsertNewline");
+    map->add("insertParagraphSeparator:", "InsertNewline");
+    map->add("insertTabIgnoringFieldEditor:", "InsertTab");
+    map->add("pageDown:", "MovePageDown");
+    map->add("pageDownAndModifySelection:", "MovePageDownAndModifySelection");
+    map->add("pageUp:", "MovePageUp");
+    map->add("pageUpAndModifySelection:", "MovePageUpAndModifySelection");
+
+    return map;
+}
+
+static String commandNameForSelectorName(const String& selectorName)
+{
+    // Check the exception map first.
+    static const SelectorNameMap* exceptionMap = createSelectorExceptionMap();
+    SelectorNameMap::const_iterator it = exceptionMap->find(selectorName);
+    if (it != exceptionMap->end())
+        return it->second;
+
+    // Remove the trailing colon.
+    // No need to capitalize the command name since Editor command names are not case sensitive.
+    size_t selectorNameLength = selectorName.length();
+    if (selectorNameLength < 2 || selectorName[selectorNameLength - 1] != ':')
+        return String();
+    return selectorName.left(selectorNameLength - 1);
+}
+
+static TextInputState currentTextInputState(Frame* frame)
+{
+    TextInputState state;
+    state.hasMarkedText = frame->editor()->hasComposition();
+    state.selectionIsEditable = !frame->selection()->isNone() && frame->selection()->isContentEditable();
+    return state;
+}
+
+static Frame* frameForEvent(KeyboardEvent* event)
+{
+    Node* node = event->target()->toNode();
     ASSERT(node);
     Frame* frame = node->document()->frame();
     ASSERT(frame);
+    return frame;
+}
+
+bool WebPage::executeKeypressCommandsInternal(const Vector<WebCore::KeypressCommand>& commands, KeyboardEvent* event)
+{
+    Frame* frame = frameForEvent(event);
+    ASSERT(frame->page() == corePage());
+
+    bool eventWasHandled = false;
+    for (size_t i = 0; i < commands.size(); ++i) {
+        if (commands[i].commandName == "insertText:") {
+            ASSERT(!frame->editor()->hasComposition());
+
+            if (!frame->editor()->canEdit())
+                continue;
+
+            // An insertText: might be handled by other responders in the chain if we don't handle it.
+            // One example is space bar that results in scrolling down the page.
+            eventWasHandled |= frame->editor()->insertText(commands[i].text, event);
+        } else {
+            Editor::Command command = frame->editor()->command(commandNameForSelectorName(commands[i].commandName));
+            if (command.isSupported())
+                eventWasHandled |= command.execute(event);
+            // FIXME: WebHTMLView sends the event up the responder chain with WebResponderChainSink if it's not supported by the editor. Should we do the same?
+        }
+    }
+    return eventWasHandled;
+}
+
+bool WebPage::handleEditingKeyboardEvent(KeyboardEvent* event, bool saveCommands)
+{
+    ASSERT(!saveCommands || event->keypressCommands().isEmpty()); // Save commands once for each event.
+
+    Frame* frame = frameForEvent(event);
     
-    const PlatformKeyboardEvent* keyEvent = evt->keyEvent();
-    if (!keyEvent)
+    const PlatformKeyboardEvent* platformEvent = event->keyEvent();
+    if (!platformEvent)
         return false;
-    const Vector<KeypressCommand>& commands = evt->keypressCommands();
-    bool hasKeypressCommand = !commands.isEmpty();
-    
+    Vector<KeypressCommand>& commands = event->keypressCommands();
+
+    if ([platformEvent->macEvent() type] == NSFlagsChanged)
+        return false;
+
     bool eventWasHandled = false;
     
-    if (shouldSaveCommand || !hasKeypressCommand) {
-        Vector<KeypressCommand> commandsList;  
-        Vector<CompositionUnderline> underlines;
-        unsigned start;
-        unsigned end;
-        if (!WebProcess::shared().connection()->sendSync(Messages::WebPageProxy::InterpretKeyEvent(keyEvent->type()), 
-                                                         Messages::WebPageProxy::InterpretKeyEvent::Reply(commandsList, start, end, underlines),
-                                                         m_pageID, CoreIPC::Connection::NoTimeout))
+    if (saveCommands) {
+        KeyboardEvent* oldEvent = m_keyboardEventBeingInterpreted;
+        m_keyboardEventBeingInterpreted = event;
+        bool sendResult = WebProcess::shared().connection()->sendSync(Messages::WebPageProxy::InterpretQueuedKeyEvent(currentTextInputState(frame)), 
+            Messages::WebPageProxy::InterpretQueuedKeyEvent::Reply(eventWasHandled, commands), m_pageID);
+        m_keyboardEventBeingInterpreted = oldEvent;
+        if (!sendResult)
             return false;
-        if (commandsList.isEmpty())
-            return eventWasHandled;
-        
-        if (commandsList[0].commandName == "setMarkedText") {
-            frame->editor()->setComposition(commandsList[0].text, underlines, start, end);
-            eventWasHandled = true;
-        } else if (commandsList[0].commandName == "insertText" && frame->editor()->hasComposition()) {
-            frame->editor()->confirmComposition(commandsList[0].text);
-            eventWasHandled = true;
-        } else if (commandsList[0].commandName == "unmarkText") {
-            frame->editor()->confirmComposition();
-            eventWasHandled = true;
-        } else {
-            for (size_t i = 0; i < commandsList.size(); i++)
-                evt->keypressCommands().append(commandsList[i]);
-        }
+
+        // An input method may make several actions per keypress. For example, pressing Return with Korean IM both confirms it and sends a newline.
+        // IM-like actions are handled immediately (so the return value from UI process is true), but there are saved commands that
+        // should be handled like normal text input after DOM event dispatch.
+        if (!event->keypressCommands().isEmpty())
+            return false;
     } else {
-        size_t size = commands.size();
-        // Are there commands that would just cause text insertion if executed via Editor?
+        // Are there commands that could just cause text insertion if executed via Editor?
         // WebKit doesn't have enough information about mode to decide how they should be treated, so we leave it upon WebCore
         // to either handle them immediately (e.g. Tab that changes focus) or let a keypress event be generated
         // (e.g. Tab that inserts a Tab character, or Enter).
         bool haveTextInsertionCommands = false;
-        for (size_t i = 0; i < size; ++i) {
-            if (frame->editor()->command(commands[i].commandName).isTextInsertion())
+        for (size_t i = 0; i < commands.size(); ++i) {
+            if (frame->editor()->command(commandNameForSelectorName(commands[i].commandName)).isTextInsertion())
                 haveTextInsertionCommands = true;
         }
-        if (!haveTextInsertionCommands || keyEvent->type() == PlatformKeyboardEvent::Char) {
-            for (size_t i = 0; i < size; ++i) {
-                if (commands[i].commandName == "insertText") {
-                    // Don't insert null or control characters as they can result in unexpected behaviour
-                    if (evt->charCode() < ' ')
-                        return false;
-                    eventWasHandled = frame->editor()->insertText(commands[i].text, evt);
-                } else
-                    if (frame->editor()->command(commands[i].commandName).isSupported())
-                        eventWasHandled = frame->editor()->command(commands[i].commandName).execute(evt);
-            }
+        // If there are no text insertion commands, default keydown handler is the right time to execute the commands.
+        // Keypress (Char event) handler is the latest opportunity to execute.
+        if (!haveTextInsertionCommands || platformEvent->type() == PlatformKeyboardEvent::Char) {
+            eventWasHandled = executeKeypressCommandsInternal(event->keypressCommands(), event);
+            event->keypressCommands().clear();
         }
     }
     return eventWasHandled;
@@ -153,6 +216,54 @@ void WebPage::sendComplexTextInputToPlugin(uint64_t pluginComplexTextInputIdenti
     }
 }
 
+void WebPage::setComposition(const String& text, Vector<CompositionUnderline> underlines, uint64_t selectionStart, uint64_t selectionEnd, uint64_t replacementRangeStart, uint64_t replacementRangeEnd, TextInputState& newState)
+{
+    Frame* frame = m_page->focusController()->focusedOrMainFrame();
+
+    if (frame->selection()->isContentEditable()) {
+        RefPtr<Range> replacementRange;
+        if (replacementRangeStart != NSNotFound) {
+            replacementRange = convertToRange(frame, NSMakeRange(replacementRangeStart, replacementRangeEnd - replacementRangeStart));
+            frame->selection()->setSelection(VisibleSelection(replacementRange.get(), SEL_DEFAULT_AFFINITY));
+        }
+
+        frame->editor()->setComposition(text, underlines, selectionStart, selectionEnd);
+    }
+
+    newState = currentTextInputState(frame);
+}
+
+void WebPage::confirmComposition(TextInputState& newState)
+{
+    Frame* frame = m_page->focusController()->focusedOrMainFrame();
+
+    frame->editor()->confirmComposition();
+
+    newState = currentTextInputState(frame);
+}
+
+void WebPage::insertText(const String& text, uint64_t replacementRangeStart, uint64_t replacementRangeEnd, bool& handled, TextInputState& newState)
+{
+    Frame* frame = m_page->focusController()->focusedOrMainFrame();
+
+    RefPtr<Range> replacementRange;
+    if (replacementRangeStart != NSNotFound) {
+        replacementRange = convertToRange(frame, NSMakeRange(replacementRangeStart, replacementRangeEnd - replacementRangeStart));
+        frame->selection()->setSelection(VisibleSelection(replacementRange.get(), SEL_DEFAULT_AFFINITY));
+    }
+
+    if (!frame->editor()->hasComposition()) {
+        // An insertText: might be handled by other responders in the chain if we don't handle it.
+        // One example is space bar that results in scrolling down the page.
+        handled = frame->editor()->insertText(text, m_keyboardEventBeingInterpreted);
+    } else {
+        handled = true;
+        frame->editor()->confirmComposition(text);
+    }
+
+    newState = currentTextInputState(frame);
+}
+
 void WebPage::getMarkedRange(uint64_t& location, uint64_t& length)
 {
     location = NSNotFound;
@@ -164,12 +275,22 @@ void WebPage::getMarkedRange(uint64_t& location, uint64_t& length)
     getLocationAndLengthFromRange(frame->editor()->compositionRange().get(), location, length);
 }
 
-static PassRefPtr<Range> characterRangeAtPoint(Frame* frame, const IntPoint& point)
+void WebPage::getSelectedRange(uint64_t& location, uint64_t& length)
 {
-    VisiblePosition position = frame->visiblePositionForPoint(point);
+    location = NSNotFound;
+    length = 0;
+    Frame* frame = m_page->focusController()->focusedOrMainFrame();
+    if (!frame)
+        return;
+    
+    getLocationAndLengthFromRange(frame->selection()->toNormalizedRange().get(), location, length);
+}
+
+static PassRefPtr<Range> characterRangeAtPositionForPoint(Frame* frame, const VisiblePosition& position, const IntPoint& point)
+{
     if (position.isNull())
         return 0;
-    
+
     VisiblePosition previous = position.previous();
     if (previous.isNotNull()) {
         RefPtr<Range> previousCharacterRange = makeRange(previous, position);
@@ -188,7 +309,12 @@ static PassRefPtr<Range> characterRangeAtPoint(Frame* frame, const IntPoint& poi
     
     return 0;
 }
-    
+
+static PassRefPtr<Range> characterRangeAtPoint(Frame* frame, const IntPoint& point)
+{
+    return characterRangeAtPositionForPoint(frame, frame->visiblePositionForPoint(point), point);
+}
+
 void WebPage::characterIndexForPoint(IntPoint point, uint64_t& index)
 {
     index = NSNotFound;
@@ -207,7 +333,7 @@ void WebPage::characterIndexForPoint(IntPoint point, uint64_t& index)
     getLocationAndLengthFromRange(range.get(), index, length);
 }
 
-static PassRefPtr<Range> convertToRange(Frame* frame, NSRange nsrange)
+PassRefPtr<Range> convertToRange(Frame* frame, NSRange nsrange)
 {
     if (nsrange.location > INT_MAX)
         return 0;
@@ -242,6 +368,41 @@ void WebPage::firstRectForCharacterRange(uint64_t location, uint64_t length, Web
     resultRect = frame->view()->contentsToWindow(rect);
 }
 
+void WebPage::executeKeypressCommands(const Vector<WebCore::KeypressCommand>& commands, bool& handled, TextInputState& newState)
+{
+    Frame* frame = m_page->focusController()->focusedOrMainFrame();
+
+    handled = executeKeypressCommandsInternal(commands, m_keyboardEventBeingInterpreted);
+
+    newState = currentTextInputState(frame);
+}
+
+static bool isPositionInRange(const VisiblePosition& position, Range* range)
+{
+    RefPtr<Range> positionRange = makeRange(position, position);
+
+    ExceptionCode ec = 0;
+    range->compareBoundaryPoints(Range::START_TO_START, positionRange.get(), ec);
+    if (ec)
+        return false;
+
+    if (!range->isPointInRange(positionRange->startContainer(), positionRange->startOffset(), ec))
+        return false;
+    if (ec)
+        return false;
+
+    return true;
+}
+
+static bool shouldUseSelection(const VisiblePosition& position, const VisibleSelection& selection)
+{
+    RefPtr<Range> selectedRange = selection.toNormalizedRange();
+    if (!selectedRange)
+        return false;
+
+    return isPositionInRange(position, selectedRange.get());
+}
+
 void WebPage::performDictionaryLookupAtLocation(const FloatPoint& floatPoint)
 {
     Frame* frame = m_page->mainFrame();
@@ -250,46 +411,78 @@ void WebPage::performDictionaryLookupAtLocation(const FloatPoint& floatPoint)
 
     // Find the frame the point is over.
     IntPoint point = roundedIntPoint(floatPoint);
-
     HitTestResult result = frame->eventHandler()->hitTestResultAtPoint(point, false);
     frame = result.innerNonSharedNode() ? result.innerNonSharedNode()->document()->frame() : m_page->focusController()->focusedOrMainFrame();
 
-    // Figure out if there are any characters under the point.
-    RefPtr<Range> characterRange = characterRangeAtPoint(frame, frame->view()->windowToContents(point));
-    if (!characterRange)
+    IntPoint translatedPoint = frame->view()->windowToContents(point);
+    VisiblePosition position = frame->visiblePositionForPoint(translatedPoint);
+
+    // Don't do anything if there is no character at the point.
+    if (!characterRangeAtPositionForPoint(frame, position, translatedPoint))
         return;
 
-    // Grab the currently selected text.
-    RefPtr<Range> selectedRange = m_page->focusController()->focusedOrMainFrame()->selection()->selection().toNormalizedRange();
-
-    // Use the selected text if the point was anywhere in it. Assertain this by seeing if either character range
-    // the mouse is over is contained by the selection range.
-    if (characterRange && selectedRange) {
-        ExceptionCode ec = 0;
-        selectedRange->compareBoundaryPoints(Range::START_TO_START, characterRange.get(), ec);
-        if (!ec) {
-            if (selectedRange->isPointInRange(characterRange->startContainer(), characterRange->startOffset(), ec)) {
-                if (!ec)
-                    characterRange = selectedRange;
-            }
-        }
+    VisibleSelection selection = m_page->focusController()->focusedOrMainFrame()->selection()->selection();
+    if (shouldUseSelection(position, selection)) {
+        performDictionaryLookupForSelection(DictionaryPopupInfo::HotKey, frame, selection);
+        return;
     }
 
-    if (!characterRange)
-        return;
+    NSDictionary *options = nil;
 
-    // Ensure we have whole words.
-    VisibleSelection selection(characterRange.get());
-    selection.expandUsingGranularity(WordGranularity);
+#if !defined(BUILDING_ON_SNOW_LEOPARD)
+    // As context, we are going to use the surrounding paragraph of text.
+    VisiblePosition paragraphStart = startOfParagraph(position);
+    VisiblePosition paragraphEnd = endOfParagraph(position);
 
-    RefPtr<Range> finalRange = selection.toNormalizedRange();
+    NSRange rangeToPass = NSMakeRange(TextIterator::rangeLength(makeRange(paragraphStart, position).get()), 0);
+
+    RefPtr<Range> fullCharacterRange = makeRange(paragraphStart, paragraphEnd);
+    String fullPlainTextString = plainText(fullCharacterRange.get());
+
+    NSRange extractedRange = WKExtractWordDefinitionTokenRangeFromContextualString(fullPlainTextString, rangeToPass, &options);
+
+    RefPtr<Range> finalRange = TextIterator::subrange(fullCharacterRange.get(), extractedRange.location, extractedRange.length);
     if (!finalRange)
         return;
+#else
+    RefPtr<Range> finalRange = makeRange(startOfWord(position), endOfWord(position));
+    if (!finalRange)
+        return;
+#endif
 
-    performDictionaryLookupForRange(DictionaryPopupInfo::HotKey, frame, finalRange.get());
+    performDictionaryLookupForRange(DictionaryPopupInfo::HotKey, frame, finalRange.get(), options);
 }
 
-void WebPage::performDictionaryLookupForRange(DictionaryPopupInfo::Type type, Frame* frame, Range* range)
+void WebPage::performDictionaryLookupForSelection(DictionaryPopupInfo::Type type, Frame* frame, const VisibleSelection& selection)
+{
+    RefPtr<Range> selectedRange = selection.toNormalizedRange();
+    if (!selectedRange)
+        return;
+
+    NSDictionary *options = nil;
+
+#if !defined(BUILDING_ON_SNOW_LEOPARD)
+    VisiblePosition selectionStart = selection.visibleStart();
+    VisiblePosition selectionEnd = selection.visibleEnd();
+
+    // As context, we are going to use the surrounding paragraphs of text.
+    VisiblePosition paragraphStart = startOfParagraph(selectionStart);
+    VisiblePosition paragraphEnd = endOfParagraph(selectionEnd);
+
+    int lengthToSelectionStart = TextIterator::rangeLength(makeRange(paragraphStart, selectionStart).get());
+    int lengthToSelectionEnd = TextIterator::rangeLength(makeRange(paragraphStart, selectionEnd).get());
+    NSRange rangeToPass = NSMakeRange(lengthToSelectionStart, lengthToSelectionEnd - lengthToSelectionStart);
+
+    String fullPlainTextString = plainText(makeRange(paragraphStart, paragraphEnd).get());
+
+    // Since we already have the range we want, we just need to grab the returned options.
+    WKExtractWordDefinitionTokenRangeFromContextualString(fullPlainTextString, rangeToPass, &options);
+#endif
+
+    performDictionaryLookupForRange(type, frame, selectedRange.get(), options);
+}
+
+void WebPage::performDictionaryLookupForRange(DictionaryPopupInfo::Type type, Frame* frame, Range* range, NSDictionary *options)
 {
     String rangeText = range->text();
     if (rangeText.stripWhiteSpace().isEmpty())
@@ -316,18 +509,11 @@ void WebPage::performDictionaryLookupForRange(DictionaryPopupInfo::Type type, Fr
     dictionaryPopupInfo.type = type;
     dictionaryPopupInfo.origin = FloatPoint(rangeRect.x(), rangeRect.y());
     dictionaryPopupInfo.fontInfo.fontAttributeDictionary = fontDescriptorAttributes;
+#if !defined(BUILDING_ON_SNOW_LEOPARD)
+    dictionaryPopupInfo.options = (CFDictionaryRef)options;
+#endif
 
     send(Messages::WebPageProxy::DidPerformDictionaryLookup(rangeText, dictionaryPopupInfo));
-}
-
-static inline void scroll(Page* page, ScrollDirection direction, ScrollGranularity granularity)
-{
-    page->focusController()->focusedOrMainFrame()->eventHandler()->scrollRecursively(direction, granularity);
-}
-
-static inline void logicalScroll(Page* page, ScrollLogicalDirection direction, ScrollGranularity granularity)
-{
-    page->focusController()->focusedOrMainFrame()->eventHandler()->logicalScrollRecursively(direction, granularity);
 }
 
 bool WebPage::performDefaultBehaviorForKeyEvent(const WebKeyboardEvent& keyboardEvent)
@@ -335,7 +521,8 @@ bool WebPage::performDefaultBehaviorForKeyEvent(const WebKeyboardEvent& keyboard
     if (keyboardEvent.type() != WebEvent::KeyDown)
         return false;
 
-    // FIXME: This should be in WebCore.
+    // FIXME: Most of these are already handled by system key bindings, why are we hardcoding them here?
+    // FIXME: Common behaviors like scrolling down on Space should probably be implemented in WebCore.
 
     switch (keyboardEvent.windowsVirtualKeyCode()) {
     case VK_BACK:
@@ -390,7 +577,7 @@ bool WebPage::performDefaultBehaviorForKeyEvent(const WebKeyboardEvent& keyboard
         if (keyboardEvent.metaKey())
             m_page->goBack();
         else {
-            if (keyboardEvent.altKey()  | keyboardEvent.controlKey())
+            if (keyboardEvent.altKey() || keyboardEvent.controlKey())
                 scroll(m_page.get(), ScrollLeft, ScrollByPage);
             else
                 scroll(m_page.get(), ScrollLeft, ScrollByLine);
@@ -435,6 +622,13 @@ void WebPage::writeSelectionToPasteboard(const String& pasteboardName, const Vec
     result = true;
 }
 
+void WebPage::readSelectionFromPasteboard(const String& pasteboardName, bool& result)
+{
+    Frame* frame = m_page->focusController()->focusedOrMainFrame();
+    frame->editor()->readSelectionFromPasteboard(pasteboardName);
+    result = true;
+}
+    
 AccessibilityWebPageObject* WebPage::accessibilityRemoteObject()
 {
     return m_mockAccessibilityElement.get();
@@ -472,13 +666,26 @@ String WebPage::cachedResponseMIMETypeForURL(const WebCore::KURL& url)
     return [[cachedResponse response] MIMEType];
 }
 
-bool WebPage::canHandleRequest(const WebCore::ResourceRequest& request)
+bool WebPage::platformCanHandleRequest(const WebCore::ResourceRequest& request)
 {
     if ([NSURLConnection canHandleRequest:request.nsURLRequest()])
-        return YES;
+        return true;
 
     // FIXME: Return true if this scheme is any one WebKit2 knows how to handle.
     return request.url().protocolIs("applewebdata");
+}
+
+void WebPage::setDragSource(NSObject *dragSource)
+{
+    m_dragSource = dragSource;
+}
+
+void WebPage::platformDragEnded()
+{
+    // The drag source we care about here is NSFilePromiseDragSource, which doesn't look at
+    // the arguments. It's OK to just pass arbitrary constant values, so we just pass all zeroes.
+    [m_dragSource.get() draggedImage:nil endedAt:NSZeroPoint operation:NSDragOperationNone];
+    m_dragSource = nullptr;
 }
 
 } // namespace WebKit

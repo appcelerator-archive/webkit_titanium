@@ -11,7 +11,7 @@ ResourceSendRequest Properties:
         url : <string>
         requestMethod : "GET"
     }
-    type : 12
+    type : "ResourceSendRequest"
     usedHeapSize : <number>
     totalHeapSize : <number>
 }
@@ -23,12 +23,11 @@ ResourceReceiveResponse Properties:
         identifier : <number>
         statusCode : 0
         mimeType : <string>
-        expectedContentLength : 213
         url : <string>
     }
     children : <object>
     endTime : <number>
-    type : 13
+    type : "ResourceReceiveResponse"
     usedHeapSize : <number>
     totalHeapSize : <number>
 }
@@ -41,7 +40,7 @@ ResourceFinish Properties:
         didFail : false
         url : <string>
     }
-    type : 14
+    type : "ResourceFinish"
     usedHeapSize : <number>
     totalHeapSize : <number>
 }

@@ -39,6 +39,7 @@
 #import "WebKitNSStringExtras.h"
 #import <JavaScriptCore/APICast.h>
 #import <WebCore/Document.h>
+#import <WebCore/Element.h>
 #import <WebCore/HTMLInputElement.h>
 #import <WebCore/HTMLParserIdioms.h>
 #import <WebCore/JSElement.h>
@@ -71,6 +72,13 @@ using namespace JSC;
 - (NSString *)_markerTextForListItem
 {
     return WebCore::markerTextForListItem(core(self));
+}
+
+- (JSValueRef)_shadowRoot:(JSContextRef)context
+{
+    JSLock lock(SilenceAssertionsOnly);
+    ExecState* execState = toJS(context);
+    return toRef(execState, toJS(execState, core(self)->shadowRoot()));
 }
 
 @end
@@ -197,9 +205,14 @@ using namespace JSC;
 
 @implementation DOMHTMLInputElement (WebDOMHTMLInputElementOperationsPrivate)
 
+- (void)_setAutofilled:(BOOL)autofilled
+{
+    static_cast<HTMLInputElement*>(core((DOMElement *)self))->setAutofilled(autofilled);
+}
+
 - (void)_setValueForUser:(NSString *)value
 {
-    static_cast<HTMLInputElement*>(core(self))->setValueForUser(value);
+    static_cast<HTMLInputElement*>(core((DOMElement *)self))->setValueForUser(value);
 }
 
 @end

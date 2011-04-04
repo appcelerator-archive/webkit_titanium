@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2010, 2011 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -84,7 +84,7 @@ private:
     virtual void dispatchWillClose();
     virtual void dispatchDidReceiveIcon();
     virtual void dispatchDidStartProvisionalLoad();
-    virtual void dispatchDidReceiveTitle(const String& title);
+    virtual void dispatchDidReceiveTitle(const WebCore::StringWithDirection&);
     virtual void dispatchDidChangeIcons();
     virtual void dispatchDidCommitLoad();
     virtual void dispatchDidFailProvisionalLoad(const WebCore::ResourceError&);
@@ -97,7 +97,7 @@ private:
     virtual WebCore::Frame* dispatchCreatePage(const WebCore::NavigationAction&);
     virtual void dispatchShow();
     
-    virtual void dispatchDecidePolicyForMIMEType(WebCore::FramePolicyFunction, const String& MIMEType, const WebCore::ResourceRequest&);
+    virtual void dispatchDecidePolicyForResponse(WebCore::FramePolicyFunction, const WebCore::ResourceResponse&, const WebCore::ResourceRequest&);
     virtual void dispatchDecidePolicyForNewWindowAction(WebCore::FramePolicyFunction, const WebCore::NavigationAction&, const WebCore::ResourceRequest&, PassRefPtr<WebCore::FormState>, const String& frameName);
     virtual void dispatchDecidePolicyForNavigationAction(WebCore::FramePolicyFunction, const WebCore::NavigationAction&, const WebCore::ResourceRequest&, PassRefPtr<WebCore::FormState>);
     virtual void cancelPolicyCheck();
@@ -165,7 +165,7 @@ private:
     virtual void prepareForDataSourceReplacement();
     
     virtual PassRefPtr<WebCore::DocumentLoader> createDocumentLoader(const WebCore::ResourceRequest&, const WebCore::SubstituteData&);
-    virtual void setTitle(const String& title, const WebCore::KURL&);
+    virtual void setTitle(const WebCore::StringWithDirection&, const WebCore::KURL&);
     
     virtual String userAgent(const WebCore::KURL&);
     
@@ -191,7 +191,7 @@ private:
     
     virtual PassRefPtr<WebCore::Widget> createJavaAppletWidget(const WebCore::IntSize&, WebCore::HTMLAppletElement*, const WebCore::KURL& baseURL, const Vector<String>& paramNames, const Vector<String>& paramValues);
     
-    virtual WebCore::ObjectContentType objectContentType(const WebCore::KURL& url, const String& mimeType);
+    virtual WebCore::ObjectContentType objectContentType(const WebCore::KURL&, const String& mimeType, bool shouldPreferPlugInsForImages);
     virtual String overrideMediaType() const;
 
     virtual void dispatchDidClearWindowObjectInWorld(WebCore::DOMWrapperWorld*);

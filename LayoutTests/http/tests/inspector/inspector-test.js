@@ -48,9 +48,10 @@ InspectorTest.evaluateInPage = function(code, callback)
 {
     callback = InspectorTest.safeWrap(callback);
 
-    function mycallback(result)
+    function mycallback(error, result)
     {
-        callback(WebInspector.RemoteObject.fromPayload(result));
+        if (!error)
+            callback(WebInspector.RemoteObject.fromPayload(result));
     }
     RuntimeAgent.evaluate(code, "console", false, mycallback);
 }
@@ -136,7 +137,7 @@ InspectorTest.reloadPage = function(callback)
 
     if (WebInspector.panels.network)
         WebInspector.panels.network._reset();
-    InspectorAgent.reloadPage(false);
+    PageAgent.reloadPage(false);
 }
 
 InspectorTest.pageReloaded = function()
@@ -156,10 +157,10 @@ InspectorTest.runAfterPendingDispatches = function(callback)
     InspectorBackend.runAfterPendingDispatches(callback);
 }
 
-InspectorTest.createKeyEvent = function(keyIdentifier)
+InspectorTest.createKeyEvent = function(keyIdentifier, ctrlKey, altKey, shiftKey, metaKey)
 {
     var evt = document.createEvent("KeyboardEvent");
-    evt.initKeyboardEvent("keydown", true /* can bubble */, true /* can cancel */, null /* view */, keyIdentifier, "");
+    evt.initKeyboardEvent("keydown", true /* can bubble */, true /* can cancel */, null /* view */, keyIdentifier, "", ctrlKey, altKey, shiftKey, metaKey);
     return evt;
 }
 
@@ -237,6 +238,21 @@ InspectorTest.addSniffer = function(receiver, methodName, override, opt_sticky)
         }
         return result;
     };
+}
+
+InspectorTest.textContentWithLineBreaks = function(node)
+{
+    var buffer = "";
+    var currentNode = node;
+    while (currentNode = currentNode.traverseNextNode(node)) {
+        if (currentNode.nodeType === Node.TEXT_NODE)
+            buffer += currentNode.nodeValue;
+        else if (currentNode.nodeName === "LI")
+            buffer += "\n    ";
+        else if (currentNode.classList.contains("console-message"))
+            buffer += "\n\n";
+    }
+    return buffer;
 }
 
 };
@@ -318,7 +334,9 @@ function didEvaluateForTestInFrontend(callId)
     if (callId !== completeTestCallId)
         return;
     delete window.completeTestCallId;
-    closeInspectorAndNotifyDone();
+    // Close inspector asynchrously to allow caller of this
+    // function send response before backend dispatcher and frontend are destroyed.
+    setTimeout(closeInspectorAndNotifyDone, 0);
 }
 
 function closeInspectorAndNotifyDone()

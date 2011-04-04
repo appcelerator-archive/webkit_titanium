@@ -21,7 +21,7 @@ InspectorTest.nodeWithId = function(idValue, callback)
                 return;
             }
             pendingRequests++;
-            WebInspector.domAgent.getChildNodesAsync(childNode, processChildren.bind(null, false));
+            childNode.getChildNodes(processChildren.bind(null, false));
         }
 
         if (topLevel)
@@ -34,7 +34,7 @@ InspectorTest.nodeWithId = function(idValue, callback)
     WebInspector.domAgent.requestDocument(documentRequested.bind(this));
     function documentRequested(doc)
     {
-        WebInspector.domAgent.getChildNodesAsync(doc, processChildren.bind(this, true));
+        doc.getChildNodes(processChildren.bind(this, true));
     }
 };
 
@@ -204,12 +204,19 @@ InspectorTest.dumpDOMAgentTree = function()
 
     function dump(node, prefix, startIndex)
     {
-        InspectorTest.addResult(prefix + node.nodeName + "[" + (node.id - startIndex)+ "]");
+        InspectorTest.addResult(prefix + node.nodeName() + "[" + (node.id - startIndex)+ "]");
         var children = node.children;
         for (var i = 0; children && i < children.length; ++i)
             dump(children[i], prefix + "    ", startIndex);
     }
     dump(WebInspector.domAgent._document, "", WebInspector.domAgent._document.id - 1);
+};
+
+InspectorTest.rangeText = function(range)
+{
+    if (!range)
+        return "[undefined-undefined]";
+    return "[" + range.start + "-" + range.end + "]";
 };
 
 };

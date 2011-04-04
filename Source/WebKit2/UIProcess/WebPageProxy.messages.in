@@ -35,6 +35,7 @@ messages -> WebPageProxy {
     SetCursor(WebCore::Cursor cursor)
     SetStatusText(WTF::String statusText)
     SetToolTip(WTF::String toolTip)
+    SetFocus(bool focused)
     TakeFocus(bool direction)
     FocusedFrameChanged(uint64_t frameID)
     FrameSetLargestFrameChanged(uint64_t frameID)
@@ -48,6 +49,7 @@ messages -> WebPageProxy {
     GetIsResizable() -> (bool isResizable)
     SetWindowFrame(WebCore::FloatRect windowFrame)
     GetWindowFrame() -> (WebCore::FloatRect windowFrame)
+    WindowToScreen(WebCore::IntRect rect) -> (WebCore::IntRect screenFrame)
     RunBeforeUnloadConfirmPanel(WTF::String message, uint64_t frameID) -> (bool shouldClose)
     PageDidScroll()
     RunOpenPanel(uint64_t frameID, WebKit::WebOpenPanelParameters::Data parameters)
@@ -58,7 +60,7 @@ messages -> WebPageProxy {
     DidChangeScrollOffsetPinningForMainFrame(bool hasHorizontalScrollbar, bool hasVerticalScrollbar)
 
 #if ENABLE(TILED_BACKING_STORE)
-    PageDidRequestScroll(WebCore::IntSize delta)
+    PageDidRequestScroll(WebCore::IntPoint point)
 #endif
 #if PLATFORM(QT)
     DidChangeContentsSize(WebCore::IntSize newSize)
@@ -66,9 +68,10 @@ messages -> WebPageProxy {
 #endif
 
     # Policy messages
-    DecidePolicyForMIMEType(uint64_t frameID, WTF::String MIMEType, WebCore::ResourceRequest request, uint64_t listenerID, WebKit::InjectedBundleUserMessageEncoder userData) -> (bool receivedPolicyAction, uint64_t policyAction, uint64_t downloadID)
+    DecidePolicyForResponse(uint64_t frameID, WebCore::ResourceResponse response, WebCore::ResourceRequest request, uint64_t listenerID, WebKit::InjectedBundleUserMessageEncoder userData) -> (bool receivedPolicyAction, uint64_t policyAction, uint64_t downloadID)
     DecidePolicyForNavigationAction(uint64_t frameID, uint32_t navigationType, uint32_t modifiers, int32_t mouseButton, WebCore::ResourceRequest request, uint64_t listenerID, WebKit::InjectedBundleUserMessageEncoder userData) -> (bool receivedPolicyAction, uint64_t policyAction, uint64_t downloadID)
     DecidePolicyForNewWindowAction(uint64_t frameID, uint32_t navigationType, uint32_t modifiers, int32_t mouseButton, WebCore::ResourceRequest request, WTF::String frameName, uint64_t listenerID, WebKit::InjectedBundleUserMessageEncoder userData)
+    UnableToImplementPolicy(uint64_t frameID, WebCore::ResourceError error, WebKit::InjectedBundleUserMessageEncoder userData)
 
     # Progress messages
     DidChangeProgress(double value)
@@ -91,7 +94,7 @@ messages -> WebPageProxy {
     DidFirstVisuallyNonEmptyLayoutForFrame(uint64_t frameID, WebKit::InjectedBundleUserMessageEncoder userData)
     DidReceiveServerRedirectForProvisionalLoadForFrame(uint64_t frameID, WTF::String url, WebKit::InjectedBundleUserMessageEncoder userData)
     DidRemoveFrameFromHierarchy(uint64_t frameID, WebKit::InjectedBundleUserMessageEncoder userData)
-    DidStartProvisionalLoadForFrame(uint64_t frameID, WTF::String url, bool loadingSubstituteDataForUnreachableURL, WebKit::InjectedBundleUserMessageEncoder userData)
+    DidStartProvisionalLoadForFrame(uint64_t frameID, WTF::String url, WTF::String unreachableURL, WebKit::InjectedBundleUserMessageEncoder userData)
     DidReceiveTitleForFrame(uint64_t frameID, WTF::String title, WebKit::InjectedBundleUserMessageEncoder userData)
     DidDisplayInsecureContentForFrame(uint64_t frameID, WebKit::InjectedBundleUserMessageEncoder userData)
     DidRunInsecureContentForFrame(uint64_t frameID, WebKit::InjectedBundleUserMessageEncoder userData)
@@ -122,17 +125,6 @@ messages -> WebPageProxy {
     ValidateCommandCallback(WTF::String command, bool isEnabled, int32_t state, uint64_t callbackID)
 
     ViewScaleFactorDidChange(double scaleFactor)
-
-#if PLATFORM(MAC)
-    # Dictionary support.
-    DidPerformDictionaryLookup(WTF::String text, WebKit::DictionaryPopupInfo dictionaryPopupInfo)
-
-    # Keyboard support messages
-    InterpretKeyEvent(uint32_t type) -> (Vector<WebCore::KeypressCommand> commandName, uint32_t selectionStart, uint32_t selectionEnd, Vector<WebCore::CompositionUnderline> underlines)
-    
-    # Remote accessibility messages
-    RegisterWebProcessAccessibilityToken(CoreIPC::DataReference data)
-#endif
     
     # BackForward messages
     BackForwardAddItem(uint64_t itemID)
@@ -149,21 +141,23 @@ messages -> WebPageProxy {
     
     # Selection messages
     SelectionStateChanged(WebKit::SelectionState selectionState)
-
 #if PLATFORM(WIN)
     DidChangeCompositionSelection(bool hasChanged)
 #endif
 
     # Find messages
     DidCountStringMatches(WTF::String string, uint32_t matchCount)
-    SetFindIndicator(WebCore::FloatRect selectionRect, Vector<WebCore::FloatRect> textRects, WebKit::SharedMemory::Handle contentImageHandle, bool fadeOut)
+    SetFindIndicator(WebCore::FloatRect selectionRect, Vector<WebCore::FloatRect> textRects, WebKit::ShareableBitmap::Handle contentImageHandle, bool fadeOut)
     DidFindString(WTF::String string, uint32_t matchCount)
     DidFailToFindString(WTF::String string)
 
     # PopupMenu messages
     ShowPopupMenu(WebCore::IntRect rect, uint64_t textDirection, Vector<WebKit::WebPopupItem> items, int32_t selectedIndex, WebKit::PlatformPopupMenuData data)
     HidePopupMenu()
-    
+#if PLATFORM(WIN)
+    SetPopupMenuSelectedIndex(int32_t selectedIndex)
+#endif
+
     # ContextMenu messages
     ShowContextMenu(WebCore::IntPoint menuLocation, WebKit::ContextMenuState state, Vector<WebKit::WebContextMenuItemData> items, WebKit::InjectedBundleUserMessageEncoder userData)
 
@@ -177,18 +171,6 @@ messages -> WebPageProxy {
     # Geolocation messages
     RequestGeolocationPermissionForFrame(uint64_t geolocationID, uint64_t frameID, WTF::String originIdentifier)
 
-#if PLATFORM(MAC)
-    # Plug-in complex text input support messages
-    SetComplexTextInputEnabled(uint64_t pluginComplexTextInputIdentifier, bool complexTextInputEnabled)
-#endif
-
-#if PLATFORM(MAC)
-    # Speech messages
-    GetIsSpeaking() -> (bool isSpeaking)
-    Speak(WTF::String string)
-    StopSpeaking()
-#endif
-
     # Spelling and grammar messages
     CheckTextOfParagraph(WTF::String text, uint64_t checkingTypes) -> (Vector<WebCore::TextCheckingResult> results)
     UpdateSpellingUIWithMisspelledWord(WTF::String misspelledWord)
@@ -200,9 +182,39 @@ messages -> WebPageProxy {
     # Drag and drop messages
     DidPerformDragControllerAction(uint64_t resultOperation)
 #if PLATFORM(MAC)
-    SetDragImage(WebCore::IntPoint clientPosition, WebCore::IntSize imageSize, WebKit::SharedMemory::Handle dragImage, bool linkDrag)
+    SetDragImage(WebCore::IntPoint clientPosition, WebKit::ShareableBitmap::Handle dragImage, bool linkDrag)
 #endif
 #if PLATFORM(WIN)
     StartDragDrop(WebCore::IntPoint imagePoint, WebCore::IntPoint dragPoint, uint64_t okEffect, HashMap<UINT,Vector<String> > dataMap, WebCore::IntSize dragImageSize, WebKit::SharedMemory::Handle dragImage, bool linkDrag)
+#endif
+
+#if PLATFORM(MAC)
+    # Dictionary support.
+    DidPerformDictionaryLookup(WTF::String text, WebKit::DictionaryPopupInfo dictionaryPopupInfo)
+
+    # Keyboard input support messages
+    InterpretQueuedKeyEvent(WebKit::TextInputState state) -> (bool handled, Vector<WebCore::KeypressCommand> savedCommands)
+    
+    # Remote accessibility messages
+    RegisterWebProcessAccessibilityToken(CoreIPC::DataReference data)
+
+    # Plug-in complex text input support messages
+    SetComplexTextInputEnabled(uint64_t pluginComplexTextInputIdentifier, bool complexTextInputEnabled)
+
+    # Speech messages
+    GetIsSpeaking() -> (bool isSpeaking)
+    Speak(WTF::String string)
+    StopSpeaking()
+
+    # Spotlight
+    SearchWithSpotlight(WTF::String string)
+#endif
+
+#if PLATFORM(MAC) && !defined(BUILDING_ON_SNOW_LEOPARD)
+    # Autocorrection messages
+    ShowCorrectionPanel(int32_t panelType, WebCore::FloatRect boundingBoxOfReplacedString, String replacedString, String replacementString, Vector<String> alternativeReplacementStrings)
+    DismissCorrectionPanel(int32_t reason)
+    DismissCorrectionPanelSoon(int32_t reason) -> (String result)
+    RecordAutocorrectionResponse(int32_t responseType, String replacedString, String replacementString);
 #endif
 }

@@ -17,6 +17,7 @@ SET(WTF_HEADERS
     Deque.h
     DisallowCType.h
     DoublyLinkedList.h
+    DynamicAnnotations.h
     Encoder.h
     FastAllocBase.h
     FastMalloc.h
@@ -30,6 +31,7 @@ SET(WTF_HEADERS
     HashSet.h
     HashTable.h
     HashTraits.h
+    HexNumber.h
     ListHashSet.h
     ListRefPtr.h
     Locker.h
@@ -65,6 +67,7 @@ SET(WTF_HEADERS
     RefPtrHashMap.h
     RetainPtr.h
     SegmentedVector.h
+    SHA1.h
     StackBounds.h
     StaticConstructors.h
     StdLibExtras.h
@@ -75,7 +78,7 @@ SET(WTF_HEADERS
     TCSpinLock.h
     TCSystemAlloc.h
     ThreadIdentifierDataPthreads.h
-    ThreadSafeShared.h
+    ThreadSafeRefCounted.h
     ThreadSpecific.h
     Threading.h
     ThreadingPrimitives.h
@@ -109,6 +112,7 @@ SET(WTF_SOURCES
     CryptographicallyRandomNumber.cpp
     CurrentTime.cpp
     DecimalNumber.cpp
+    DynamicAnnotations.cpp
     FastMalloc.cpp
     HashTable.cpp
     MainThread.cpp
@@ -116,6 +120,7 @@ SET(WTF_SOURCES
     OSRandomSource.cpp
     RandomNumber.cpp
     RefCountedLeakCounter.cpp
+    SHA1.cpp
     StackBounds.cpp
     StringExtras.cpp
     Threading.cpp

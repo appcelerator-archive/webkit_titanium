@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2010, 2011 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -158,6 +158,11 @@ void WKBundlePageSetPageZoomFactor(WKBundlePageRef pageRef, double zoomFactor)
     toImpl(pageRef)->setPageZoomFactor(zoomFactor);
 }
 
+void WKBundlePageSetScaleAtOrigin(WKBundlePageRef pageRef, double scale, WKPoint origin)
+{
+    toImpl(pageRef)->scaleWebView(scale, toIntPoint(origin));
+}
+
 WKBundleBackForwardListRef WKBundlePageGetBackForwardList(WKBundlePageRef pageRef)
 {
     return toAPI(toImpl(pageRef)->backForwardList());
@@ -216,4 +221,19 @@ WKBundleInspectorRef WKBundlePageGetInspector(WKBundlePageRef pageRef)
 void WKBundlePageForceRepaint(WKBundlePageRef page)
 {
     toImpl(page)->forceRepaintWithoutCallback();
+}
+
+void WKBundlePageSimulateMouseDown(WKBundlePageRef page, int button, WKPoint position, int clickCount, WKEventModifiers modifiers, double time)
+{
+    toImpl(page)->simulateMouseDown(button, toIntPoint(position), clickCount, modifiers, time);
+}
+
+void WKBundlePageSimulateMouseUp(WKBundlePageRef page, int button, WKPoint position, int clickCount, WKEventModifiers modifiers, double time)
+{
+    toImpl(page)->simulateMouseUp(button, toIntPoint(position), clickCount, modifiers, time);
+}
+
+void WKBundlePageSimulateMouseMotion(WKBundlePageRef page, WKPoint position, double time)
+{
+    toImpl(page)->simulateMouseMotion(toIntPoint(position), time);
 }

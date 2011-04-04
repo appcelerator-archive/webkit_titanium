@@ -290,6 +290,13 @@ AccessibilityObject* AXObjectCache::rootObject()
     return getOrCreate(m_document->view());
 }
 
+AccessibilityObject* AXObjectCache::rootObjectForFrame(Frame* frame)
+{
+    if (!frame)
+        return 0;
+    return getOrCreate(frame->view());
+}    
+    
 AccessibilityObject* AXObjectCache::getOrCreate(AccessibilityRole role)
 {
     RefPtr<AccessibilityObject> obj = 0;
@@ -609,7 +616,7 @@ void AXObjectCache::textMarkerDataForVisiblePosition(TextMarkerData& textMarkerD
         return;
     
     if (domNode->isHTMLElement()) {
-        InputElement* inputElement = toInputElement(static_cast<Element*>(domNode));
+        InputElement* inputElement = domNode->toInputElement();
         if (inputElement && inputElement->isPasswordField())
             return;
     }

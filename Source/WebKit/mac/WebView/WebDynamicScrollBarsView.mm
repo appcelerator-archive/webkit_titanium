@@ -515,7 +515,13 @@ static const unsigned cMaxUpdateScrollbarsPass = 2;
     BOOL isContinuous;
     WKGetWheelEventDeltas(event, &deltaX, &deltaY, &isContinuous);
 
-    BOOL isLatchingEvent = WKIsLatchingWheelEvent(event);
+#if !defined(BUILDING_ON_TIGER) && !defined(BUILDING_ON_LEOPARD) && !defined(BUILDING_ON_SNOW_LEOPARD)
+    NSEventPhase momentumPhase = [event momentumPhase];
+    BOOL isLatchingEvent = momentumPhase & NSEventPhaseBegan || momentumPhase & NSEventPhaseChanged;
+#else
+    int momentumPhase = WKGetNSEventMomentumPhase(event);
+    BOOL isLatchingEvent = momentumPhase == WKEventPhaseBegan || momentumPhase == WKEventPhaseChanged;
+#endif
 
     if (fabsf(deltaY) > fabsf(deltaX)) {
         if (![self allowsVerticalScrolling]) {
@@ -558,9 +564,10 @@ static const unsigned cMaxUpdateScrollbarsPass = 2;
     [self release];
 }
 
+// This object will be the parent of the web area in WK1, so it should not be ignored.
 - (BOOL)accessibilityIsIgnored 
 {
-    return YES;
+    return NO;
 }
 
 - (void)setScrollOrigin:(NSPoint)scrollOrigin updatePositionAtAll:(BOOL)updatePositionAtAll immediately:(BOOL)updatePositionSynchronously

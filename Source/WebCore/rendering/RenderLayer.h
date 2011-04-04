@@ -255,8 +255,8 @@ public:
     Scrollbar* horizontalScrollbar() const { return m_hBar.get(); }
     Scrollbar* verticalScrollbar() const { return m_vBar.get(); }
 
-    int verticalScrollbarWidth() const;
-    int horizontalScrollbarHeight() const;
+    int verticalScrollbarWidth(OverlayScrollbarSizeRelevancy relevancy = IgnoreOverlayScrollbarSize) const;
+    int horizontalScrollbarHeight(OverlayScrollbarSizeRelevancy relevancy = IgnoreOverlayScrollbarSize) const;
 
     bool hasOverflowControls() const;
     void positionOverflowControls(int tx, int ty);
@@ -264,7 +264,7 @@ public:
     bool hitTestOverflowControls(HitTestResult&, const IntPoint& localPoint);
     IntSize offsetFromResizeCorner(const IntPoint& absolutePoint) const;
 
-    void paintOverflowControls(GraphicsContext*, int tx, int ty, const IntRect& damageRect);
+    void paintOverflowControls(GraphicsContext*, int tx, int ty, const IntRect& damageRect, bool paintingOverlayControls = false);
     void paintScrollCorner(GraphicsContext*, int tx, int ty, const IntRect& damageRect);
     void paintResizer(GraphicsContext*, int tx, int ty, const IntRect& damageRect);
 
@@ -296,14 +296,13 @@ public:
     void updateLayerPosition();
     
     enum UpdateLayerPositionsFlag {
-        DoFullRepaint = 1,
-        CheckForRepaint = 1 << 1,
-        IsCompositingUpdateRoot = 1 << 2,
-        UpdateCompositingLayers = 1 << 3,
-        UpdatePagination = 1 << 4
+        CheckForRepaint = 1,
+        IsCompositingUpdateRoot = 1 << 1,
+        UpdateCompositingLayers = 1 << 2,
+        UpdatePagination = 1 << 3
     };
     typedef unsigned UpdateLayerPositionsFlags;
-    void updateLayerPositions(UpdateLayerPositionsFlags = DoFullRepaint | IsCompositingUpdateRoot | UpdateCompositingLayers, IntPoint* cachedOffset = 0);
+    void updateLayerPositions(UpdateLayerPositionsFlags = CheckForRepaint | IsCompositingUpdateRoot | UpdateCompositingLayers, IntPoint* cachedOffset = 0);
 
     void updateTransform();
 
@@ -362,6 +361,7 @@ public:
     // layers that intersect the point from front to back.
     void paint(GraphicsContext*, const IntRect& damageRect, PaintBehavior = PaintBehaviorNormal, RenderObject* paintingRoot = 0);
     bool hitTest(const HitTestRequest&, HitTestResult&);
+    void paintOverlayScrollbars(GraphicsContext*, const IntRect& damageRect, PaintBehavior, RenderObject* paintingRoot);
 
     // This method figures out our layerBounds in coordinates relative to
     // |rootLayer}.  It also computes our background and foreground clip rects
@@ -444,6 +444,9 @@ public:
 
     bool paintsWithTransform(PaintBehavior) const;
 
+    bool containsDirtyOverlayScrollbars() const { return m_containsDirtyOverlayScrollbars; }
+    void setContainsDirtyOverlayScrollbars(bool dirtyScrollbars) { m_containsDirtyOverlayScrollbars = dirtyScrollbars; }
+
 private:
     // The normal operator new is disallowed on all render objects.
     void* operator new(size_t) throw();
@@ -466,7 +469,8 @@ private:
         PaintLayerHaveTransparency = 1,
         PaintLayerAppliedTransform = 1 << 1,
         PaintLayerTemporaryClipRects = 1 << 2,
-        PaintLayerPaintingReflection = 1 << 3
+        PaintLayerPaintingReflection = 1 << 3,
+        PaintLayerPaintingOverlayScrollbars = 1 << 4
     };
     
     typedef unsigned PaintLayerFlags;
@@ -526,6 +530,10 @@ private:
     virtual IntSize contentsSize() const;
     virtual int visibleHeight() const;
     virtual int visibleWidth() const;
+    virtual IntPoint currentMousePosition() const;
+    virtual bool shouldSuspendScrollAnimations() const;
+
+    virtual void disconnectFromPage() { m_page = 0; }
 
     // NOTE: This should only be called by the overriden setScrollOffset from ScrollableArea.
     void scrollTo(int x, int y);
@@ -619,18 +627,6 @@ protected:
     int m_scrollX;
     int m_scrollY;
     
-    // There are 8 possible combinations of writing mode and direction.  Scroll origin (and its corresponding left/top overflow)
-    // will be non-zero in the x or y axis if there is any reversed direction or writing-mode.  The combinations are:
-    // writing-mode / direction     scrollOrigin.x() set    scrollOrigin.y() set
-    // horizontal-tb / ltr          NO                      NO
-    // horizontal-tb / rtl          YES                     NO
-    // horizontal-bt / ltr          NO                      YES
-    // horizontal-bt / rtl          YES                     YES
-    // vertical-lr / ltr            NO                      NO
-    // vertical-lr / rtl            NO                      YES
-    // vertical-rl / ltr            YES                     NO
-    // vertical-rl / rtl            YES                     YES
-    IntPoint m_scrollOrigin;
     int m_scrollLeftOverflow;
     int m_scrollTopOverflow;
     
@@ -691,6 +687,10 @@ protected:
     bool m_mustOverlapCompositedLayers : 1;
 #endif
 
+    bool m_containsDirtyOverlayScrollbars : 1;
+
+    IntPoint m_cachedOverlayScrollbarOffset;
+
     RenderMarquee* m_marquee; // Used by layers with overflow:marquee
     
     // Cached normal flow values for absolute positioned elements with static left/top values.
@@ -712,6 +712,8 @@ private:
 #if USE(ACCELERATED_COMPOSITING)
     OwnPtr<RenderLayerBacking> m_backing;
 #endif
+
+    Page* m_page;
 };
 
 } // namespace WebCore

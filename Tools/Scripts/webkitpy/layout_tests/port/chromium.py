@@ -51,6 +51,12 @@ _log = logging.getLogger("webkitpy.layout_tests.port.chromium")
 # FIXME: This function doesn't belong in this package.
 class ChromiumPort(base.Port):
     """Abstract base class for Chromium implementations of the Port class."""
+    ALL_BASELINE_VARIANTS = [
+        'chromium-mac-snowleopard', 'chromium-mac-leopard',
+        'chromium-win-win7', 'chromium-win-vista', 'chromium-win-xp',
+        'chromium-linux', 'chromium-linux-x86_64',
+        'chromium-gpu-mac-leopard', 'chromium-gpu-win-xp', 'chromium-gpu-linux',
+    ]
 
     def __init__(self, **kwargs):
         base.Port.__init__(self, **kwargs)
@@ -230,6 +236,9 @@ class ChromiumPort(base.Port):
             # http://bugs.python.org/issue1731717
             self._helper.wait()
 
+    def all_baseline_variants(self):
+        return self.ALL_BASELINE_VARIANTS
+
     def test_expectations(self):
         """Returns the test expectations for this port.
 
@@ -251,7 +260,6 @@ class ChromiumPort(base.Port):
     def skipped_layout_tests(self, extra_test_files=None):
         expectations_str = self.test_expectations()
         overrides_str = self.test_expectations_overrides()
-        test_platform_name = self.test_platform_name()
         is_debug_mode = False
 
         all_test_files = self.tests([])
@@ -264,15 +272,6 @@ class ChromiumPort(base.Port):
         tests_dir = self.layout_tests_dir()
         return [self.relative_test_filename(test)
                 for test in expectations.get_tests_with_result_type(test_expectations.SKIP)]
-
-    def test_platform_names(self):
-        return ('mac', 'win', 'linux', 'win-xp', 'win-vista', 'win-7')
-
-    def test_platform_name_to_name(self, test_platform_name):
-        if test_platform_name in self.test_platform_names():
-            return 'chromium-' + test_platform_name
-        raise ValueError('Unsupported test_platform_name: %s' %
-                         test_platform_name)
 
     def test_repository_paths(self):
         # Note: for JSON file's backward-compatibility we use 'chrome' rather
@@ -423,10 +422,10 @@ class ChromiumDriver(base.Driver):
     def _output_image(self):
         """Returns the image output which driver generated."""
         png_path = self._image_path
-        if png_path and self._port._filesystem.isfile(png_path):
+        if png_path and self._port._filesystem.exists(png_path):
             return self._port._filesystem.read_binary_file(png_path)
         else:
-            return None
+            return ''
 
     def _output_image_with_retry(self):
         # Retry a few more times because open() sometimes fails on Windows,
@@ -443,6 +442,11 @@ class ChromiumDriver(base.Driver):
                     raise e
         return self._output_image()
 
+    def _clear_output_image(self):
+        png_path = self._image_path
+        if png_path and self._port._filesystem.exists(png_path):
+            self._port._filesystem.remove(png_path)
+
     def run_test(self, driver_input):
         output = []
         error = []
@@ -450,7 +454,7 @@ class ChromiumDriver(base.Driver):
         timeout = False
         actual_uri = None
         actual_checksum = None
-
+        self._clear_output_image()
         start_time = time.time()
 
         uri = self._port.filename_to_uri(driver_input.filename)
@@ -497,9 +501,10 @@ class ChromiumDriver(base.Driver):
             (line, crash) = self._write_command_and_read_line(input=None)
 
         run_time = time.time() - start_time
-        return base.DriverOutput(
-            ''.join(output), self._output_image_with_retry(), actual_checksum,
-            crash, run_time, timeout, ''.join(error))
+        output_image = self._output_image_with_retry()
+        assert output_image is not None
+        return base.DriverOutput(''.join(output), output_image, actual_checksum,
+                                 crash, run_time, timeout, ''.join(error))
 
     def stop(self):
         if self._proc:

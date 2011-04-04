@@ -86,6 +86,7 @@ namespace WebCore {
         
         GraphicsContext* context() const;
 
+        bool isAccelerated() const { return m_accelerateRendering; }
         bool drawsUsingCopy() const; // If the image buffer has to render using a copied image, it will return true.
         PassRefPtr<Image> copyImage() const; // Return a new image that is a copy of the buffer.
 
@@ -131,6 +132,10 @@ namespace WebCore {
         // so that create() knows when it should return failure.
         ImageBuffer(const IntSize&, ColorSpace colorSpace, RenderingMode renderingMode, bool& success);
     };
+
+#if PLATFORM(CG) || USE(SKIA)
+    String ImageDataToDataURL(const ImageData& input, const String& mimeType, const double* quality);
+#endif
 
 } // namespace WebCore
 

@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2007 Kevin Ollivier <kevino@theolliviers.com>
+ * Copyright (C) 2011 Apple Inc. All rights reserved.
  *
  * All rights reserved.
  *
@@ -294,12 +295,13 @@ void FrameLoaderClientWx::dispatchDidStartProvisionalLoad()
 }
 
 
-void FrameLoaderClientWx::dispatchDidReceiveTitle(const String& title)
+void FrameLoaderClientWx::dispatchDidReceiveTitle(const StringWithDirection& title)
 {
     if (m_webView) {
-        m_webView->SetPageTitle(title);
+        // FIXME: use direction of title.
+        m_webView->SetPageTitle(title.string());
         wxWebViewReceivedTitleEvent wkEvent(m_webView);
-        wkEvent.SetTitle(title);
+        wkEvent.SetTitle(title.string());
         m_webView->GetEventHandler()->ProcessEvent(wkEvent);
     }
 }
@@ -524,7 +526,7 @@ void FrameLoaderClientWx::prepareForDataSourceReplacement()
 }
 
 
-void FrameLoaderClientWx::setTitle(const String& title, const KURL&)
+void FrameLoaderClientWx::setTitle(const StringWithDirection& title, const KURL&)
 {
     notImplemented();
 }
@@ -775,7 +777,7 @@ Frame* FrameLoaderClientWx::dispatchCreatePage(const NavigationAction&)
     return false;
 }
 
-void FrameLoaderClientWx::dispatchDecidePolicyForMIMEType(FramePolicyFunction function, const String& mimetype, const ResourceRequest& request)
+void FrameLoaderClientWx::dispatchDecidePolicyForResponse(FramePolicyFunction function, const ResourceResponse& response, const ResourceRequest& request)
 {
     if (!m_webFrame)
         return;
@@ -870,7 +872,7 @@ void FrameLoaderClientWx::transferLoadingResourceFromPage(unsigned long, Documen
 {
 }
 
-ObjectContentType FrameLoaderClientWx::objectContentType(const KURL& url, const String& mimeType)
+ObjectContentType FrameLoaderClientWx::objectContentType(const KURL& url, const String& mimeType, bool shouldPreferPlugInsForImages)
 {
     notImplemented();
     return ObjectContentType();

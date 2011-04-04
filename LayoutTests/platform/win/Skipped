@@ -48,6 +48,10 @@ http/tests/inspector/console-websocket-error.html
 http/tests/inspector/network/network-size.html
 http/tests/inspector/network/network-timing.html
 
+# https://bugs.webkit.org/show_bug.cgi?id=19793
+http/tests/inspector/network/network-size-chunked.html
+http/tests/inspector/network/network-size-sync.html
+
 # Fails <rdar://problem/5674289>
 media/video-seek-past-end-paused.html
 
@@ -116,6 +120,7 @@ editing/execCommand/copy-without-selection.html
 
 # Drag & Drop doesn't work correctly in DRT <rdar://5621244>
 editing/pasteboard/drag-image-in-about-blank-frame.html
+editing/pasteboard/drop-file-svg.html
 editing/pasteboard/get-data-text-plain-drop.html
 fast/events/drag-in-frames.html
 fast/events/standalone-image-drag-to-editable.html
@@ -208,6 +213,7 @@ fast/dom/Window/window-postmessage-clone-frames.html
 
 # File API is not supported yet
 fast/files
+http/tests/fileapi
 
 # Need to add functionality to DumpRenderTree to test IDN <rdar://problem/5301954>
 fast/encoding/idn-security.html
@@ -316,9 +322,6 @@ editing/pasteboard/drop-text-events.html
 editing/selection/drag-in-iframe.html
 fast/events/dragging-mouse-moves.html
 
-# Crash beneath SocketStream::readStreamCallback http://webkit.org/b/44138
-http/tests/websocket/tests/workers/worker-handshake-challenge-randomness.html
-
 # Causes next test to time out http://webkit.org/b/46975
 http/tests/xmlhttprequest/xmlhttprequest-sync-vs-async-assertion-failure.html
 
@@ -410,14 +413,11 @@ http/tests/security/xssAuditor/script-tag-with-fancy-unicode.html
 # Needs windows-specific pixel results http://webkit.org/b/54757
 media/video-controls-in-media-document.html
 
-# Sometimes crashes http://webkit.org/b/55375
-http/tests/websocket/tests/reload-crash.html
-
 # Sometimes fails http://webkit.org/b/55329
 fast/events/pageshow-pagehide-on-back-cached.html
 
-# Crashes http://webkit.org/b/55069
-fast/text/international/text-combine-parser-test.html
+# Different tests sometimes time out on apple-windows-5 http://webkit.org/b/55579
+http/tests/websocket
 
 ################################################################################
 ####################### No bugs filed about the below yet#######################
@@ -970,16 +970,17 @@ fast/text/international/thai-cursor-position.html
 fast/dom/tab-in-right-alignment.html
 svg/text/caret-in-svg-text.xhtml
 
-# textInputController.hasSpellingMarkers() is not implemented.
-editing/spelling/spelling-backspace-between-lines.html
-editing/spelling/spelling-contenteditable.html
-editing/spelling/spelling-textarea.html
+# textInputController.hasGrammarMarkers() is not implemented.
+editing/spelling/grammar.html
 
 # EditorClient::requestCheckingOfString() is not implemented
 editing/spelling/spellcheck-paste.html
 
 # IndexedDB is not yet enabled.
 storage/indexeddb
+
+# StorageTracker is not enabled.
+storage/domstorage/localstorage/storagetracker
 
 # This port doesn't support DeviceMotion or DeviceOrientation.
 fast/dom/DeviceMotion
@@ -989,6 +990,8 @@ fast/dom/Window/window-properties-device-orientation.html
 # Link prefetch is disabled by default
 fast/dom/HTMLLinkElement/link-and-subresource-test.html
 fast/dom/HTMLLinkElement/prefetch.html
+fast/dom/HTMLLinkElement/prefetch-beforeload.html
+fast/dom/HTMLLinkElement/prefetch-onerror.html
 fast/dom/HTMLLinkElement/prefetch-onload.html
 http/tests/misc/prefetch-purpose.html
 
@@ -1036,6 +1039,7 @@ printing/page-format-data.html
 # https://bugs.webkit.org/show_bug.cgi?id=38381
 fast/forms/input-appearance-spinbutton-disabled-readonly.html
 fast/forms/input-appearance-spinbutton-layer.html
+fast/forms/input-appearance-spinbutton-visibility.html
 fast/forms/input-number-events.html
 fast/forms/input-spinbutton-capturing.html
 
@@ -1060,9 +1064,12 @@ printing/setPrinting.html
 
 # The feature was disabled due to a compatibility issue.
 # https://bugs.webkit.org/show_bug.cgi?id=40520
-fast/forms/interactive-validation-lost-focusable.html
 fast/forms/interactive-validation-prevented.html
 fast/forms/interactive-validation-attach-assertion.html
+fast/forms/interactive-validation-assertion-by-validate-twice.html
+fast/forms/interactive-validation-select-crash.html
+fast/forms/interactive-validation-crash-by-style-override.html
+fast/forms/validation-message-appearance.html
 
 # Web Timing is not enabled.
 # https://bugs.webkit.org/show_bug.cgi?id=42435
@@ -1089,6 +1096,8 @@ http/tests/appcache/origin-quota.html
 
 # https://bugs.webkit.org/show_bug.cgi?id=43332
 inspector/debugger/dom-breakpoints.html
+inspector/debugger/event-listener-breakpoints.html
+inspector/debugger/xhr-breakpoints.html
 
 # https://bugs.webkit.org/show_bug.cgi?id=40300
 inspector/debugger/live-edit.html
@@ -1113,6 +1122,7 @@ fast/parser/pre-html5-parser-quirks.html
 
 # FileSystem API is not supported.
 fast/filesystem
+http/tests/filesystem
 http/tests/security/filesystem-iframe-from-remote.html
 
 # LayoutTestController::nodesFromRect is not supported.
@@ -1141,6 +1151,8 @@ fast/frames/meta-refresh-user-gesture.html
 # These require DRT setSerializeHTTPLoads implementation to be reliable.
 http/tests/local/link-stylesheet-load-order.html
 http/tests/local/link-stylesheet-load-order-preload.html
+fast/preloader/document-write.html
+fast/preloader/document-write-2.html
 
 # https://bugs.webkit.org/show_bug.cgi?id=50994
 fast/loader/user-stylesheet-fast-path.html
@@ -1157,10 +1169,62 @@ fast/animation
 # This port doesn't support v8 i18n extension.
 fast/js/i18n-bindings-locale.html
 
-# For https://bugs.webkit.org/show_bug.cgi?id=54490
-inspector/console/console-api-on-call-frame.html
-inspector/console/console-assert.html
-inspector/debugger
-
 # For https://bugs.webkit.org/show_bug.cgi?id=54519
 fast/xmlhttprequest/xmlhttprequest-responsetype-arraybuffer.html
+
+# https://bugs.webkit.org/show_bug.cgi?id=55921
+# Windows port doesn't support HTML in pastes.
+editing/pasteboard/onpaste-text-html-types.html
+
+# DataTransferItems is not yet implemented.
+editing/pasteboard/data-transfer-items.html
+
+# Needs expectation update
+fast/dom/HTMLMeterElement/meter-element.html
+fast/dom/HTMLMeterElement/meter-boundary-values.html
+fast/dom/HTMLMeterElement/meter-optimums.html
+fast/dom/HTMLMeterElement/meter-styles-changing-pseudo.html
+fast/dom/HTMLMeterElement/meter-styles.html
+fast/dom/HTMLMeterElement/meter-appearances-capacity.html
+fast/dom/HTMLMeterElement/meter-appearances-rating-relevancy.html
+
+# https://bugs.webkit.org/show_bug.cgi?id=56167
+http/tests/media/reload-after-dialog.html
+http/tests/media/remove-while-loading.html
+http/tests/media/video-seekable-stall.html
+
+# https://bugs.webkit.org/show_bug.cgi?id=56347
+fast/html/details-add-summary-1-and-click.html
+fast/html/details-add-summary-2-and-click.html
+fast/html/details-add-summary-3-and-click.html
+fast/html/details-add-summary-4-and-click.html
+fast/html/details-add-summary-5-and-click.html
+fast/html/details-add-summary-6-and-click.html
+fast/html/details-add-summary-7-and-click.html
+fast/html/details-add-summary-8-and-click.html
+fast/html/details-add-summary-9-and-click.html
+fast/html/details-add-summary-10-and-click.html
+fast/html/details-remove-summary-1-and-click.html
+fast/html/details-remove-summary-2-and-click.html
+fast/html/details-remove-summary-3-and-click.html
+fast/html/details-remove-summary-4-and-click.html
+fast/html/details-remove-summary-5-and-click.html
+fast/html/details-remove-summary-6-and-click.html
+
+# https://bugs.webkit.org/show_bug.cgi?id=56478
+plugins/refcount-leaks.html
+
+# https://bugs.webkit.org/show_bug.cgi?id=56496
+fast/js/array-sort-modifying-tostring.html
+
+# https://bugs.webkit.org/show_bug.cgi?id=56573
+fast/dom/HTMLKeygenElement/keygen.html
+
+# https://bugs.webkit.org/show_bug.cgi?id=57693
+plugins/windowless_plugin_paint_test.html
+
+# scalePage is currently Mac-specific WebKit API.
+fast/dom/Element/scale-page-bounding-client-rect.html
+fast/dom/Element/scale-page-client-rects.html
+fast/dom/Range/scale-page-bounding-client-rect.html
+fast/dom/Range/scale-page-client-rects.html

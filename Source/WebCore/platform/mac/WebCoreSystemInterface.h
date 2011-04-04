@@ -50,11 +50,13 @@ typedef struct _NSRect NSRect;
 @class NSDate;
 @class NSEvent;
 @class NSFont;
+@class NSHTTPCookie;
 @class NSImage;
 @class NSMenu;
 @class NSMutableURLRequest;
 @class NSString;
 @class NSTextFieldCell;
+@class NSURL;
 @class NSURLConnection;
 @class NSURLRequest;
 @class NSURLResponse;
@@ -68,10 +70,12 @@ class NSData;
 class NSDate;
 class NSEvent;
 class NSFont;
+class NSHTTPCookie;
 class NSImage;
 class NSMenu;
 class NSMutableArray;
 class NSMutableURLRequest;
+class NSURL;
 class NSURLRequest;
 class NSString;
 class NSTextFieldCell;
@@ -81,6 +85,8 @@ class NSView;
 class QTMovie;
 class QTMovieView;
 #endif
+
+typedef struct _CFURLResponse *CFURLResponseRef;
 
 extern "C" {
 
@@ -111,6 +117,7 @@ extern BOOL (*wkGetGlyphTransformedAdvances)(CGFontRef, NSFont*, CGAffineTransfo
 extern void (*wkDrawMediaSliderTrack)(int themeStyle, CGContextRef context, CGRect rect, float timeLoaded, float currentTime, 
     float duration, unsigned state);
 extern void (*wkDrawMediaUIPart)(int part, int themeStyle, CGContextRef context, CGRect rect, unsigned state);
+extern CFStringRef (*wkSignedPublicKeyAndChallengeString)(unsigned keySize, CFStringRef challenge, CFStringRef keyDescription);
 extern NSString* (*wkGetPreferredExtensionForMIMEType)(NSString*);
 extern NSArray* (*wkGetExtensionsForMIMEType)(NSString*);
 extern NSString* (*wkGetMIMETypeForExtension)(NSString*);
@@ -152,7 +159,6 @@ extern void (*wkSetHTTPPipeliningPriority)(NSMutableURLRequest *, int priority);
 extern void (*wkSetCONNECTProxyForStream)(CFReadStreamRef, CFStringRef proxyHost, CFNumberRef proxyPort);
 extern void (*wkSetCONNECTProxyAuthorizationForStream)(CFReadStreamRef, CFStringRef proxyAuthorizationString);
 extern CFHTTPMessageRef (*wkCopyCONNECTProxyResponse)(CFReadStreamRef, CFURLRef responseURL);
-extern BOOL (*wkIsLatchingWheelEvent)(NSEvent *);
 
 #ifndef BUILDING_ON_TIGER
 extern void (*wkGetGlyphsForCharacters)(CGFontRef, const UniChar[], CGGlyph[], size_t);
@@ -180,6 +186,15 @@ extern BOOL (*wkUseSharedMediaUI)();
 extern void* wkGetHyphenationLocationBeforeIndex;
 #else
 extern CFIndex (*wkGetHyphenationLocationBeforeIndex)(CFStringRef string, CFIndex index);
+
+typedef enum {
+    wkEventPhaseNone = 0,
+    wkEventPhaseBegan = 1,
+    wkEventPhaseChanged = 2,
+    wkEventPhaseEnded = 3,
+} wkEventPhase;
+
+extern int (*wkGetNSEventMomentumPhase)(NSEvent *);
 #endif
 
 extern CTLineRef (*wkCreateCTLineWithUniCharProvider)(const UniChar* (*provide)(CFIndex stringIndex, CFIndex* charCount, CFDictionaryRef* attributes, void*), void (*dispose)(const UniChar* chars, void*), void*);
@@ -190,10 +205,13 @@ extern CGContextRef (*wkIOSurfaceContextCreate)(IOSurfaceRef surface, unsigned w
 extern CGImageRef (*wkIOSurfaceContextCreateImage)(CGContextRef context);
 
 typedef struct __WKScrollbarPainter *WKScrollbarPainterRef;
+typedef struct __WKScrollbarPainterController *WKScrollbarPainterControllerRef;
+
 extern WKScrollbarPainterRef (*wkMakeScrollbarPainter)(int controlSize, bool isHorizontal);
 extern WKScrollbarPainterRef (*wkMakeScrollbarReplacementPainter)(WKScrollbarPainterRef oldPainter, int newStyle, int controlSize, bool isHorizontal);
 extern void (*wkScrollbarPainterSetDelegate)(WKScrollbarPainterRef, id scrollbarPainterDelegate);
 extern void (*wkScrollbarPainterPaint)(WKScrollbarPainterRef, bool enabled, double value, CGFloat proportion, CGRect frameRect);
+extern void (*wkScrollbarPainterForceFlashScrollers)(WKScrollbarPainterControllerRef);
 extern int (*wkScrollbarThickness)(int controlSize);
 extern int (*wkScrollbarMinimumThumbLength)(WKScrollbarPainterRef);
 extern int (*wkScrollbarMinimumTotalLengthNeededForThumb)(WKScrollbarPainterRef);
@@ -204,7 +222,6 @@ extern void (*wkSetScrollbarPainterTrackAlpha)(WKScrollbarPainterRef, CGFloat);
 extern bool (*wkScrollbarPainterIsHorizontal)(WKScrollbarPainterRef);
 extern void (*wkScrollbarPainterSetOverlayState)(WKScrollbarPainterRef, int overlayScrollerState);
 
-typedef struct __WKScrollbarPainterController *WKScrollbarPainterControllerRef;
 extern WKScrollbarPainterControllerRef (*wkMakeScrollbarPainterController)(id painterControllerDelegate);
 extern void (*wkSetPainterForPainterController)(WKScrollbarPainterControllerRef, WKScrollbarPainterRef, bool isHorizontal);
 extern WKScrollbarPainterRef (*wkVerticalScrollbarPainterForController)(WKScrollbarPainterControllerRef);
@@ -238,6 +255,19 @@ extern AXUIElementRef (*wkCreateAXUIElementRef)(id element);
 typedef const struct __CFURLStorageSession* CFURLStorageSessionRef;
 extern CFURLStorageSessionRef (*wkCreatePrivateStorageSession)(CFStringRef);
 extern NSURLRequest* (*wkCopyRequestWithStorageSession)(CFURLStorageSessionRef, NSURLRequest*);
+
+typedef struct OpaqueCFHTTPCookieStorage* CFHTTPCookieStorageRef;
+extern CFHTTPCookieStorageRef (*wkCopyHTTPCookieStorage)(CFURLStorageSessionRef);
+extern unsigned (*wkGetHTTPCookieAcceptPolicy)(CFHTTPCookieStorageRef);
+extern NSArray *(*wkHTTPCookiesForURL)(CFHTTPCookieStorageRef, NSURL *);
+extern void (*wkSetHTTPCookiesForURL)(CFHTTPCookieStorageRef, NSArray *, NSURL *, NSURL *);
+extern void (*wkDeleteHTTPCookie)(CFHTTPCookieStorageRef, NSHTTPCookie *);
+
+extern CFStringRef (*wkGetCFURLResponseMIMEType)(CFURLResponseRef);
+extern CFURLRef (*wkGetCFURLResponseURL)(CFURLResponseRef);
+extern CFHTTPMessageRef (*wkGetCFURLResponseHTTPResponse)(CFURLResponseRef);
+extern CFStringRef (*wkCopyCFURLResponseSuggestedFilename)(CFURLResponseRef);
+extern void (*wkSetCFURLResponseMIMEType)(CFURLResponseRef, CFStringRef mimeType);
 
 }
 

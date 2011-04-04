@@ -65,9 +65,9 @@ WebInspector.AuditRules.getDomainToResourcesMap = function(resources, types, nee
 
 WebInspector.AuditRules.evaluateInTargetWindow = function(func, args, callback)
 {
-    function mycallback(result)
+    function mycallback(error, result)
     {
-        if (result)
+        if (!error && result)
             callback(JSON.parse(result.description));
         else
             callback(null);
@@ -322,7 +322,7 @@ WebInspector.AuditRules.UnusedCssRule.prototype = {
                     for (var curRule = 0; curRule < styleSheet.rules.length; ++curRule) {
                         var rule = styleSheet.rules[curRule];
                         // Exact computation whenever source ranges are available.
-                        var textLength = (rule.selectorRange && rule.style.properties.endOffset) ? rule.style.properties.endOffset - rule.selectorRange.start + 1 : 0;
+                        var textLength = (rule.selectorRange && rule.style.range && rule.style.range.end) ? rule.style.range.end - rule.selectorRange.start + 1 : 0;
                         if (!textLength && rule.style.cssText)
                             textLength = rule.style.cssText.length + rule.selectorText.length;
                         stylesheetSize += textLength;
@@ -377,24 +377,28 @@ WebInspector.AuditRules.UnusedCssRule.prototype = {
             WebInspector.AuditRules.evaluateInTargetWindow(routine, [selectors], selectorsCallback.bind(null, callback, styleSheets, testedSelectors));
         }
 
-        function styleSheetCallback(styleSheets, continuation, styleSheet)
+        function styleSheetCallback(styleSheets, sourceURL, continuation, styleSheet)
         {
-            if (styleSheet)
+            if (styleSheet) {
+                styleSheet.sourceURL = sourceURL;
                 styleSheets.push(styleSheet);
+            }
             if (continuation)
                 continuation(styleSheets);
         }
 
-        function allStylesCallback(styleSheetIds)
+        function allStylesCallback(error, styleSheetInfos)
         {
-            if (!styleSheetIds || !styleSheetIds.length)
+            if (error || !styleSheetInfos || !styleSheetInfos.length)
                 return evalCallback([]);
             var styleSheets = [];
-            for (var i = 0; i < styleSheetIds.length; ++i)
-                WebInspector.CSSStyleSheet.createForId(styleSheetIds[i], styleSheetCallback.bind(null, styleSheets, i == styleSheetIds.length - 1 ? evalCallback : null));
+            for (var i = 0; i < styleSheetInfos.length; ++i) {
+                var info = styleSheetInfos[i];
+                WebInspector.CSSStyleSheet.createForId(info.styleSheetId, styleSheetCallback.bind(null, styleSheets, info.sourceURL, i == styleSheetInfos.length - 1 ? evalCallback : null));
+            }
         }
 
-        CSSAgent.getAllStyles(allStylesCallback);
+        CSSAgent.getAllStyleSheets(allStylesCallback);
     }
 }
 
@@ -719,11 +723,19 @@ WebInspector.AuditRules.ImageDimensionsRule.prototype = {
 
         function getStyles(nodeIds)
         {
+            if (!nodeIds) {
+                console.error("Failed to get styles");
+                return;
+            }
             for (var i = 0; i < nodeIds.length; ++i)
                 WebInspector.cssModel.getStylesAsync(nodeIds[i], imageStylesReady.bind(this, nodeIds[i], i === nodeIds.length - 1));
         }
+        function onDocumentAvailable(root)
+        {
+            WebInspector.domAgent.querySelectorAll(root.id, "img[src]", getStyles);
+        }
+        WebInspector.domAgent.requestDocument(onDocumentAvailable);
 
-        DOMAgent.querySelectorAll(0, "img[src]", true, getStyles);
     }
 }
 

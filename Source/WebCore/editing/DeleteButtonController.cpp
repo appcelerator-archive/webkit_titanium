@@ -63,7 +63,7 @@ DeleteButtonController::DeleteButtonController(Frame* frame)
 
 static bool isDeletableElement(const Node* node)
 {
-    if (!node || !node->isHTMLElement() || !node->inDocument() || !node->isContentEditable())
+    if (!node || !node->isHTMLElement() || !node->inDocument() || !node->rendererIsEditable())
         return false;
 
     // In general we want to only draw the UI around object of a certain area, but we still keep the min width/height to
@@ -112,8 +112,12 @@ static bool isDeletableElement(const Node* node)
             return false;
 
         // Allow blocks that have background images
-        if (style->hasBackgroundImage() && style->backgroundImage()->canRender(1.0f))
-            return true;
+        if (style->hasBackgroundImage()) {
+            for (const FillLayer* background = style->backgroundLayers(); background; background = background->next()) {
+                if (background->image() && background->image()->canRender(1))
+                    return true;
+            }
+        }
 
         // Allow blocks with a minimum number of non-transparent borders
         unsigned visibleBorders = style->borderTop().isVisible() + style->borderBottom().isVisible() + style->borderLeft().isVisible() + style->borderRight().isVisible();
@@ -156,15 +160,11 @@ static HTMLElement* enclosingDeletableElement(const VisibleSelection& selection)
 
     // The enclosingNodeOfType function only works on nodes that are editable
     // (which is strange, given its name).
-    if (!container->isContentEditable())
+    if (!container->rendererIsEditable())
         return 0;
 
     Node* element = enclosingNodeOfType(firstPositionInNode(container), &isDeletableElement);
-    if (!element)
-        return 0;
-
-    ASSERT(element->isHTMLElement());
-    return toHTMLElement(element);
+    return element && element->isHTMLElement() ? toHTMLElement(element) : 0;
 }
 
 void DeleteButtonController::respondToChangedSelection(const VisibleSelection& oldSelection)

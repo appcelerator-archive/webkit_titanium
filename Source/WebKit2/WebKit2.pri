@@ -41,20 +41,25 @@ WEBKIT2_INCLUDEPATH = \
     $$SOURCE_DIR/WebKit2/WebProcess/ApplicationCache \
     $$SOURCE_DIR/WebKit2/WebProcess/Authentication \
     $$SOURCE_DIR/WebKit2/WebProcess/Cookies \
+    $$SOURCE_DIR/WebKit2/WebProcess/Cookies/qt \
     $$SOURCE_DIR/WebKit2/WebProcess/Downloads \
     $$SOURCE_DIR/WebKit2/WebProcess/Downloads/qt \
+    $$SOURCE_DIR/WebKit2/WebProcess/FullScreen \
     $$SOURCE_DIR/WebKit2/WebProcess/Geolocation \
+    $$SOURCE_DIR/WebKit2/WebProcess/IconDatabase \
     $$SOURCE_DIR/WebKit2/WebProcess/InjectedBundle \
     $$SOURCE_DIR/WebKit2/WebProcess/InjectedBundle/DOM \
     $$SOURCE_DIR/WebKit2/WebProcess/InjectedBundle/API/c \
     $$SOURCE_DIR/WebKit2/WebProcess/KeyValueStorage \
+    $$SOURCE_DIR/WebKit2/WebProcess/MediaCache \
     $$SOURCE_DIR/WebKit2/WebProcess/Plugins \
     $$SOURCE_DIR/WebKit2/WebProcess/Plugins/Netscape \
     $$SOURCE_DIR/WebKit2/WebProcess/ResourceCache \
     $$SOURCE_DIR/WebKit2/WebProcess/WebCoreSupport \
     $$SOURCE_DIR/WebKit2/WebProcess/WebCoreSupport/qt \
     $$SOURCE_DIR/WebKit2/WebProcess/WebPage \
-    $$SOURCE_DIR/WebKit2/WebProcess/qt
+    $$SOURCE_DIR/WebKit2/WebProcess/qt \
+    $$SOURCE_DIR/WebKit2/PluginProcess
 
 # On Symbian PREPEND_INCLUDEPATH is the best way to make sure that WebKit headers
 # are included before platform headers.

@@ -42,15 +42,21 @@ WK_EXPORT WKBundleNodeHandleRef WKBundleNodeHandleCopyDocument(WKBundleNodeHandl
 
 /* Additional DOM Operations */
 
-WK_EXPORT WKRect WKBundleNodeHandleGetElementBounds(WKBundleNodeHandleRef nodeHandle);
 WK_EXPORT WKRect WKBundleNodeHandleGetRenderRect(WKBundleNodeHandleRef nodeHandle, bool* isReplaced);
 
+/* Element Specific Operations */
+WK_EXPORT WKRect WKBundleNodeHandleGetElementBounds(WKBundleNodeHandleRef elementHandle);
+WK_EXPORT WKBundleNodeHandleRef WKBundleNodeHandleCopyElementShadowRoot(WKBundleNodeHandleRef elementHandle);
 
 /* HTMLInputElement Specific Operations */
 WK_EXPORT void WKBundleNodeHandleSetHTMLInputElementValueForUser(WKBundleNodeHandleRef htmlInputElementHandle, WKStringRef value);
 WK_EXPORT bool WKBundleNodeHandleGetHTMLInputElementAutofilled(WKBundleNodeHandleRef htmlInputElementHandle);
 WK_EXPORT void WKBundleNodeHandleSetHTMLInputElementAutofilled(WKBundleNodeHandleRef htmlInputElementHandle, bool filled);
+WK_EXPORT bool WKBundleNodeHandleGetHTMLInputElementLastChangeWasUserEdit(WKBundleNodeHandleRef htmlInputElementHandle);
 
+/* HTMLTextAreaElement Specific Operations */
+WK_EXPORT bool WKBundleNodeHandleGetHTMLTextAreaElementLastChangeWasUserEdit(WKBundleNodeHandleRef htmlTextAreaElementHandle);
+    
 /* HTMLTableCellElement Specific Operations */
 WK_EXPORT WKBundleNodeHandleRef WKBundleNodeHandleCopyHTMLTableCellElementCellAbove(WKBundleNodeHandleRef htmlTableCellElementHandle);
 

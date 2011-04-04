@@ -44,9 +44,11 @@ public:
     // Implementors must call cachedResource->removeClient() immediately.
     virtual void stopWatchingForLoad(CachedResource*) = 0;
 
-    // Implementors can block certain script loads (for XSSAuditor, etc.)
-    virtual bool shouldLoadExternalScriptFromSrc(const AtomicString&) = 0;
     virtual HTMLInputStream& inputStream() = 0;
+
+    virtual bool hasPreloadScanner() const = 0;
+    virtual void appendCurrentInputStreamToPreloadScannerAndScan() = 0;
+    
 };
 
 }

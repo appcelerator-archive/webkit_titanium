@@ -32,6 +32,7 @@
 #define WebClipboard_h
 
 #include "WebCommon.h"
+#include "WebData.h"
 #include "WebString.h"
 #include "WebVector.h"
 
@@ -44,6 +45,7 @@ class WebURL;
 class WebClipboard {
 public:
     enum Format {
+        FormatPlainText,
         FormatHTML,
         FormatBookmark,
         FormatSmartPaste
@@ -62,6 +64,7 @@ public:
 
     virtual WebString readPlainText(Buffer) { return WebString(); }
     virtual WebString readHTML(Buffer, WebURL*) { return WebString(); }
+    virtual WebData readImage(Buffer) { return WebData(); }
 
     virtual void writePlainText(const WebString&) { }
     virtual void writeHTML(

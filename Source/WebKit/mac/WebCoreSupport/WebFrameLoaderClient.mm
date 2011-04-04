@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2006, 2007, 2008, 2009, 2011 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -624,12 +624,13 @@ void WebFrameLoaderClient::dispatchDidStartProvisionalLoad()
         CallFrameLoadDelegate(implementations->didStartProvisionalLoadForFrameFunc, webView, @selector(webView:didStartProvisionalLoadForFrame:), m_webFrame.get());
 }
 
-void WebFrameLoaderClient::dispatchDidReceiveTitle(const String& title)
+void WebFrameLoaderClient::dispatchDidReceiveTitle(const StringWithDirection& title)
 {
     WebView *webView = getWebView(m_webFrame.get());   
     WebFrameLoadDelegateImplementationCache* implementations = WebViewGetFrameLoadDelegateImplementations(webView);
     if (implementations->didReceiveTitleForFrameFunc)
-        CallFrameLoadDelegate(implementations->didReceiveTitleForFrameFunc, webView, @selector(webView:didReceiveTitle:forFrame:), (NSString *)title, m_webFrame.get());
+        // FIXME: use direction of title.
+        CallFrameLoadDelegate(implementations->didReceiveTitleForFrameFunc, webView, @selector(webView:didReceiveTitle:forFrame:), (NSString *)title.string(), m_webFrame.get());
 }
 
 void WebFrameLoaderClient::dispatchDidChangeIcons()
@@ -742,13 +743,13 @@ void WebFrameLoaderClient::dispatchShow()
     [[webView _UIDelegateForwarder] webViewShow:webView];
 }
 
-void WebFrameLoaderClient::dispatchDecidePolicyForMIMEType(FramePolicyFunction function,
-    const String& MIMEType, const ResourceRequest& request)
+void WebFrameLoaderClient::dispatchDecidePolicyForResponse(FramePolicyFunction function,
+    const ResourceResponse& response, const ResourceRequest& request)
 {
     WebView *webView = getWebView(m_webFrame.get());
 
     [[webView _policyDelegateForwarder] webView:webView
-                        decidePolicyForMIMEType:MIMEType
+                        decidePolicyForMIMEType:response.mimeType()
                                         request:request.nsURLRequest()
                                           frame:m_webFrame.get()
                                decisionListener:setUpPolicyListener(function).get()];
@@ -893,7 +894,7 @@ void WebFrameLoaderClient::updateGlobalHistory()
         WebHistoryDelegateImplementationCache* implementations = WebViewGetHistoryDelegateImplementations(view);
         if (implementations->navigatedFunc) {
             WebNavigationData *data = [[WebNavigationData alloc] initWithURLString:loader->urlForHistory()
-                                                                             title:loader->title()
+                                                                             title:loader->title().string()
                                                                    originalRequest:loader->originalRequestCopy().nsURLRequest()
                                                                           response:loader->response().nsURLResponse()
                                                                  hasSubstituteData:loader->substituteData().isValid()
@@ -907,7 +908,7 @@ void WebFrameLoaderClient::updateGlobalHistory()
     }
 
     [[WebHistory optionalSharedHistory] _visitedURL:loader->urlForHistory() 
-                                          withTitle:loader->title()
+                                          withTitle:loader->title().string()
                                              method:loader->originalRequestCopy().httpMethod()
                                          wasFailure:loader->urlForHistoryReflectsFailure()
                                  increaseVisitCount:!loader->clientRedirectSourceForHistory()]; // Do not increase visit count due to navigations that were not initiated by the user directly, avoiding growth from programmatic reloads.
@@ -1179,7 +1180,7 @@ PassRefPtr<DocumentLoader> WebFrameLoaderClient::createDocumentLoader(const Reso
     return loader.release();
 }
 
-void WebFrameLoaderClient::setTitle(const String& title, const KURL& url)
+void WebFrameLoaderClient::setTitle(const StringWithDirection& title, const KURL& url)
 {
     WebView* view = getWebView(m_webFrame.get());
     
@@ -1188,7 +1189,8 @@ void WebFrameLoaderClient::setTitle(const String& title, const KURL& url)
         if (!implementations->setTitleFunc)
             return;
             
-        CallHistoryDelegate(implementations->setTitleFunc, view, @selector(webView:updateHistoryTitle:forURL:), (NSString *)title, (NSString *)url);
+        // FIXME: use direction of title.
+        CallHistoryDelegate(implementations->setTitleFunc, view, @selector(webView:updateHistoryTitle:forURL:), (NSString *)title.string(), (NSString *)url);
         return;
     }
     
@@ -1196,7 +1198,7 @@ void WebFrameLoaderClient::setTitle(const String& title, const KURL& url)
     nsURL = [nsURL _webkit_canonicalize];
     if(!nsURL)
         return;
-    NSString *titleNSString = title;
+    NSString *titleNSString = title.string();
        
     [[[WebHistory optionalSharedHistory] itemForURL:nsURL] setTitle:titleNSString];
 }
@@ -1285,7 +1287,7 @@ void WebFrameLoaderClient::transitionToCommittedForNewPage()
         // like the ones that Safari uses for bookmarks it is the only way the DocumentLoader
         // will get the proper title.
         if (DocumentLoader* documentLoader = [dataSource _documentLoader])
-            documentLoader->setTitle([dataSource pageTitle]);
+            documentLoader->setTitle(StringWithDirection([dataSource pageTitle], LTR));
     }
 
     if (HTMLFrameOwnerElement* owner = coreFrame->ownerElement())
@@ -1454,7 +1456,7 @@ void WebFrameLoaderClient::transferLoadingResourceFromPage(unsigned long identif
     [kit(oldPage) _removeObjectForIdentifier:identifier];
 }
 
-ObjectContentType WebFrameLoaderClient::objectContentType(const KURL& url, const String& mimeType)
+ObjectContentType WebFrameLoaderClient::objectContentType(const KURL& url, const String& mimeType, bool shouldPreferPlugInsForImages)
 {
     BEGIN_BLOCK_OBJC_EXCEPTIONS;
 
@@ -1491,18 +1493,25 @@ ObjectContentType WebFrameLoaderClient::objectContentType(const KURL& url, const
     if (type.isEmpty())
         return ObjectContentFrame; // Go ahead and hope that we can display the content.
 
-    if (MIMETypeRegistry::isSupportedImageMIMEType(type))
-        return ObjectContentImage;
-
     WebBasePluginPackage *package = [getWebView(m_webFrame.get()) _pluginForMIMEType:type];
+    ObjectContentType plugInType = ObjectContentNone;
     if (package) {
 #if ENABLE(NETSCAPE_PLUGIN_API)
         if ([package isKindOfClass:[WebNetscapePluginPackage class]])
-            return ObjectContentNetscapePlugin;
+            plugInType = ObjectContentNetscapePlugin;
+        else
 #endif
-        ASSERT([package isKindOfClass:[WebPluginPackage class]]);
-        return ObjectContentOtherPlugin;
+        {
+            ASSERT([package isKindOfClass:[WebPluginPackage class]]);
+            plugInType = ObjectContentOtherPlugin;
+        }
     }
+    
+    if (MIMETypeRegistry::isSupportedImageMIMEType(type))
+        return shouldPreferPlugInsForImages && plugInType != ObjectContentNone ? plugInType : ObjectContentImage;
+
+    if (plugInType != ObjectContentNone)
+        return plugInType;
 
     if ([m_webFrame->_private->webFrameView _viewClassForMIMEType:type])
         return ObjectContentFrame;

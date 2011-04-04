@@ -23,6 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "config.h"
 #include "LayoutTestController.h"
 
 #include "InjectedBundle.h"
@@ -33,9 +34,10 @@
 #include <WebKit2/WKBundleFrame.h>
 #include <WebKit2/WKBundleFramePrivate.h>
 #include <WebKit2/WKBundleInspector.h>
+#include <WebKit2/WKBundleNodeHandlePrivate.h>
 #include <WebKit2/WKBundlePagePrivate.h>
-#include <WebKit2/WKBundleScriptWorld.h>
 #include <WebKit2/WKBundlePrivate.h>
+#include <WebKit2/WKBundleScriptWorld.h>
 #include <WebKit2/WKRetainPtr.h>
 #include <WebKit2/WebKit2.h>
 #include <wtf/HashMap.h>
@@ -285,6 +287,16 @@ bool LayoutTestController::findString(JSStringRef target, JSValueRef optionsArra
     return WKBundlePageFindString(InjectedBundle::shared().page()->page(), toWK(target).get(), options);
 }
 
+void LayoutTestController::clearAllDatabases()
+{
+    WKBundleClearAllDatabases(InjectedBundle::shared().bundle());
+}
+
+void LayoutTestController::setDatabaseQuota(uint64_t quota)
+{
+    return WKBundleSetDatabaseQuota(InjectedBundle::shared().bundle(), quota);
+}
+
 bool LayoutTestController::isCommandEnabled(JSStringRef name)
 {
     return WKBundlePageIsEditingCommandEnabled(InjectedBundle::shared().page()->page(), toWK(name).get());
@@ -301,9 +313,33 @@ void LayoutTestController::setXSSAuditorEnabled(bool enabled)
     WKBundleOverrideXSSAuditorEnabledForTestRunner(InjectedBundle::shared().bundle(), InjectedBundle::shared().pageGroup(), true);
 }
 
+void LayoutTestController::setAllowUniversalAccessFromFileURLs(bool enabled)
+{
+    WKBundleOverrideAllowUniversalAccessFromFileURLsForTestRunner(InjectedBundle::shared().bundle(), InjectedBundle::shared().pageGroup(), enabled);
+}
+
 unsigned LayoutTestController::windowCount()
 {
     return InjectedBundle::shared().pageCount();
+}
+
+JSValueRef LayoutTestController::shadowRoot(JSValueRef element)
+{
+    WKBundleFrameRef mainFrame = WKBundlePageGetMainFrame(InjectedBundle::shared().page()->page());
+    JSContextRef context = WKBundleFrameGetJavaScriptContext(mainFrame);
+
+    if (!element || !JSValueIsObject(context, element))
+        return JSValueMakeNull(context);
+
+    WKRetainPtr<WKBundleNodeHandleRef> domElement = adoptWK(WKBundleNodeHandleCreate(context, const_cast<JSObjectRef>(element)));
+    if (!domElement)
+        return JSValueMakeNull(context);
+
+    WKRetainPtr<WKBundleNodeHandleRef> shadowRootDOMElement = adoptWK(WKBundleNodeHandleCopyElementShadowRoot(domElement.get()));
+    if (!shadowRootDOMElement)
+        return JSValueMakeNull(context);
+
+    return WKBundleFrameGetJavaScriptWrapperForNodeForWorld(mainFrame, shadowRootDOMElement.get(), WKBundleScriptWorldNormalWorld());
 }
 
 void LayoutTestController::clearBackForwardList()

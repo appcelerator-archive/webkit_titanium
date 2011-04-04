@@ -30,7 +30,7 @@ import unittest
 import datetime
 import StringIO
 
-from .bugzilla import Bugzilla, BugzillaQueries, parse_bug_id
+from .bugzilla import Bugzilla, BugzillaQueries, parse_bug_id, parse_bug_id_from_changelog
 
 from webkitpy.common.system.outputcapture import OutputCapture
 from webkitpy.tool.mocktool import MockBrowser
@@ -104,7 +104,7 @@ class BugzillaTest(unittest.TestCase):
     <bug>
           <bug_id>32585</bug_id>
           <creation_ts>2009-12-15 15:17 PST</creation_ts>
-          <short_desc>bug to test webkit-patch and commit-queue failures</short_desc>
+          <short_desc>bug to test webkit-patch&apos;s and commit-queue&apos;s failures</short_desc>
           <delta_ts>2009-12-27 21:04:50 PST</delta_ts>
           <reporter_accessible>1</reporter_accessible>
           <cclist_accessible>1</cclist_accessible>
@@ -173,7 +173,7 @@ ZEZpbmlzaExvYWRXaXRoUmVhc29uOnJlYXNvbl07Cit9CisKIEBlbmQKIAogI2VuZGlmCg==
 
     _expected_example_bug_parsing = {
         "id" : 32585,
-        "title" : u"bug to test webkit-patch and commit-queue failures",
+        "title" : u"bug to test webkit-patch's and commit-queue's failures",
         "cc_emails" : ["foo@bar.com", "example@example.com"],
         "reporter_email" : "eric@webkit.org",
         "assigned_to_email" : "webkit-unassigned@lists.webkit.org",
@@ -191,6 +191,52 @@ ZEZpbmlzaExvYWRXaXRoUmVhc29uOnJlYXNvbl07Cit9CisKIEBlbmQKIAogI2VuZGlmCg==
             'id': 45548
         }],
     }
+
+    def test_parse_bug_id_from_changelog(self):
+        commit_text = '''
+2011-03-23  Ojan Vafai  <ojan@chromium.org>
+
+        Add failing result for WebKit2. All tests that require
+        focus fail on WebKit2. See https://bugs.webkit.org/show_bug.cgi?id=56988.
+
+        * platform/mac-wk2/fast/css/pseudo-any-expected.txt: Added.
+
+        '''
+
+        self.assertEquals(56988, parse_bug_id_from_changelog(commit_text))
+
+        commit_text = '''
+2011-03-23  Ojan Vafai  <ojan@chromium.org>
+
+        Add failing result for WebKit2. All tests that require
+        focus fail on WebKit2. See https://bugs.webkit.org/show_bug.cgi?id=56988.
+        https://bugs.webkit.org/show_bug.cgi?id=12345
+
+        * platform/mac-wk2/fast/css/pseudo-any-expected.txt: Added.
+
+        '''
+
+        self.assertEquals(12345, parse_bug_id_from_changelog(commit_text))
+
+        commit_text = '''
+2011-03-31  Adam Roben  <aroben@apple.com>
+
+        Quote the executable path we pass to ::CreateProcessW
+
+        This will ensure that spaces in the path will be interpreted correctly.
+
+        Fixes <http://webkit.org/b/57569> Web process sometimes fails to launch when there are
+        spaces in its path
+
+        Reviewed by Steve Falkenburg.
+
+        * UIProcess/Launcher/win/ProcessLauncherWin.cpp:
+        (WebKit::ProcessLauncher::launchProcess): Surround the executable path in quotes.
+
+        '''
+
+        self.assertEquals(57569, parse_bug_id_from_changelog(commit_text))
+
 
     # FIXME: This should move to a central location and be shared by more unit tests.
     def _assert_dictionaries_equal(self, actual, expected):

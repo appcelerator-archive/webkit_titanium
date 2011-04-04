@@ -35,6 +35,12 @@ using namespace WebCore;
 
 NSString *WebDatabaseDirectoryDefaultsKey = @"WebDatabaseDirectory";
 NSString *WebKitLocalCacheDefaultsKey = @"WebKitLocalCache";
+NSString *WebStorageDirectoryDefaultsKey = @"WebKitLocalStorageDatabasePathPreferenceKey";
+
+static NSString *WebKitApplicationDidChangeAccessibilityEnhancedUserInterfaceNotification = @"NSApplicationDidChangeAccessibilityEnhancedUserInterfaceNotification";
+
+// FIXME: <rdar://problem/9138817> - After this "backwards compatibility" radar is removed, this code should be removed to only return an empty String.
+NSString *WebIconDatabaseDirectoryDefaultsKey = @"WebIconDatabaseDirectoryDefaultsKey";
 
 namespace WebKit {
 
@@ -78,12 +84,11 @@ void WebContext::platformInitializeWebProcess(WebProcessCreationParameters& para
     NSURLCache *urlCache = [NSURLCache sharedURLCache];
 
     parameters.parentProcessName = [[NSProcessInfo processInfo] processName];    
-    parameters.nsURLCachePath = fileSystemRepresentation([(NSString *)cachePath.get() stringByStandardizingPath]);
+    parameters.nsURLCachePath = [(NSString *)cachePath.get() stringByStandardizingPath];
     parameters.nsURLCacheMemoryCapacity = [urlCache memoryCapacity];
     parameters.nsURLCacheDiskCapacity = [urlCache diskCapacity];
 
-    ASSERT(strlen(parameters.nsURLCachePath.data()));
-    ASSERT(parameters.nsURLCachePath.data()[strlen(parameters.nsURLCachePath.data()) - 1] != '/'); // Necessary for NSURLCache to find the cache file.
+    ASSERT(!parameters.nsURLCachePath.isEmpty());
 
 #if USE(ACCELERATED_COMPOSITING) && HAVE(HOSTED_CORE_ANIMATION)
     mach_port_t renderServerPort = WKInitializeRenderServer();
@@ -92,19 +97,46 @@ void WebContext::platformInitializeWebProcess(WebProcessCreationParameters& para
 #endif
 
     // FIXME: This should really be configurable; we shouldn't just blindly allow read access to the UI process bundle.
-    parameters.uiProcessBundleResourcePath = fileSystemRepresentation([[NSBundle mainBundle] resourcePath]);
+    parameters.uiProcessBundleResourcePath = [[NSBundle mainBundle] resourcePath];
 
 #if USE(CFURLSTORAGESESSIONS)
     parameters.uiProcessBundleIdentifier = String([[NSBundle mainBundle] bundleIdentifier]);
 #endif
+    
+    // Listen for enhanced accessibility changes and propagate them to the WebProcess.
+    m_enhancedAccessibilityObserver = [[NSNotificationCenter defaultCenter] addObserverForName:WebKitApplicationDidChangeAccessibilityEnhancedUserInterfaceNotification object:nil queue:[NSOperationQueue currentQueue] usingBlock:^(NSNotification *note) {
+        setEnhancedAccessibility([[[note userInfo] objectForKey:@"AXEnhancedUserInterface"] boolValue]);
+    }];
 }
 
+void WebContext::platformInvalidateContext()
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:(id)m_enhancedAccessibilityObserver.get()];
+}
+    
 String WebContext::platformDefaultDatabaseDirectory() const
 {
     NSString *databasesDirectory = [[NSUserDefaults standardUserDefaults] objectForKey:WebDatabaseDirectoryDefaultsKey];
     if (!databasesDirectory || ![databasesDirectory isKindOfClass:[NSString class]])
         databasesDirectory = @"~/Library/WebKit/Databases";
     return [databasesDirectory stringByStandardizingPath];
+}
+
+String WebContext::platformDefaultIconDatabasePath() const
+{
+    // FIXME: <rdar://problem/9138817> - After this "backwards compatibility" radar is removed, this code should be removed to only return an empty String.
+    NSString *databasesDirectory = [[NSUserDefaults standardUserDefaults] objectForKey:WebIconDatabaseDirectoryDefaultsKey];
+    if (!databasesDirectory || ![databasesDirectory isKindOfClass:[NSString class]])
+        databasesDirectory = @"~/Library/Icons/WebpageIcons.db";
+    return [databasesDirectory stringByStandardizingPath];
+}
+
+String WebContext::platformDefaultLocalStorageDirectory() const
+{
+    NSString *localStorageDirectory = [[NSUserDefaults standardUserDefaults] objectForKey:WebStorageDirectoryDefaultsKey];
+    if (!localStorageDirectory || ![localStorageDirectory isKindOfClass:[NSString class]])
+        localStorageDirectory = @"~/Library/WebKit/LocalStorage";
+    return [localStorageDirectory stringByStandardizingPath];
 }
 
 } // namespace WebKit

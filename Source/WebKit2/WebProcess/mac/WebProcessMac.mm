@@ -28,7 +28,9 @@
 
 #import "FullKeyboardAccessWatcher.h"
 #import "SandboxExtension.h"
+#import "WebPage.h"
 #import "WebProcessCreationParameters.h"
+#import <WebCore/FileSystem.h>
 #import <WebCore/MemoryCache.h>
 #import <WebCore/PageCache.h>
 #import <WebKitSystemInterface.h>
@@ -37,6 +39,8 @@
 #import <mach/host_info.h>
 #import <mach/mach.h>
 #import <mach/mach_error.h>
+#import <objc/runtime.h>
+#import <WebCore/LocalizedStrings.h>
 
 #if ENABLE(WEB_PROCESS_SANDBOX)
 #import <sandbox.h>
@@ -106,8 +110,10 @@ void WebProcess::platformSetCacheModel(CacheModel cacheModel)
     [nsurlCache setDiskCapacity:max<unsigned long>(urlCacheDiskCapacity, [nsurlCache diskCapacity])]; // Don't shrink a big disk cache, since that would cause churn.
 }
 
-void WebProcess::platformClearResourceCaches()
+void WebProcess::platformClearResourceCaches(ResourceCachesToClear cachesToClear)
 {
+    if (cachesToClear == InMemoryResourceCachesOnly)
+        return;
     [[NSURLCache sharedURLCache] removeAllCachedResponses];
 }
 
@@ -117,7 +123,7 @@ bool WebProcess::fullKeyboardAccessEnabled()
 }
 
 #if ENABLE(WEB_PROCESS_SANDBOX)
-static void appendSandboxParameterPath(Vector<const char*>& vector, const char* name, const char* path)
+static void appendSandboxParameterPathInternal(Vector<const char*>& vector, const char* name, const char* path)
 {
     char normalizedPath[PATH_MAX];
     if (!realpath(path, normalizedPath))
@@ -127,14 +133,31 @@ static void appendSandboxParameterPath(Vector<const char*>& vector, const char* 
     vector.append(fastStrDup(normalizedPath));
 }
 
-static void appendSandboxParameterConfPath(Vector<const char*>& vector, const char* name, int confID)
+static void appendReadwriteConfDirectory(Vector<const char*>& vector, const char* name, int confID)
 {
     char path[PATH_MAX];
     if (confstr(confID, path, PATH_MAX) <= 0)
         path[0] = '\0';
 
-    appendSandboxParameterPath(vector, name, path);
+    appendSandboxParameterPathInternal(vector, name, path);
 }
+
+static void appendReadonlySandboxDirectory(Vector<const char*>& vector, const char* name, NSString *path)
+{
+    appendSandboxParameterPathInternal(vector, name, [(NSString *)path fileSystemRepresentation]);
+}
+
+static void appendReadwriteSandboxDirectory(Vector<const char*>& vector, const char* name, NSString *path)
+{
+    NSError *error = nil;
+
+    // This is very unlikely to fail, but in case it actually happens, we'd like some sort of output in the console.
+    if (![[NSFileManager defaultManager] createDirectoryAtPath:path withIntermediateDirectories:YES attributes:nil error:&error])
+        NSLog(@"could not create \"%@\", error %@", path, error);
+
+    appendSandboxParameterPathInternal(vector, name, [(NSString *)path fileSystemRepresentation]);
+}
+
 #endif
 
 static void initializeSandbox(const WebProcessCreationParameters& parameters)
@@ -147,13 +170,20 @@ static void initializeSandbox(const WebProcessCreationParameters& parameters)
 
     Vector<const char*> sandboxParameters;
 
-    appendSandboxParameterPath(sandboxParameters, "HOME_DIR", [NSHomeDirectory() fileSystemRepresentation]);
-    appendSandboxParameterPath(sandboxParameters, "WEBKIT2_FRAMEWORK_DIR", [[[[NSBundle bundleForClass:NSClassFromString(@"WKView")] bundlePath] stringByDeletingLastPathComponent] fileSystemRepresentation]);
-    appendSandboxParameterConfPath(sandboxParameters, "DARWIN_USER_TEMP_DIR", _CS_DARWIN_USER_TEMP_DIR);
-    appendSandboxParameterConfPath(sandboxParameters, "DARWIN_USER_CACHE_DIR", _CS_DARWIN_USER_CACHE_DIR);
-    appendSandboxParameterPath(sandboxParameters, "WEBKIT_DATABASE_DIR", [(NSString *)parameters.databaseDirectory fileSystemRepresentation]);
-    appendSandboxParameterPath(sandboxParameters, "NSURL_CACHE_DIR", parameters.nsURLCachePath.data());
-    appendSandboxParameterPath(sandboxParameters, "UI_PROCESS_BUNDLE_RESOURCE_DIR", parameters.uiProcessBundleResourcePath.data());
+    // These are read-only.
+    appendReadonlySandboxDirectory(sandboxParameters, "WEBKIT2_FRAMEWORK_DIR", [[[NSBundle bundleForClass:NSClassFromString(@"WKView")] bundlePath] stringByDeletingLastPathComponent]);
+    appendReadonlySandboxDirectory(sandboxParameters, "UI_PROCESS_BUNDLE_RESOURCE_DIR", parameters.uiProcessBundleResourcePath);
+
+    // These are read-write getconf paths.
+    appendReadwriteConfDirectory(sandboxParameters, "DARWIN_USER_TEMP_DIR", _CS_DARWIN_USER_TEMP_DIR);
+    appendReadwriteConfDirectory(sandboxParameters, "DARWIN_USER_CACHE_DIR", _CS_DARWIN_USER_CACHE_DIR);
+
+    // These are read-write paths.
+    appendReadwriteSandboxDirectory(sandboxParameters, "HOME_DIR", NSHomeDirectory());
+    appendReadwriteSandboxDirectory(sandboxParameters, "WEBKIT_DATABASE_DIR", parameters.databaseDirectory);
+    appendReadwriteSandboxDirectory(sandboxParameters, "WEBKIT_LOCALSTORAGE_DIR", parameters.localStorageDirectory);
+    appendReadwriteSandboxDirectory(sandboxParameters, "NSURL_CACHE_DIR", parameters.nsURLCachePath);
+
     sandboxParameters.append(static_cast<const char*>(0));
 
     const char* profilePath = [[[NSBundle mainBundle] pathForResource:@"com.apple.WebProcess" ofType:@"sb"] fileSystemRepresentation];
@@ -171,13 +201,23 @@ static void initializeSandbox(const WebProcessCreationParameters& parameters)
 #endif
 }
 
+static id NSApplicationAccessibilityFocusedUIElement(NSApplication*, SEL)
+{
+    WebPage* page = WebProcess::shared().focusedWebPage();
+    if (!page || !page->accessibilityRemoteObject())
+        return 0;
+
+    return [page->accessibilityRemoteObject() accessibilityFocusedUIElement];
+}
+    
 void WebProcess::platformInitializeWebProcess(const WebProcessCreationParameters& parameters, CoreIPC::ArgumentDecoder*)
 {
+    [[NSFileManager defaultManager] changeCurrentDirectoryPath:[[NSBundle mainBundle] bundlePath]];
+
     initializeSandbox(parameters);
 
     if (!parameters.parentProcessName.isNull()) {
-        // FIXME (WebKit2) <rdar://problem/8728860> WebKit2 needs to be localized
-        NSString *applicationName = [NSString stringWithFormat:@"%@ Web Content", (NSString *)parameters.parentProcessName];
+        NSString *applicationName = [NSString stringWithFormat:WEB_UI_STRING("%@ Web Content", "Visible name of the web process. The argument is the application name."), (NSString *)parameters.parentProcessName];
         WKSetVisibleApplicationName((CFStringRef)applicationName);
     }
 
@@ -185,12 +225,16 @@ void WebProcess::platformInitializeWebProcess(const WebProcessCreationParameters
         NSUInteger cacheMemoryCapacity = parameters.nsURLCacheMemoryCapacity;
         NSUInteger cacheDiskCapacity = parameters.nsURLCacheDiskCapacity;
 
-        NSString *nsCachePath = [[NSFileManager defaultManager] stringWithFileSystemRepresentation:parameters.nsURLCachePath.data() length:strlen(parameters.nsURLCachePath.data())];
-        RetainPtr<NSURLCache> parentProcessURLCache(AdoptNS, [[NSURLCache alloc] initWithMemoryCapacity:cacheMemoryCapacity diskCapacity:cacheDiskCapacity diskPath:nsCachePath]);
+        RetainPtr<NSURLCache> parentProcessURLCache(AdoptNS, [[NSURLCache alloc] initWithMemoryCapacity:cacheMemoryCapacity diskCapacity:cacheDiskCapacity diskPath:parameters.nsURLCachePath]);
         [NSURLCache setSharedURLCache:parentProcessURLCache.get()];
     }
 
     m_compositingRenderServerPort = parameters.acceleratedCompositingPort.port();
+
+    // rdar://9118639 accessibilityFocusedUIElement in NSApplication defaults to use the keyWindow. Since there's
+    // no window in WK2, NSApplication needs to use the focused page's focused element.
+    Method methodToPatch = class_getInstanceMethod([NSApplication class], @selector(accessibilityFocusedUIElement));
+    method_setImplementation(methodToPatch, (IMP)NSApplicationAccessibilityFocusedUIElement);
 }
 
 void WebProcess::platformTerminate()

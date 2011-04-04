@@ -191,6 +191,7 @@ RenderObject::RenderObject(Node* node)
     , m_needsPositionedMovementLayout(false)
     , m_normalChildNeedsLayout(false)
     , m_posChildNeedsLayout(false)
+    , m_needsSimplifiedNormalFlowLayout(false)
     , m_preferredLogicalWidthsDirty(false)
     , m_floating(false)
     , m_positioned(false)
@@ -201,6 +202,7 @@ RenderObject::RenderObject(Node* node)
     , m_isBox(false)
     , m_inline(true)
     , m_replaced(false)
+    , m_horizontalWritingMode(true)
     , m_isDragging(false)
     , m_hasLayer(false)
     , m_hasOverflowClip(false)
@@ -215,7 +217,6 @@ RenderObject::RenderObject(Node* node)
     , m_hasMarkupTruncation(false)
     , m_selectionState(SelectionNone)
     , m_hasColumns(false)
-    , m_cellWidthChanged(false)
 {
 #ifndef NDEBUG
     renderObjectCounter.increment();
@@ -901,7 +902,7 @@ IntRect RenderObject::borderInnerRect(const IntRect& borderRect, unsigned short 
 }
 
 #if HAVE(PATH_BASED_BORDER_RADIUS_DRAWING)
-void RenderObject::drawBoxSideFromPath(GraphicsContext* graphicsContext, IntRect borderRect, Path borderPath, 
+void RenderObject::drawBoxSideFromPath(GraphicsContext* graphicsContext, const IntRect& borderRect, const Path& borderPath,
                                     float thickness, float drawThickness, BoxSide s, const RenderStyle* style, 
                                     Color c, EBorderStyle borderStyle)
 {
@@ -1048,7 +1049,7 @@ void RenderObject::drawBoxSideFromPath(GraphicsContext* graphicsContext, IntRect
     graphicsContext->drawRect(borderRect);
 }
 #else
-void RenderObject::drawArcForBoxSide(GraphicsContext* graphicsContext, int x, int y, float thickness, IntSize radius,
+void RenderObject::drawArcForBoxSide(GraphicsContext* graphicsContext, int x, int y, float thickness, const IntSize& radius,
                                      int angleStart, int angleSpan, BoxSide s, Color c,
                                      EBorderStyle style, bool firstCorner)
 {
@@ -1686,9 +1687,12 @@ StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsign
         // Text nodes share style with their parents but transforms don't apply to them,
         // hence the !isText() check.
         // FIXME: when transforms are taken into account for overflow, we will need to do a layout.
-        if (!isText() && (!hasLayer() || !toRenderBoxModelObject(this)->layer()->isComposited()))
-            diff = StyleDifferenceLayout;
-        else if (diff < StyleDifferenceRecompositeLayer)
+        if (!isText() && (!hasLayer() || !toRenderBoxModelObject(this)->layer()->isComposited())) {
+            if (!hasLayer())
+                diff = StyleDifferenceLayout; // FIXME: Do this for now since SimplifiedLayout cannot handle updating floating objects lists.
+            else if (diff < StyleDifferenceSimplifiedLayout)
+                diff = StyleDifferenceSimplifiedLayout;
+        } else if (diff < StyleDifferenceRecompositeLayer)
             diff = StyleDifferenceRecompositeLayer;
     }
 
@@ -1767,6 +1771,8 @@ void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
             setNeedsLayoutAndPrefWidthsRecalc();
         else if (updatedDiff == StyleDifferenceLayoutPositionedMovementOnly)
             setNeedsPositionedMovementLayout();
+        else if (updatedDiff == StyleDifferenceSimplifiedLayout)
+            setNeedsSimplifiedNormalFlowLayout();
     }
     
     if (updatedDiff == StyleDifferenceRepaintLayer || updatedDiff == StyleDifferenceRepaint) {
@@ -1832,6 +1838,7 @@ void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle* newS
             m_positioned = false;
             m_relPositioned = false;
         }
+        m_horizontalWritingMode = true;
         m_paintBackground = false;
         m_hasOverflowClip = false;
         m_hasTransform = false;
@@ -1879,7 +1886,7 @@ void RenderObject::styleDidChange(StyleDifference diff, const RenderStyle* oldSt
     if (!m_parent)
         return;
     
-    if (diff == StyleDifferenceLayout) {
+    if (diff == StyleDifferenceLayout || diff == StyleDifferenceSimplifiedLayout) {
         RenderCounter::rendererStyleChanged(this, oldStyle, m_style.get());
 
         // If the object already needs layout, then setNeedsLayout won't do
@@ -1890,7 +1897,10 @@ void RenderObject::styleDidChange(StyleDifference diff, const RenderStyle* oldSt
         if (m_needsLayout && oldStyle->position() != m_style->position())
             markContainingBlocksForLayout();
 
-        setNeedsLayoutAndPrefWidthsRecalc();
+        if (diff == StyleDifferenceLayout)
+            setNeedsLayoutAndPrefWidthsRecalc();
+        else
+            setNeedsSimplifiedNormalFlowLayout();
     } else if (diff == StyleDifferenceLayoutPositionedMovementOnly)
         setNeedsPositionedMovementLayout();
 
@@ -1936,7 +1946,7 @@ IntRect RenderObject::viewRect() const
     return view()->viewRect();
 }
 
-FloatPoint RenderObject::localToAbsolute(FloatPoint localPoint, bool fixed, bool useTransforms) const
+FloatPoint RenderObject::localToAbsolute(const FloatPoint& localPoint, bool fixed, bool useTransforms) const
 {
     TransformState transformState(TransformState::ApplyTransformDirection, localPoint);
     mapLocalToContainer(0, fixed, useTransforms, transformState);
@@ -1945,7 +1955,7 @@ FloatPoint RenderObject::localToAbsolute(FloatPoint localPoint, bool fixed, bool
     return transformState.lastPlanarPoint();
 }
 
-FloatPoint RenderObject::absoluteToLocal(FloatPoint containerPoint, bool fixed, bool useTransforms) const
+FloatPoint RenderObject::absoluteToLocal(const FloatPoint& containerPoint, bool fixed, bool useTransforms) const
 {
     TransformState transformState(TransformState::UnapplyInverseTransformDirection, containerPoint);
     mapAbsoluteToLocalPoint(fixed, useTransforms, transformState);
@@ -2610,11 +2620,11 @@ RenderBoxModelObject* RenderObject::offsetParent() const
     //     * The computed value of the position property of A is static and the ancestor
     //       is one of the following HTML elements: td, th, or table.
     //     * Our own extension: if there is a difference in the effective zoom
+
     bool skipTables = isPositioned() || isRelPositioned();
     float currZoom = style()->effectiveZoom();
     RenderObject* curr = parent();
-    while (curr && (!curr->node() ||
-                    (!curr->isPositioned() && !curr->isRelPositioned() && !curr->isBody()))) {
+    while (curr && (!curr->node() || (!curr->isPositioned() && !curr->isRelPositioned() && !curr->isBody()))) {
         Node* element = curr->node();
         if (!skipTables && element) {
             bool isTableElement = element->hasTagName(tableTag) ||
@@ -2644,14 +2654,14 @@ VisiblePosition RenderObject::createVisiblePosition(int offset, EAffinity affini
 {
     // If this is a non-anonymous renderer in an editable area, then it's simple.
     if (Node* node = this->node()) {
-        if (!node->isContentEditable()) {
+        if (!node->rendererIsEditable()) {
             // If it can be found, we prefer a visually equivalent position that is editable. 
             Position position(node, offset);
             Position candidate = position.downstream(CanCrossEditingBoundary);
-            if (candidate.deprecatedNode()->isContentEditable())
+            if (candidate.deprecatedNode()->rendererIsEditable())
                 return VisiblePosition(candidate, affinity);
             candidate = position.upstream(CanCrossEditingBoundary);
-            if (candidate.deprecatedNode()->isContentEditable())
+            if (candidate.deprecatedNode()->rendererIsEditable())
                 return VisiblePosition(candidate, affinity);
         }
         // FIXME: Eliminate legacy editing positions

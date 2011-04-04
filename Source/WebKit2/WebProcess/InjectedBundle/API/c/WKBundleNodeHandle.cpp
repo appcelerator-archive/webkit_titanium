@@ -51,14 +51,20 @@ WKBundleNodeHandleRef WKBundleNodeHandleCopyDocument(WKBundleNodeHandleRef nodeH
     return toAPI(nodeHandle.release().releaseRef());
 }
 
-WKRect WKBundleNodeHandleGetElementBounds(WKBundleNodeHandleRef nodeHandleRef)
-{
-    return toAPI(toImpl(nodeHandleRef)->elementBounds());
-}
-
 WKRect WKBundleNodeHandleGetRenderRect(WKBundleNodeHandleRef nodeHandleRef, bool* isReplaced)
 {
     return toAPI(toImpl(nodeHandleRef)->renderRect(isReplaced));
+}
+
+WKRect WKBundleNodeHandleGetElementBounds(WKBundleNodeHandleRef elementHandleRef)
+{
+    return toAPI(toImpl(elementHandleRef)->elementBounds());
+}
+
+WKBundleNodeHandleRef WKBundleNodeHandleCopyElementShadowRoot(WKBundleNodeHandleRef elementHandleRef)
+{
+    RefPtr<InjectedBundleNodeHandle> nodeHandle = toImpl(elementHandleRef)->elementShadowRoot();
+    return toAPI(nodeHandle.release().releaseRef());
 }
 
 void WKBundleNodeHandleSetHTMLInputElementValueForUser(WKBundleNodeHandleRef htmlInputElementHandleRef, WKStringRef valueRef)
@@ -74,6 +80,16 @@ bool WKBundleNodeHandleGetHTMLInputElementAutofilled(WKBundleNodeHandleRef htmlI
 void WKBundleNodeHandleSetHTMLInputElementAutofilled(WKBundleNodeHandleRef htmlInputElementHandleRef, bool filled)
 {
     toImpl(htmlInputElementHandleRef)->setHTMLInputElementAutofilled(filled);
+}
+
+bool WKBundleNodeHandleGetHTMLInputElementLastChangeWasUserEdit(WKBundleNodeHandleRef htmlInputElementHandleRef)
+{
+    return toImpl(htmlInputElementHandleRef)->htmlInputElementLastChangeWasUserEdit();
+}
+
+bool WKBundleNodeHandleGetHTMLTextAreaElementLastChangeWasUserEdit(WKBundleNodeHandleRef htmlTextAreaElementHandleRef)
+{
+    return toImpl(htmlTextAreaElementHandleRef)->htmlTextAreaElementLastChangeWasUserEdit();
 }
 
 WKBundleNodeHandleRef WKBundleNodeHandleCopyHTMLTableCellElementCellAbove(WKBundleNodeHandleRef htmlTableCellElementHandleRef)
