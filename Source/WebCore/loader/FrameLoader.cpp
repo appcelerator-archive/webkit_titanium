@@ -3427,12 +3427,6 @@ void FrameLoader::dispatchDidClearWindowObjectInWorld(DOMWrapperWorld* world)
     InspectorInstrumentation::didClearWindowObjectInWorld(m_frame, world);
 }
 
-// TITANIUM
-void FrameLoader::foundUnknownScriptType(const String& source)
-{
-    m_client->foundUnknownScriptType(source);
-}
-
 void FrameLoader::updateSandboxFlags()
 {
     SandboxFlags flags = m_forcedSandboxFlags;

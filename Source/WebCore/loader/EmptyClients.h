@@ -378,9 +378,6 @@ public:
     virtual void documentElementAvailable() { }
     virtual void didPerformFirstNavigation() const { }
 
-    // TITANIUM
-    virtual void foundUnknownScriptType(const String&) { }
-
     virtual void registerForIconNotification(bool) { }
 
 #if USE(V8)

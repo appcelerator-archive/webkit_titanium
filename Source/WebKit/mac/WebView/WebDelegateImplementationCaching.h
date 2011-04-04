@@ -77,7 +77,6 @@ struct WebFrameLoadDelegateImplementationCache {
     IMP didFinishDocumentLoadForFrameFunc;
     IMP didDisplayInsecureContentFunc;
     IMP didRunInsecureContentFunc;
-    IMP foundUnknownScriptTypeForFrameFunc;
 };
 
 struct WebScriptDebugDelegateImplementationCache {

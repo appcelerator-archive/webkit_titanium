@@ -177,10 +177,8 @@ bool ScriptElement::prepareScript(const TextPosition1& scriptStartPosition, Lega
     if (!m_element->inDocument())
         return false;
 
-/*  TITANIUM: disable this check, otherwise non-javascript scripts will never run.
     if (!isScriptTypeSupported(supportLegacyTypes))
         return false;
-*/
 
     if (wasParserInserted) {
         m_parserInserted = true;
@@ -267,14 +265,7 @@ void ScriptElement::executeScript(const ScriptSourceCode& sourceCode)
             // Create a script from the script element node, using the script
             // block's source and the script block's type.
             // Note: This is where the script is compiled and actually executed.
-            //
-            // TITANIUM: If the script is Javascript let WebKit evaluate it.
-            // Otherwise notify Titanium to evaluate the script if possible.
-            if (isScriptTypeSupported()) {
-                frame->script()->evaluate(sourceCode);
-            } else {
-                frame->loader()->foundUnknownScriptType(sourceCode.source());
-            }
+            frame->script()->evaluate(sourceCode);
         }
 
         Document::updateStyleForAllDocuments();

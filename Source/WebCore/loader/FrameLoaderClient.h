@@ -267,9 +267,6 @@ namespace WebCore {
         virtual void documentElementAvailable() = 0;
         virtual void didPerformFirstNavigation() const = 0; // "Navigation" here means a transition from one page to another that ends up in the back/forward list.
 
-        // TITANIUM
-        virtual void foundUnknownScriptType(const String& source) = 0;
-
 #if USE(V8)
         virtual void didCreateScriptContextForFrame() = 0;
         virtual void didDestroyScriptContextForFrame() = 0;

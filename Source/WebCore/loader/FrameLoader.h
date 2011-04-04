@@ -245,9 +245,6 @@ public:
     void dispatchDidClearWindowObjectsInAllWorlds();
     void dispatchDocumentElementAvailable();
 
-    // TITANIUM
-    void foundUnknownScriptType(const String& source);
-
     void ownerElementSandboxFlagsChanged() { updateSandboxFlags(); }
 
     bool isSandboxed(SandboxFlags mask) const { return m_sandboxFlags & mask; }

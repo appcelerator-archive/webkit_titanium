@@ -2003,18 +2003,6 @@ void WebFrameLoaderClient::didPerformFirstNavigation() const
         [preferences setCacheModel:WebCacheModelDocumentBrowser];
 }
 
-// TITANIUM
-void WebFrameLoaderClient::foundUnknownScriptType(const String& source)
-{
-	WebView* webView = getWebView(m_webFrame.get());
-	WebFrameLoadDelegateImplementationCache* implementations = WebViewGetFrameLoadDelegateImplementations(webView);
-
-	if (implementations->foundUnknownScriptTypeForFrameFunc) {
-		CallFrameLoadDelegate(implementations->foundUnknownScriptTypeForFrameFunc, webView, @selector(webView:foundUnknownScriptType:forFrame:),
-			(NSString *)source, m_webFrame.get());
-	}
-}
-
 PassRefPtr<FrameNetworkingContext> WebFrameLoaderClient::createNetworkingContext()
 {
     return WebFrameNetworkingContext::create(core(m_webFrame.get()));
